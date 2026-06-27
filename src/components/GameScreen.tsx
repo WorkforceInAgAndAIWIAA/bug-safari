@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import type { ReturnType as RT } from "@/lib/util-types";
 import { useGameEngine } from "@/hooks/useGameEngine";
 import { Flame, Sparkles, ChevronRight, ArrowLeft, Bug, CheckCircle2, XCircle } from "lucide-react";
 
@@ -142,6 +141,3 @@ function Pill({ icon: Icon, label }: { icon: typeof Flame; label: string }) {
     </span>
   );
 }
-
-// satisfy import (TS lint); we reference types via ReturnType above
-export type _RT = RT;
