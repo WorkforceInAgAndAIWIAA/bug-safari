@@ -4,6 +4,7 @@ import type { GradeLevel } from "@/lib/types";
 import { GRADE_LABEL } from "@/lib/types";
 import { insects, type Insect } from "@/data/insects";
 import { Gamepad2, Sparkles, CheckCircle2 } from "lucide-react";
+import { K5PracticeHub } from "./K5PracticeHub";
 
 interface MiniGame {
   id: string;
@@ -14,13 +15,7 @@ interface MiniGame {
 }
 
 const GAMES: Record<GradeLevel, MiniGame[]> = {
-  elementary: [
-    { id: "name-the-bug", name: "Name the Bug", blurb: "Match the picture to the common name.", difficulty: "Easy", playable: true },
-    { id: "friend-or-foe", name: "Friend or Foe", blurb: "Pest or helper — make the call.", difficulty: "Easy", playable: true },
-    { id: "life-stages", name: "Life Stages", blurb: "Order egg → larva/nymph → adult.", difficulty: "Easy" },
-    { id: "habitat", name: "Habitat Mapping", blurb: "Place insects with their host plants.", difficulty: "Easy" },
-    { id: "safe-or-sting", name: "Safe or Sting", blurb: "Decide if it stings or bites.", difficulty: "Easy" },
-  ],
+  elementary: [],
   middle: [
     { id: "field-scout", name: "Field Scout", blurb: "Identify by common name + host.", difficulty: "Medium", playable: true },
     { id: "order-up", name: "Order Up", blurb: "Drop each insect into its order.", difficulty: "Medium", playable: true },
@@ -66,6 +61,9 @@ export function PracticeHub({ onClose }: { onClose: () => void }) {
         ))}
       </div>
 
+      {tab === "elementary" ? (
+        <K5PracticeHub />
+      ) : (
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {GAMES[tab].map((game) => (
           <button
@@ -87,6 +85,7 @@ export function PracticeHub({ onClose }: { onClose: () => void }) {
           </button>
         ))}
       </div>
+      )}
 
       {active && <QuickDrill game={active} grade={tab} onClose={() => setActive(null)} />}
     </OverlayShell>
