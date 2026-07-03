@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode, type DragEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { insects as ALL_INSECTS, type Insect } from "@/data/insects";
 import { Sparkles, Trophy, ArrowLeft, CheckCircle2, XCircle, Clock, RefreshCcw, Undo2 } from "lucide-react";
 import insectDiagram from "@/assets/insect_diagram.png.asset.json";
