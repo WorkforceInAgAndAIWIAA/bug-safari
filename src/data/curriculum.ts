@@ -177,16 +177,6 @@ export const CURRICULUM: Record<LearningGradeLevel, Unit[]> = {
           ],
           funFact: "The brown marmorated stink bug is from Asia — it hitchhiked to the US in packing crates in the 1990s and has been causing problems for fruit and vegetable farmers ever since!",
         },
-        {
-          id: "disease-carriers",
-          title: "What are disease carriers?",
-          sections: [
-            {
-              heading: "Vectors of disease",
-              body: "Insects can spread diseases between other insects, plants, and humans. A disease is a harmful condition that impacts living organisms and shows specific signs and symptoms. Insects spread diseases by acting as vectors of disease. Vectors are organisms that carry and spread disease. Insects spread diseases in two ways: bites and contamination. Some insects bite, suck the blood, or cause injury to the skin of animals and humans. Through this method, insects can spread diseases directly to humans. Disease is spread by contaminated insects when they have disease pathogens on their bodies from infected areas. Insects may pick up these pathogens from garbage, sewage, and other contaminated items. Insects must be managed to prevent diseases from spreading to humans and animals.",
-            },
-          ],
-        },
       ],
     },
     {
