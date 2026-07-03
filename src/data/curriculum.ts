@@ -276,22 +276,316 @@ export const CURRICULUM: Record<LearningGradeLevel, Unit[]> = {
   ],
   middle: [
     {
-      id: "field-basics",
-      title: "Field basics",
+      id: "classification-morphology",
+      title: "Classification and morphology",
       lessons: [
         {
-          id: "orders",
-          title: "Insect orders at a glance",
+          id: "taxonomy",
+          title: "Taxonomy: how insects get their names",
           sections: [
-            { heading: "What to look for first", body: "Beetles, flies, moths/butterflies, true bugs, bees/wasps, grasshoppers — learn the order-level traits that narrow any ID quickly." },
+            {
+              heading: "The ranked hierarchy of life",
+              body: "Taxonomy is the science of classifying living things into organized groups based on shared traits. All living organisms are arranged in a ranked hierarchy: Kingdom, Phylum, Class, Order, Family, Genus, and Species. Insects belong to Class Insecta within Phylum Arthropoda, a group that also includes spiders, centipedes, and crustaceans. Understanding these groupings explains why a spider is not an insect: spiders have eight legs and two body sections, placing them in Class Arachnida, while insects always have six legs and three body sections.",
+            },
+            {
+              heading: "Binomial nomenclature",
+              body: "Every insect species carries a unique two-word scientific name in a system called binomial nomenclature, developed by the Swedish naturalist Carl Linnaeus in the 1700s. The first word identifies the genus, a grouping of closely related species, and the second word identifies the specific species within that genus. Scientific names are always written in italics and are recognized by scientists worldwide regardless of language. Common names, by contrast, vary widely by region and can cause genuine confusion in the field.",
+            },
           ],
+          funFact:
+            "Think of scientific names like GPS coordinates. A common name like \"corn borer\" is like saying \"meet me downtown\" — it could mean a dozen different places. The scientific name Ostrinia nubilalis drops a pin on exactly one species, worldwide.",
         },
         {
-          id: "life-cycle",
-          title: "Complete vs. incomplete metamorphosis",
+          id: "morphology",
+          title: "Morphology: reading a bug like a map",
           sections: [
-            { heading: "Why it matters for scouting", body: "Egg → larva → pupa → adult, versus egg → nymph → adult. Knowing the stage tells you what damage to expect and how to time control." },
+            {
+              heading: "Head position and mouthparts",
+              body: "Morphology is the study of an organism's physical structure and form. Head position reveals feeding strategy: a prognathous head points forward (predators), a hypognathous head points downward (plant chewers like grasshoppers), and an opisthognathous head angles backward (piercing-suckers like aphids and leafhoppers). Chewing mandibles cut and grind solid tissue, while piercing-sucking stylets act like hypodermic needles to extract fluids or inject saliva.",
+            },
+            {
+              heading: "Antennae and wings",
+              body: "Antennae take many forms: filiform (thread-like, ground beetles), clavate (club-tipped, bark beetles), pectinate (comb-like, some moths), and aristate (bristle-bearing, many flies). Wings are equally diagnostic. Beetles have hardened forewings called elytra protecting membranous hindwings. True bugs have a partially hardened forewing called a hemelytron. Moths and butterflies carry microscopic scales on all four wings. Working head-to-abdomen systematically produces consistent IDs.",
+            },
           ],
+          funFact:
+            "An insect's body is a tool bag where every feature has a reason. A flea beetle's enlarged hind legs are its springs, a bee's pollen baskets are its grocery bags, and an aphid's needle-like beak is its juice straw.",
+        },
+      ],
+    },
+    {
+      id: "life-cycles",
+      title: "Life cycles",
+      lessons: [
+        {
+          id: "metamorphosis",
+          title: "One bug, four disguises",
+          sections: [
+            {
+              heading: "Complete vs. incomplete metamorphosis",
+              body: "Holometabolous insects (complete metamorphosis) pass through four stages: egg, larva, pupa, adult — beetles, moths, flies, and wasps. Larvae and adults often look like completely different species. Hemimetabolous insects (incomplete metamorphosis) hatch as nymphs that resemble miniature wingless adults — grasshoppers, aphids, stink bugs, and leafhoppers.",
+            },
+            {
+              heading: "Instars and management timing",
+              body: "Nymphs develop through growth stages called instars, each separated by a molt in which the insect sheds its exoskeleton. Wing pads and reproductive structures develop with each successive instar. In the field, identifying life stage matters as much as identifying species: management timing, economic thresholds, and control options are all tied to which stage the population has reached.",
+            },
+          ],
+          funFact:
+            "Spraying a field after caterpillars have bored into the stalk is like locking the barn door after the horse is out — the insecticide can't reach them. Life-cycle knowledge tells you which window to act in.",
+        },
+      ],
+    },
+    {
+      id: "identification",
+      title: "Identification skills and tools",
+      lessons: [
+        {
+          id: "observation",
+          title: "Observation: scouting with a system",
+          sections: [
+            {
+              heading: "Systematic scouting records",
+              body: "Crop scouting is the systematic inspection of a field to detect, identify, and estimate pest densities. A thorough record includes crop growth stage, plant part examined, insect life stage with a population estimate, and location within the field. Pest pressure follows predictable spatial patterns: black cutworm damage often enters from field edges near grass, while aphid colonies concentrate in low-lying, lush areas.",
+            },
+            {
+              heading: "Damage diagnosis",
+              body: "Damage patterns narrow the suspect list as effectively as seeing the insect. Stippled, silvery leaves indicate spider mites. Clean circular holes suggest flea beetles. Transparent \"windowing\" of leaf epidermis points to early-instar caterpillars. Learning to work backward from damage to culprit is a core skill built through field practice.",
+            },
+          ],
+          funFact:
+            "Random scouting is like opening a book to random pages. A systematic route through the field reads chapter by chapter — the story builds, and patterns emerge you'd never otherwise notice.",
+        },
+        {
+          id: "dichotomous-key",
+          title: "Dichotomous keys: the yes-or-no path to a name",
+          sections: [
+            {
+              heading: "How a key works",
+              body: "A dichotomous key guides you to an unknown organism's name through paired choices called couplets. The word comes from Greek dicha (\"in two\") and temnein (\"to cut\"). Each couplet presents two contrasting descriptions of a feature; the user picks the match and is directed to the next couplet. Each step eliminates large groups until a single species remains.",
+            },
+            {
+              heading: "Morphological characters",
+              body: "Keys rely on morphological characters — observable structural features. Common ones for insects: number and texture of wings, antenna shape and length, head position, mouthpart type, leg segment arrangement, body markings, and overall shape and size.",
+            },
+          ],
+          funFact:
+            "A dichotomous key is twenty questions with a strict rulebook. Every question has two answers, each eliminates a big chunk of possibilities, and careful answers always arrive at a name. The only way to end up wrong is to rush before really looking at the specimen.",
+        },
+        {
+          id: "look-alikes",
+          title: "Look-alikes: when bugs wear each other's clothes",
+          sections: [
+            {
+              heading: "Diagnostic features",
+              body: "Look-alike species share enough visual similarity to be routinely confused but often need very different management. Fall armyworm vs. true armyworm is a classic example: both are brown-gray caterpillars in corn, but the fall armyworm shows an inverted pale \"Y\" on the head capsule and four black spots in a square on the eighth abdominal segment, while the true armyworm has pale lateral stripes and a more uniform body color.",
+            },
+            {
+              heading: "One reliable feature at a time",
+              body: "A diagnostic feature is a single characteristic that, when clearly observed, is enough to rule out all similar species. Searching for one reliable diagnostic feature — rather than trying to match overall appearance — separates experienced scouts from beginners. A 10× hand lens reveals features invisible to the naked eye, like the rusty-orange cornicle base on the bird cherry-oat aphid or the antennal banding of the brown marmorated stink bug.",
+            },
+          ],
+          funFact:
+            "Distinguishing look-alikes is like identifying twins. You don't glance and guess — you find the one specific detail only one of them has, and that single feature does all the work.",
+        },
+      ],
+    },
+    {
+      id: "beneficials",
+      title: "Beneficial insects",
+      lessons: [
+        {
+          id: "pollination",
+          title: "Pollination: the hidden workforce",
+          sections: [
+            {
+              heading: "Managed and wild pollinators",
+              body: "Pollination transfers pollen from anther to stigma, triggering seed and fruit development. It's essential for almonds, apples, blueberries, cucumbers, soybeans, and sunflowers. Managed pollinators — most famously the European honey bee — are intentionally kept for pollination services. Wild native pollinators include bumble bees, sweat bees, mining bees, mason bees, plus non-bees like syrphid flies, beetles, and butterflies.",
+            },
+            {
+              heading: "Protecting pollinators on the farm",
+              body: "When pollinator communities decline, fruit set drops and yield falls in ways no fertilizer or irrigation can fix. Protection means timing insecticide applications around bee activity, preserving flowering habitat near fields, and choosing bee-safer products when bloom-time sprays are unavoidable. Syrphid flies deserve recognition — their yellow-and-black bands mimic bees and wasps, but their two wings (vs. four) and stationary hovering give them away.",
+            },
+          ],
+          funFact:
+            "Pollinators are mail carriers for plants. Without them delivering pollen flower to flower, the plant never gets the signal to start making fruit. No delivery, no harvest.",
+        },
+        {
+          id: "biocontrol",
+          title: "Biocontrol: insects that fight your battles",
+          sections: [
+            {
+              heading: "Predators and parasitoids",
+              body: "Predators actively hunt and consume many prey — lady beetles, green lacewings, ground beetles, spined soldier bugs. Parasitoids lay eggs in or on a single host; their offspring consume the host from the inside and eventually kill it. Braconid wasps, ichneumon wasps, and tachinid flies parasitize caterpillars, aphids, and other pests.",
+            },
+            {
+              heading: "Signs of biocontrol at work",
+              body: "Parasitoid evidence is often visible without catching a single insect: silken cocoons attached to a caterpillar's exterior, or bronze, hardened aphid mummies on leaves. When broad-spectrum insecticides wipe these natural enemies out, pest resurgence often follows — populations rebound higher than before because the biological brake is gone along with the pest itself.",
+            },
+          ],
+          funFact:
+            "Natural enemies are an unpaid security team working in the background. You don't notice them until they're gone — and then pests they were controlling suddenly run wild. A broad-spectrum spray is like firing the security team right before a big event.",
+        },
+        {
+          id: "decomposers",
+          title: "Decomposers: nature's recycling system",
+          sections: [
+            {
+              heading: "Comminution and nutrient cycling",
+              body: "Decomposition breaks dead organic matter into simpler compounds that living plants can reabsorb, returning nitrogen, phosphorus, and potassium to the soil. Insects contribute through comminution — the physical shredding of organic material into smaller pieces. Beetles, fly larvae, springtails, and earwigs are primary insect decomposers, dramatically increasing surface area available for microbial activity.",
+            },
+            {
+              heading: "Soil health and decomposer communities",
+              body: "Fields with diverse decomposer communities show faster residue turnover and more biologically active soils than those with intensive tillage, compaction, or heavy pesticide use — all of which reduce decomposer populations. Soil health and insect conservation are two sides of the same practice, not separate concerns.",
+            },
+          ],
+          funFact:
+            "Decomposer insects are a compost crew working underground — they chop big pieces into small pieces so the microbial team can finish the job. Without them, it's like composting a whole pumpkin: it eventually breaks down, but very slowly.",
+        },
+      ],
+    },
+    {
+      id: "pest-damage",
+      title: "Pest insects and crop damage",
+      lessons: [
+        {
+          id: "feeding-guilds",
+          title: "Feeding guilds: how pests do their damage",
+          sections: [
+            {
+              heading: "Chewers, suckers, and borers",
+              body: "A feeding guild groups pest species by how they damage crops, regardless of species. Chewers (caterpillars, beetles, grasshoppers) remove tissue outright — ragged holes, skeletonized leaves, clipped stems. Piercing-suckers (aphids, leafhoppers, plant bugs, stink bugs) extract fluids through stylets, producing stippling, yellowing, wilting, and often transmitting viruses. Borers (European corn borer, stalk borer, Dectes stem borer) tunnel into stems, stalks, or roots and feed hidden inside plant tissue, largely protected from foliar sprays.",
+            },
+            {
+              heading: "Why guild determines strategy",
+              body: "The guild determines what damage looks like, where to scout, at what stage the pest is most damaging, and which control methods can realistically reach the insect and stop the injury.",
+            },
+          ],
+          funFact:
+            "Trying to spray a borer already inside a corn stalk is like trying to wash the inside of a sealed water bottle — the product can't reach the target. Guild knowledge tells you whether a spray will even work.",
+        },
+        {
+          id: "vectors",
+          title: "Disease vectors: when the bug is the messenger",
+          sections: [
+            {
+              heading: "Vectors of plant pathogens",
+              body: "A vector transmits a pathogen between hosts without necessarily being harmed itself. The corn flea beetle (Chaetocnema pulicaria) vectors Stewart's wilt (Pantoea stewartii). Corn leaf aphid and other aphids vector Barley Yellow Dwarf Virus. Western flower thrips (Frankliniella occidentalis) vectors Tomato Spotted Wilt Virus across many crops.",
+            },
+            {
+              heading: "Inoculative transmission and low thresholds",
+              body: "For vectors, the treatment threshold is driven by disease transmission risk, not feeding damage — small populations can transmit a pathogen within seconds of probing. Inoculative transmission means even insects killed quickly may already have transmitted the disease. Scout records must capture both pest identity and crop growth stage, since disease susceptibility windows vary by crop and development period.",
+            },
+          ],
+          funFact:
+            "A vector is contagious before showing any symptoms. By the time disease is obvious in the plant, transmission already happened — which is why vector thresholds are often much lower than for other pests.",
+        },
+        {
+          id: "native-invasive",
+          title: "Native vs. invasive: home field disadvantage",
+          sections: [
+            {
+              heading: "The enemy release hypothesis",
+              body: "A native species evolved in a region and sits in ecological balance with its natural enemies. A non-native (exotic, introduced) species originates elsewhere and arrives by accident or intent. Non-natives that establish, spread, and cause harm are classified as invasive. The enemy release hypothesis explains why many invasives spread so fast: they arrive without the parasitoids, predators, and pathogens that regulated them at home.",
+            },
+            {
+              heading: "Classical biocontrol and reporting",
+              body: "Brown marmorated stink bug (Halyomorpha halys), spotted lanternfly (Lycorma delicatula), and soybean aphid (Aphis glycines) all originate in Asia and expanded aggressively in the US for this reason. Managing invasives often requires classical biological control — importing and releasing natural enemies from the pest's native range under strict regulatory review. Some regulated invasives (e.g., spotted lanternfly) must be reported to state departments of agriculture.",
+            },
+          ],
+          funFact:
+            "An invasive insect in a new country is like a sports team with no opponents — they just keep scoring. The natural enemies back home were the opposition, and without them the population runs up the score.",
+        },
+      ],
+    },
+    {
+      id: "ecology-webs",
+      title: "Ecology and food webs",
+      lessons: [
+        {
+          id: "trophic-levels",
+          title: "Trophic levels: the farm as an ecosystem",
+          sections: [
+            {
+              heading: "Producers, consumers, decomposers",
+              body: "Trophic level describes where an organism sits in the energy flow. Primary producers (crop plants) capture solar energy via photosynthesis. Primary consumers are herbivores — mostly pest insects like caterpillars, aphids, and beetles. Secondary consumers are predators — predatory insects, spiders, insectivorous birds. Decomposers operate across all levels, breaking down dead matter and returning nutrients to the soil.",
+            },
+            {
+              heading: "Ripple effects and pest resurgence",
+              body: "These feeding relationships form a food web, and disrupting one level ripples through the others. When a broad-spectrum spray removes aphid predators along with the aphid population, pest resurgence often follows: the aphid population rebounds rapidly because the biological brake is gone, and can exceed pre-treatment levels. The farm is a functioning ecosystem, not a controlled box.",
+            },
+          ],
+          funFact:
+            "A food web is a net. Pull hard on one strand and several others shift. Removing natural enemies doesn't just leave a gap — it changes the tension across the whole system, and pests rush in to fill the slack.",
+        },
+        {
+          id: "dispersal",
+          title: "Dispersal: how pests travel and arrive",
+          sections: [
+            {
+              heading: "Four ways insects move",
+              body: "Active flight is powered adult movement — the most common mechanism. Passive aerial dispersal carries wingless or weak-flying insects like aphids and early-instar caterpillars on wind currents, sometimes for very long distances. Phoresy (hitchhiking) moves insects unintentionally on equipment, transplants, seed, soil, or packaging — the primary pathway for most invasive species. Crawling handles short-range movement within or between adjacent fields.",
+            },
+            {
+              heading: "Migratory pests and trap networks",
+              body: "Many economically important pests are migratory. Fall armyworm (Spodoptera frugiperda) can't overwinter in northern states and moves north each spring from the Gulf Coast on warm-front weather systems. Regional pheromone trap networks capture adult moths with synthetic attractants, tracking migrations in real time and giving scouts about two weeks of lead time before larvae appear in the field.",
+            },
+          ],
+          funFact:
+            "Migratory pest moths are like weather systems — they form far away and travel toward you. Regional moth trap networks are the radar map that lets scouts prepare before larvae show up.",
+        },
+      ],
+    },
+    {
+      id: "management",
+      title: "Management and stewardship",
+      lessons: [
+        {
+          id: "thresholds",
+          title: "Economic thresholds: when is it worth treating?",
+          sections: [
+            {
+              heading: "EIL vs. ET",
+              body: "The economic injury level (EIL) is the lowest pest density at which crop-damage cost equals control cost. The economic threshold (ET, or action threshold) is the density at which action should be taken to prevent reaching the EIL — deliberately set below the EIL to give response time. Below the ET, treatment costs more than the loss it prevents, so treating is economically unjustifiable regardless of how many insects are present.",
+            },
+            {
+              heading: "Thresholds move with the market",
+              body: "Thresholds vary by crop, growth stage, pest species, commodity price, and control cost. Some are expressed as insects per plant, some as percent defoliation, others as insects per standardized sweep. Because prices fluctuate, the ET isn't fixed: higher crop value means lower pest densities justify treatment, because each unit of yield saved is worth more.",
+            },
+          ],
+          funFact:
+            "Treating below threshold is like buying insurance for something that won't happen. The threshold tells you exactly where the math tips from \"wait\" to \"act.\"",
+        },
+        {
+          id: "ipm",
+          title: "IPM: the smarter toolbox",
+          sections: [
+            {
+              heading: "Four categories of control",
+              body: "Integrated Pest Management uses multiple strategies to hold pests below damaging levels while minimizing risk to people, non-targets, and the environment. Cultural controls (crop rotation, planting date, tillage, resistant varieties) reduce establishment or survival. Biological controls conserve or augment natural enemies. Mechanical/physical controls include row covers, trap crops, and pheromone traps. Chemical controls are used only when other strategies are insufficient and thresholds are exceeded.",
+            },
+            {
+              heading: "Insecticide resistance management",
+              body: "Resistance develops when individuals carrying genetic mutations survive an insecticide that kills susceptible ones. They reproduce and pass on the trait, shifting the population until the product no longer works. Rotating modes of action (MOA) — the biochemical mechanism by which a product kills — is the primary IRM strategy. Different MOAs in successive applications prevent any one resistance mechanism from being strongly selected across the population.",
+            },
+          ],
+          funFact:
+            "Relying on one insecticide MOA is like using the same antibiotic for every illness — the more you use it, the less it works. IPM rotates tools the same way a doctor rotates antibiotics: to stay ahead of resistance.",
+        },
+        {
+          id: "biodiversity-stewardship",
+          title: "Biodiversity and stewardship",
+          sections: [
+            {
+              heading: "Ecosystem services and landscape simplification",
+              body: "Agricultural biodiversity is the variety of living organisms in and around a farming system — insects, plants, fungi, bacteria, soil invertebrates. Ecosystem services are the free benefits functioning communities provide: pollination, biological pest control, nutrient cycling, soil formation. High biodiversity delivers more of these services. Landscape simplification — removing hedgerows, draining wetlands, eliminating field borders, reducing crop diversity — cuts habitat, food, and overwintering sites for both predators and pollinators.",
+            },
+            {
+              heading: "Practices that restore insect biodiversity",
+              body: "Farmers can rebuild insect biodiversity by establishing insectary strips (flowering plantings along field margins), planting cover crops between cash crops for habitat continuity, reducing tillage to protect soil-dwelling beneficials, and adopting threshold-based rather than calendar-based spray timing to minimize non-target impact.",
+            },
+          ],
+          funFact:
+            "A biodiverse farm is a well-stocked toolbox — you have the right tool for every job. A simplified landscape is a toolbox with only one wrench: it works fine until the problem needs something else.",
         },
       ],
     },
