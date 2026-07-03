@@ -147,3 +147,17 @@
     color: var(--color-foreground);
   }
 }
+
+@keyframes k5-shake {
+  0%, 100% { transform: translate(0, 0); }
+  20% { transform: translate(-8px, 4px) rotate(-4deg); }
+  40% { transform: translate(8px, -4px) rotate(4deg); }
+  60% { transform: translate(-6px, 3px) rotate(-3deg); }
+  80% { transform: translate(6px, -3px) rotate(3deg); }
+}
+.k5-shake { animation: k5-shake 500ms ease-in-out; }
+
+@keyframes k5-flyaway {
+  to { transform: translate(120px, -160px) scale(0.4); opacity: 0; }
+}
+.k5-flyaway { animation: k5-flyaway 700ms ease-in forwards; }
