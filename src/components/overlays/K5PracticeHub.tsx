@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { insects as ALL_INSECTS, type Insect } from "@/data/insects";
 import { Sparkles, Trophy, ArrowLeft, CheckCircle2, XCircle, Clock, RefreshCcw } from "lucide-react";
 
@@ -1102,7 +1102,7 @@ export interface K5Game {
   id: string;
   name: string;
   blurb: string;
-  render: (onAward: (n: number) => void) => JSX.Element;
+  render: (onAward: (n: number) => void) => ReactNode;
 }
 
 export const K5_GAMES: K5Game[] = [
