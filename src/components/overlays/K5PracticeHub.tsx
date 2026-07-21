@@ -3,6 +3,8 @@ import { insects as ALL_INSECTS, type Insect } from "@/data/insects";
 import { Sparkles, Trophy, ArrowLeft, CheckCircle2, XCircle, Clock, RefreshCcw, Undo2 } from "lucide-react";
 import insectDiagram from "@/assets/insect_diagram.png.asset.json";
 import worldMap from "@/assets/world_map.png.asset.json";
+import { InsectImage } from "@/components/InsectImage";
+import { getInsectImage, type InsectStage } from "@/lib/insectImages";
 
 const K5_IDS = [
   "alfalfa-weevil","bumble-bee","corn-leaf-aphid","honey-bee","japanese-beetle",
@@ -102,12 +104,8 @@ function usePoints() {
 
 // ------- Shared UI -------
 function InsectTile({ i, size = "md" }: { i: Insect; size?: "sm" | "md" | "lg" }) {
-  const s = size === "lg" ? "text-6xl p-6" : size === "sm" ? "text-3xl p-2" : "text-4xl p-4";
-  return (
-    <div className={`grid place-items-center rounded-xl bg-gradient-to-br from-secondary/40 via-accent/30 to-primary/15 ${s}`}>
-      <span aria-hidden>{EMOJI[i.id] ?? "🐜"}</span>
-    </div>
-  );
+  const dim = size === "lg" ? "h-32 w-32" : size === "sm" ? "h-14 w-14" : "h-20 w-20";
+  return <InsectImage id={i.id} name={i.commonName} className={dim} />;
 }
 function Feedback({ ok, text }: { ok: boolean; text: string }) {
   return (
