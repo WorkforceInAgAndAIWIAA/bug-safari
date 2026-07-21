@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useGameEngine } from "@/hooks/useGameEngine";
-import { Flame, Sparkles, ChevronRight, ArrowLeft, Bug, CheckCircle2, XCircle } from "lucide-react";
+import { Flame, Sparkles, ChevronRight, ArrowLeft, CheckCircle2, XCircle } from "lucide-react";
+import { InsectImage } from "@/components/InsectImage";
 
 type Engine = ReturnType<typeof useGameEngine>;
 
@@ -50,12 +51,13 @@ export function GameScreen({ engine, onExit }: { engine: Engine; onExit: () => v
           {current.phase.name}
         </div>
 
-        <div className="flex items-center justify-center rounded-xl bg-gradient-to-br from-secondary/30 via-accent/30 to-primary/15 py-10">
-          <Bug className="h-24 w-24 text-primary/70" strokeWidth={1.25} />
-        </div>
-        <p className="mt-2 text-center text-xs text-muted-foreground italic">
-          Placeholder image — species photos coming in a later pass.
-        </p>
+        <InsectImage
+          id={current.insect.id}
+          name={current.insect.commonName}
+          className="h-64 w-full sm:h-72"
+          imgClassName="h-full w-full object-contain bg-gradient-to-br from-secondary/20 via-accent/20 to-primary/10"
+          fallbackClassName="h-24 w-24 text-primary/70"
+        />
 
         <h3 className="mt-5 text-center text-xl font-semibold text-foreground">{current.prompt}</h3>
         {current.hint && <p className="mt-1 text-center text-xs text-muted-foreground">Hint: family is {current.hint}</p>}
