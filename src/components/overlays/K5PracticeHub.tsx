@@ -162,7 +162,7 @@ function BugNameMatchUp({ onAward }: { onAward: (n: number) => void }) {
           return (
             <button key={c.key} onClick={() => flip(c.key)}
               className={`aspect-square rounded-xl border-2 p-2 text-center transition ${show ? "border-primary bg-card" : "border-border bg-muted"} ${c.matched ? "opacity-60" : ""}`}>
-              {show ? (c.kind === "pic" ? <span className="text-4xl">{EMOJI[i.id]}</span> : <span className="text-xs font-semibold text-foreground">{i.commonName}</span>) : <span className="text-2xl text-muted-foreground">?</span>}
+              {show ? (c.kind === "pic" ? <InsectImage id={i.id} name={i.commonName} className="mx-auto h-full w-full" /> : <span className="text-xs font-semibold text-foreground">{i.commonName}</span>) : <span className="text-2xl text-muted-foreground">?</span>}
             </button>
           );
         })}
@@ -216,7 +216,7 @@ function BugDetective({ onAward }: { onAward: (n: number) => void }) {
       <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
         {choices.map((c) => (
           <button key={c.id} onClick={() => !msg && guess(c)} className="flex flex-col items-center gap-1 rounded-lg border border-border bg-card p-3 text-xs hover:bg-muted">
-            <span className="text-3xl">{EMOJI[c.id]}</span>
+            <InsectImage id={c.id} name={c.commonName} className="h-16 w-16" />
             <span className="font-medium">{c.commonName}</span>
           </button>
         ))}
@@ -621,8 +621,8 @@ function PestOrNot({ onAward }: { onAward: (n: number) => void }) {
   return (
     <div>
       <p className="mb-3 text-sm text-muted-foreground">Thumbs up = pest. Thumbs down = not a pest.</p>
-      <div className="grid place-items-center rounded-xl bg-muted p-8">
-        <div className="text-7xl">{EMOJI[i.id]}</div>
+      <div className="grid place-items-center rounded-xl bg-muted p-6">
+        <InsectImage id={i.id} name={i.commonName} className="h-40 w-40" />
         <div className="mt-2 text-lg font-semibold">{i.commonName}</div>
       </div>
       <div className="mt-3 grid grid-cols-2 gap-3">
@@ -657,8 +657,8 @@ function Bodyguard({ onAward }: { onAward: (n: number) => void }) {
   return (
     <div>
       <p className="mb-3 text-sm text-muted-foreground">Farmer's choice: spray or protect? Protect helpers, control pests.</p>
-      <div className="grid place-items-center rounded-xl bg-gradient-to-br from-secondary/40 to-primary/10 p-8">
-        <div className="text-7xl">{EMOJI[i.id]}</div>
+      <div className="grid place-items-center rounded-xl bg-gradient-to-br from-secondary/40 to-primary/10 p-6">
+        <InsectImage id={i.id} name={i.commonName} className="h-40 w-40" />
         <div className="mt-2 font-semibold">{i.commonName}</div>
         <div className="text-xs italic text-muted-foreground">Found on: {i.hosts}</div>
       </div>
@@ -674,14 +674,21 @@ function Bodyguard({ onAward }: { onAward: (n: number) => void }) {
 // ============================================================
 // 10. Life Cycle Builder — photo spots + click in order + undo
 // ============================================================
-const STAGE_EMOJI = (stage: string, insect: Insect) => {
-  if (stage === "Egg") return "🥚";
-  if (stage === "Larva") return "🐛";
-  if (stage === "Pupa") return "🛌";
-  if (stage === "Nymph") return "🐜";
-  if (stage === "Adult") return EMOJI[insect.id] ?? "🐞";
-  return "❓";
+const STAGE_TO_KEY: Record<string, InsectStage> = {
+  Egg: "egg",
+  Larva: "larva",
+  Pupa: "pupa",
+  Nymph: "nymph",
+  Adult: "adult",
 };
+function StageThumb({ stage, insect, size = "md" }: { stage: string; insect: Insect; size?: "sm" | "md" }) {
+  const key = STAGE_TO_KEY[stage] ?? "adult";
+  const src = getInsectImage(insect.id, key);
+  const dim = size === "sm" ? "h-10 w-10" : "h-16 w-16";
+  const emoji = stage === "Egg" ? "🥚" : stage === "Larva" ? "🐛" : stage === "Pupa" ? "🛌" : stage === "Nymph" ? "🐜" : "🐞";
+  if (!src) return <span className="text-3xl">{emoji}</span>;
+  return <img src={src} alt={`${insect.commonName} ${stage}`} className={`${dim} rounded-md object-cover`} loading="lazy" />;
+}
 function LifeCycle({ onAward }: { onAward: (n: number) => void }) {
   const [i, setI] = useState(() => rand(K5));
   const complete = i.metamorphosis === "Complete";
@@ -713,7 +720,7 @@ function LifeCycle({ onAward }: { onAward: (n: number) => void }) {
       </p>
       <div className="mb-4 grid place-items-center rounded-xl border border-border bg-muted/40 p-4">
         <div className="text-xs uppercase tracking-wide text-muted-foreground">Featured insect</div>
-        <div className="text-6xl">{EMOJI[i.id]}</div>
+        <InsectImage id={i.id} name={i.commonName} className="h-32 w-32" />
         <div className="mt-1 font-semibold">{i.commonName}</div>
       </div>
       <div className="mb-3 flex flex-wrap justify-center gap-2">
@@ -721,7 +728,7 @@ function LifeCycle({ onAward }: { onAward: (n: number) => void }) {
           const s = placed[idx];
           return (
             <div key={idx} className={`w-24 rounded-xl border-2 p-2 text-center ${s ? "border-primary bg-primary/10" : "border-dashed border-border bg-muted/30"}`}>
-              <div className="text-3xl">{s ? STAGE_EMOJI(s, i) : "?"}</div>
+              <div className="flex justify-center">{s ? <StageThumb stage={s} insect={i} /> : <span className="text-3xl">?</span>}</div>
               <div className="mt-1 text-xs font-medium">{s ?? `Step ${idx + 1}`}</div>
             </div>
           );
@@ -729,8 +736,8 @@ function LifeCycle({ onAward }: { onAward: (n: number) => void }) {
       </div>
       <div className="flex flex-wrap gap-2">
         {remaining.map((s) => (
-          <button key={s} onClick={() => place(s)} className="rounded-lg border border-border bg-card px-4 py-2 text-sm hover:bg-muted">
-            {STAGE_EMOJI(s, i)} {s}
+          <button key={s} onClick={() => place(s)} className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm hover:bg-muted">
+            <StageThumb stage={s} insect={i} size="sm" /> {s}
           </button>
         ))}
         {placed.length > 0 && !msg && (
@@ -815,7 +822,7 @@ function MigrationMap({ onAward }: { onAward: (n: number) => void }) {
             onDragEnd={() => setDragging(false)}
             className={`absolute bottom-2 right-2 cursor-grab select-none rounded-xl border border-border bg-card p-2 text-center shadow-md active:cursor-grabbing ${shake ? "k5-shake" : ""} ${dragging ? "opacity-60" : ""}`}
           >
-            <div className="text-4xl">{EMOJI[i.id]}</div>
+            <InsectImage id={i.id} name={i.commonName} className="h-14 w-14" />
             <div className="text-xs font-semibold">{i.commonName}</div>
             {isInvasive(i) && <div className="text-[10px] text-destructive">Invasive here</div>}
           </div>
@@ -1044,7 +1051,7 @@ function MovementLab({ onAward }: { onAward: (n: number) => void }) {
           onDragEnd={() => setDragging(false)}
           className={`cursor-grab select-none rounded-xl border border-border bg-card p-3 text-center shadow-md active:cursor-grabbing ${shake ? "k5-shake" : ""} ${dragging ? "opacity-60" : ""}`}
         >
-          <div className="text-4xl">{EMOJI[i.id]}</div>
+          <InsectImage id={i.id} name={i.commonName} className="h-14 w-14" />
           <div className="text-xs font-semibold">{i.commonName}</div>
         </div>
         <div className="text-xs text-muted-foreground">Drag me onto a movement pathway.</div>
@@ -1080,7 +1087,7 @@ function BodyguardDecisions({ onAward }: { onAward: (n: number) => void }) {
       <div className="space-y-2">
         {scene.map((i) => (
           <div key={i.id} className="flex items-center gap-3 rounded-lg border border-border bg-card p-2">
-            <span className="text-3xl">{EMOJI[i.id]}</span>
+            <InsectImage id={i.id} name={i.commonName} className="h-12 w-12 shrink-0" />
             <span className="flex-1 text-sm font-medium">{i.commonName}</span>
             <button onClick={() => set(i.id, "protect")} className={`rounded px-3 py-1 text-xs ${choices[i.id] === "protect" ? "bg-success/20 text-success" : "bg-muted"}`}>Protect</button>
             <button onClick={() => set(i.id, "spray")} className={`rounded px-3 py-1 text-xs ${choices[i.id] === "spray" ? "bg-destructive/20 text-destructive" : "bg-muted"}`}>Spray</button>
@@ -1127,7 +1134,7 @@ function IPMBoard({ onAward }: { onAward: (n: number) => void }) {
     <div>
       <p className="mb-3 text-sm text-muted-foreground">Pick the best IPM tool for this pest. The bars show how well each one works.</p>
       <div className="grid place-items-center rounded-xl bg-muted p-6">
-        <div className="text-6xl">{EMOJI[pest.id]}</div>
+        <InsectImage id={pest.id} name={pest.commonName} className="h-32 w-32" />
         <div className="mt-1 font-semibold">{pest.commonName}</div>
         <div className="text-xs italic text-muted-foreground">Attacking: {pest.hosts}</div>
       </div>
