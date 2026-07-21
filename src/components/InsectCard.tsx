@@ -1,5 +1,5 @@
 import type { Insect } from "@/data/insects";
-import { Bug, Leaf, Sparkles, ShieldAlert, Flower2 } from "lucide-react";
+import { InsectImage } from "@/components/InsectImage";
 
 const ROLE_STYLES: Record<string, string> = {
   Pest: "bg-destructive/10 text-destructive",
@@ -9,26 +9,19 @@ const ROLE_STYLES: Record<string, string> = {
   "Pollinator/Pest": "bg-accent/20 text-accent-foreground",
 };
 
-const ORDER_ICON: Record<string, typeof Bug> = {
-  Coleoptera: Bug,
-  Lepidoptera: Flower2,
-  Hymenoptera: Sparkles,
-  Hemiptera: ShieldAlert,
-  Diptera: Bug,
-  Orthoptera: Leaf,
-};
-
 export function InsectCard({ insect, onClick }: { insect: Insect; onClick?: () => void }) {
-  const Icon = ORDER_ICON[insect.order] ?? Bug;
   return (
     <button
       type="button"
       onClick={onClick}
       className="group flex flex-col items-stretch overflow-hidden rounded-xl border border-border bg-card text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
-      <div className="flex h-28 items-center justify-center bg-gradient-to-br from-secondary/40 via-accent/30 to-primary/15">
-        <Icon className="h-12 w-12 text-primary/70 transition group-hover:scale-110" strokeWidth={1.5} />
-      </div>
+      <InsectImage
+        id={insect.id}
+        name={insect.commonName}
+        rounded={false}
+        className="h-28 w-full transition group-hover:brightness-105"
+      />
       <div className="flex flex-1 flex-col gap-1 p-3">
         <div className="text-sm font-semibold leading-tight text-foreground">{insect.commonName}</div>
         <div className="text-xs italic text-muted-foreground">{insect.scientificName}</div>
