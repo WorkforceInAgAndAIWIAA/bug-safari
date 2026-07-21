@@ -1,5 +1,7 @@
 import type { Insect } from "@/data/insects";
-import { Bug, X } from "lucide-react";
+import { X } from "lucide-react";
+import { InsectImage } from "@/components/InsectImage";
+import { getInsectImage } from "@/lib/insectImages";
 
 const STAGES_COMPLETE = ["Egg", "Larva", "Pupa", "Adult"];
 const STAGES_INCOMPLETE = ["Egg", "Nymph", "Nymph (late)", "Adult"];
@@ -18,9 +20,7 @@ export function InsectDetail({ insect, onClose }: { insect: Insect; onClose: () 
         >
           <X className="h-4 w-4" />
         </button>
-        <div className="flex h-44 items-center justify-center rounded-xl bg-gradient-to-br from-secondary/40 via-accent/30 to-primary/15">
-          <Bug className="h-24 w-24 text-primary/70" strokeWidth={1.25} />
-        </div>
+        <InsectImage id={insect.id} name={insect.commonName} className="h-56 w-full" imgClassName="h-full w-full object-cover" />
         <h3 className="mt-4 text-2xl font-bold text-foreground">{insect.commonName}</h3>
         <p className="text-sm italic text-muted-foreground">{insect.scientificName}</p>
 
@@ -41,6 +41,7 @@ export function InsectDetail({ insect, onClose }: { insect: Insect; onClose: () 
               </span>
             ))}
           </div>
+          <StageGallery insect={insect} />
         </div>
 
         <p className="mt-5 rounded-lg bg-muted/60 p-3 text-xs text-muted-foreground">
@@ -56,6 +57,24 @@ function Field({ label, value }: { label: string; value: string }) {
     <div className="rounded-md bg-muted/40 px-3 py-2">
       <dt className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</dt>
       <dd className="text-sm font-medium text-foreground">{value}</dd>
+    </div>
+  );
+}
+
+function StageGallery({ insect }: { insect: Insect }) {
+  const stageKeys = ["egg", "larva", "nymph", "pupa", "adult", "damage"] as const;
+  const items = stageKeys
+    .map((k) => ({ key: k, url: getInsectImage(insect.id, k) }))
+    .filter((x, i, arr) => x.url && arr.findIndex((y) => y.url === x.url) === i);
+  if (items.length <= 1) return null;
+  return (
+    <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-6">
+      {items.map((it) => (
+        <div key={it.key} className="overflow-hidden rounded-md border border-border bg-muted">
+          <img src={it.url!} alt={`${insect.commonName} ${it.key}`} className="h-20 w-full object-cover" loading="lazy" />
+          <div className="px-1 py-0.5 text-center text-[10px] capitalize text-muted-foreground">{it.key}</div>
+        </div>
+      ))}
     </div>
   );
 }
