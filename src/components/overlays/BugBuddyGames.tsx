@@ -1,0 +1,1575 @@
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { insects as ALL, type Insect } from "@/data/insects";
+import { InsectImage } from "@/components/InsectImage";
+import { getInsectImage, hasInsectImage, type InsectStage } from "@/lib/insectImages";
+import { ArrowLeft, CheckCircle2, RefreshCcw, Sparkles, Trophy, XCircle } from "lucide-react";
+
+/* ------------------------------------------------------------------ */
+/* helpers                                                             */
+/* ------------------------------------------------------------------ */
+export function shuffle<T>(a: T[]): T[] {
+  const b = [...a];
+  for (let i = b.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [b[i], b[j]] = [b[j], b[i]];
+  }
+  return b;
+}
+const rand = <T,>(a: T[]) => a[Math.floor(Math.random() * a.length)];
+
+const POOL = ALL.filter((i) => hasInsectImage(i.id));
+const helpers = POOL.filter((i) => i.role === "Beneficial" || i.role === "Pollinator" || i.role === "Pollinator/Pest");
+const pollinators = POOL.filter((i) => i.role === "Pollinator" || i.role === "Pollinator/Pest");
+const pests = POOL.filter((i) => i.role === "Pest" || i.role === "Invasive Pest");
+const invasives = POOL.filter((i) => i.role === "Invasive Pest");
+const isHelper = (i: Insect) => helpers.some((h) => h.id === i.id);
+
+const POINTS_KEY = "entoquest.k5.points";
+export function useK5Points() {
+  const [pts, setPts] = useState(0);
+  useEffect(() => {
+    const raw = localStorage.getItem(POINTS_KEY);
+    if (raw) setPts(Number(raw) || 0);
+  }, []);
+  const add = (n: number) =>
+    setPts((p) => {
+      const next = Math.max(0, p + n);
+      localStorage.setItem(POINTS_KEY, String(next));
+      return next;
+    });
+  const reset = () => {
+    setPts(0);
+    localStorage.setItem(POINTS_KEY, "0");
+  };
+  return { pts, add, reset };
+}
+
+function Feedback({ ok, text }: { ok: boolean; text: string }) {
+  return (
+    <div
+      className={`mt-3 flex items-start gap-2 rounded-lg border p-3 text-sm ${
+        ok ? "border-success/40 bg-success/10 text-success" : "border-destructive/40 bg-destructive/10 text-destructive"
+      }`}
+    >
+      {ok ? <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" /> : <XCircle className="mt-0.5 h-4 w-4 shrink-0" />}
+      <span>{text}</span>
+    </div>
+  );
+}
+
+function Progress({ round, total, score }: { round: number; total: number; score: number }) {
+  return (
+    <div className="mb-3 flex items-center justify-between text-xs text-muted-foreground">
+      <span>Round {Math.min(round + 1, total)} of {total}</span>
+      <span className="inline-flex items-center gap-1 font-semibold text-primary">
+        <Sparkles className="h-3.5 w-3.5" /> {score} correct
+      </span>
+    </div>
+  );
+}
+
+function Done({ score, total, onRestart }: { score: number; total: number; onRestart: () => void }) {
+  return (
+    <div className="rounded-xl border border-primary/30 bg-primary/5 p-6 text-center">
+      <div className="text-4xl">🎉</div>
+      <div className="mt-2 text-xl font-bold text-foreground">Level complete!</div>
+      <p className="mt-1 text-sm text-muted-foreground">You got {score} of {total} right.</p>
+      <button onClick={onRestart} className="mt-4 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90">
+        Play again
+      </button>
+    </div>
+  );
+}
+
+function Btn({ children, onClick, tone = "plain", disabled }: { children: ReactNode; onClick?: () => void; tone?: "plain" | "primary"; disabled?: boolean }) {
+  return (
+    <button
+      disabled={disabled}
+      onClick={onClick}
+      className={
+        tone === "primary"
+          ? "rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:opacity-50"
+          : "rounded-lg border border-border bg-card px-4 py-3 text-left text-sm transition hover:bg-muted disabled:opacity-50"
+      }
+    >
+      {children}
+    </button>
+  );
+}
+
+function describe(i: Insect): string {
+  const job =
+    i.role === "Pollinator" || i.role === "Pollinator/Pest"
+      ? "visits flowers and moves pollen"
+      : i.role === "Beneficial"
+        ? "hunts other insects to protect plants"
+        : i.role === "Invasive Pest"
+          ? "came here from far away and damages plants"
+          : "feeds on plants and can hurt a crop";
+  return `This bug ${job}. You can find it on ${i.hosts.toLowerCase()}. It grows up with ${i.metamorphosis.toLowerCase()} metamorphosis.`;
+}
+function memoryHook(i: Insect): string {
+  const w = i.commonName.split(" ")[0];
+  return `Memory hook: "${w}" — think of ${i.hosts.split(",")[0].trim().toLowerCase()} when you hear ${i.commonName}.`;
+}
+
+/* ================================================================== */
+/* 1. Insect or Not?                                                   */
+/* ================================================================== */
+const NON_INSECTS = [
+  { name: "Garden Spider", emoji: "🕷️", why: "Spiders are arachnids — 8 legs and 2 body parts." },
+  { name: "Scorpion", emoji: "🦂", why: "Scorpions are arachnids with pincers and a stinging tail." },
+  { name: "Deer Tick", emoji: "🕸️", why: "Ticks are arachnids, not insects." },
+  { name: "Daddy Long-Legs", emoji: "🕷️", why: "Harvestmen are arachnids with one body section." },
+  { name: "Roly-Poly (Pillbug)", emoji: "🦐", why: "Pillbugs are crustaceans, like tiny shrimp." },
+  { name: "Crayfish", emoji: "🦞", why: "Crayfish are crustaceans with 10 legs." },
+  { name: "Sowbug", emoji: "🦀", why: "Sowbugs are crustaceans that breathe with gills." },
+  { name: "Centipede", emoji: "🐛", why: "Centipedes are myriapods — one pair of legs per body ring." },
+  { name: "Millipede", emoji: "🪱", why: "Millipedes are myriapods with two pairs of legs per ring." },
+  { name: "Spider Mite", emoji: "🔴", why: "Mites are tiny arachnids with 8 legs." },
+];
+
+function InsectOrNot({ onAward }: { onAward: (n: number) => void }) {
+  const TOTAL = 10;
+  const [seed, setSeed] = useState(0);
+  const items = useMemo(
+    () =>
+      shuffle([
+        ...shuffle(POOL).slice(0, 5).map((i) => ({ insect: true as const, data: i })),
+        ...shuffle(NON_INSECTS).slice(0, 5).map((n) => ({ insect: false as const, data: n })),
+      ]),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [seed],
+  );
+  const [round, setRound] = useState(0);
+  const [score, setScore] = useState(0);
+  const [left, setLeft] = useState(10);
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+
+  useEffect(() => {
+    if (round >= TOTAL || msg) return;
+    setLeft(10);
+    const t = setInterval(() => setLeft((s) => s - 1), 1000);
+    return () => clearInterval(t);
+  }, [round, msg]);
+
+  useEffect(() => {
+    if (left <= 0 && !msg && round < TOTAL) answer(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [left]);
+
+  function answer(said: boolean | null) {
+    const cur = items[round];
+    const ok = said === cur.insect;
+    if (ok) {
+      setScore((s) => s + 1);
+      onAward(1);
+    }
+    const why = cur.insect ? "Insects have 3 body parts and 6 legs." : (cur.data as { why: string }).why;
+    setMsg({ ok, text: said === null ? `Time's up! ${why}` : ok ? `Yes! ${why}` : `Not quite. ${why}` });
+    setTimeout(() => {
+      setMsg(null);
+      setRound((r) => r + 1);
+    }, 1600);
+  }
+
+  if (round >= TOTAL) return <Done score={score} total={TOTAL} onRestart={() => { setSeed((s) => s + 1); setRound(0); setScore(0); }} />;
+  const cur = items[round];
+  return (
+    <div>
+      <Progress round={round} total={TOTAL} score={score} />
+      <div className="mb-3">
+        <div className="h-3 overflow-hidden rounded-full bg-muted">
+          <div className="h-full bg-primary transition-all duration-1000" style={{ width: `${(Math.max(left, 0) / 10) * 100}%` }} />
+        </div>
+        <div className="mt-1 text-right text-xs font-semibold text-muted-foreground">{Math.max(left, 0)}s left</div>
+      </div>
+      <div className="grid place-items-center rounded-2xl bg-gradient-to-br from-secondary/30 to-accent/30 p-8">
+        {cur.insect ? (
+          <InsectImage id={(cur.data as Insect).id} name={(cur.data as Insect).commonName} className="h-48 w-48" />
+        ) : (
+          <div className="grid h-48 w-48 place-items-center rounded-xl bg-card text-8xl">{(cur.data as { emoji: string }).emoji}</div>
+        )}
+        <div className="mt-3 text-2xl font-bold text-foreground">
+          {cur.insect ? (cur.data as Insect).commonName : (cur.data as { name: string }).name}
+        </div>
+      </div>
+      <div className="mt-4 grid grid-cols-2 gap-3">
+        <button onClick={() => !msg && answer(true)} className="rounded-xl border-2 border-success/50 bg-success/10 py-5 text-lg font-bold text-success hover:bg-success/20">
+          🐞 Insect
+        </button>
+        <button onClick={() => !msg && answer(false)} className="rounded-xl border-2 border-destructive/50 bg-destructive/10 py-5 text-lg font-bold text-destructive hover:bg-destructive/20">
+          🚫 Not an insect
+        </button>
+      </div>
+      {msg && <Feedback ok={msg.ok} text={msg.text} />}
+    </div>
+  );
+}
+
+/* ================================================================== */
+/* 2. Name the Insect                                                  */
+/* ================================================================== */
+const NAME_LEVELS = [
+  { id: "beetles", label: "Beetle Level", filter: (i: Insect) => i.order === "Coleoptera" },
+  { id: "butterflies", label: "Moths & Butterflies", filter: (i: Insect) => i.order === "Lepidoptera" },
+  { id: "truebugs", label: "True Bugs & Hoppers", filter: (i: Insect) => i.order === "Hemiptera" },
+  { id: "helpers", label: "Helper Insects", filter: (i: Insect) => isHelper(i) },
+  { id: "invasive", label: "Invasive Insects", filter: (i: Insect) => i.role === "Invasive Pest" },
+];
+
+function NameTheInsect({ onAward }: { onAward: (n: number) => void }) {
+  const TOTAL = 10;
+  const [level, setLevel] = useState<typeof NAME_LEVELS[number] | null>(null);
+  const [round, setRound] = useState(0);
+  const [score, setScore] = useState(0);
+  const [picked, setPicked] = useState<string | null>(null);
+
+  const list = useMemo(() => (level ? shuffle(POOL.filter(level.filter)) : []), [level]);
+  const target = list.length ? list[round % list.length] : null;
+  const options = useMemo(() => {
+    if (!target) return [];
+    return shuffle([target, ...shuffle(POOL.filter((i) => i.id !== target.id)).slice(0, 3)]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [target?.id]);
+
+  if (!level)
+    return (
+      <div className="grid gap-3 sm:grid-cols-2">
+        <p className="sm:col-span-2 text-sm text-muted-foreground">Pick a level to start:</p>
+        {NAME_LEVELS.map((l) => (
+          <Btn key={l.id} onClick={() => { setLevel(l); setRound(0); setScore(0); }}>{l.label}</Btn>
+        ))}
+      </div>
+    );
+  if (round >= TOTAL || !target) return <Done score={score} total={TOTAL} onRestart={() => setLevel(null)} />;
+
+  return (
+    <div>
+      <Progress round={round} total={TOTAL} score={score} />
+      {picked ? (
+        <div className="rounded-2xl border border-border bg-card p-6">
+          <div className="flex flex-col items-center gap-3 sm:flex-row">
+            <InsectImage id={target.id} name={target.commonName} className="h-40 w-40 shrink-0" />
+            <div>
+              <div className="text-xl font-bold text-foreground">{target.commonName}</div>
+              <p className="mt-1 text-sm text-muted-foreground">{describe(target)}</p>
+              <p className="mt-2 text-sm font-medium text-primary">{memoryHook(target)}</p>
+            </div>
+          </div>
+          <Feedback ok={picked === target.id} text={picked === target.id ? "Correct!" : `The right answer was ${target.commonName}.`} />
+          <div className="mt-3 text-right">
+            <Btn tone="primary" onClick={() => { setPicked(null); setRound((r) => r + 1); }}>Next →</Btn>
+          </div>
+        </div>
+      ) : (
+        <>
+          <div className="grid place-items-center rounded-2xl bg-gradient-to-br from-accent/30 to-secondary/30 p-6">
+            <InsectImage id={target.id} name="Mystery insect" className="h-64 w-64" />
+            <p className="mt-3 max-w-xl text-center text-base text-foreground">{describe(target)}</p>
+          </div>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            {options.map((o) => (
+              <Btn
+                key={o.id}
+                onClick={() => {
+                  setPicked(o.id);
+                  if (o.id === target.id) { setScore((s) => s + 1); onAward(2); }
+                }}
+              >
+                {o.commonName}
+              </Btn>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+/* ================================================================== */
+/* 3. Insect Mix and Match (biodiversity)                              */
+/* ================================================================== */
+const BIO_Q = [
+  { q: "What does biodiversity mean?", a: ["Many different kinds of living things", "One kind of animal", "Only plants", "No animals at all"] },
+  { q: "About how many insect species have scientists named?", a: ["About 1 million", "About 100", "About 500", "About 12"] },
+  { q: "What makes an insect an insect?", a: ["3 body parts and 6 legs", "8 legs", "A shell and claws", "Feathers"] },
+  { q: "Why is a biodiverse field healthier?", a: ["Many species keep each other in balance", "It looks nicer", "It has fewer plants", "It rains more"] },
+];
+
+function MixAndMatch({ onAward }: { onAward: (n: number) => void }) {
+  const [phase, setPhase] = useState<"quiz" | "rate" | "fix" | "done">("quiz");
+  const [quiz] = useState(() => rand(BIO_Q));
+  const [opts] = useState(() => shuffle(rand(BIO_Q) === null ? [] : []));
+  const [quizOpts] = useState(() => shuffle(quiz.a));
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [mix, setMix] = useState<Insect[]>(() => {
+    const base = shuffle(POOL).slice(0, 3);
+    return shuffle([base[0], base[0], base[0], base[1], base[1], base[2]]);
+  });
+  const [bench] = useState<Insect[]>(() => shuffle(POOL).slice(0, 6));
+  const [slot, setSlot] = useState<number | null>(null);
+  void opts;
+
+  const unique = new Set(mix.map((i) => i.id)).size;
+  const rating = unique <= 2 ? "Low" : unique <= 4 ? "Medium" : "High";
+
+  return (
+    <div>
+      {phase === "quiz" && (
+        <div>
+          <p className="mb-3 text-base font-semibold text-foreground">{quiz.q}</p>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {quizOpts.map((o) => (
+              <Btn
+                key={o}
+                onClick={() => {
+                  const ok = o === quiz.a[0];
+                  setMsg({ ok, text: ok ? "Right! Now look at this mix of bugs." : `The answer is: ${quiz.a[0]}` });
+                  if (ok) onAward(2);
+                  setTimeout(() => { setMsg(null); setPhase("rate"); }, 1500);
+                }}
+              >
+                {o}
+              </Btn>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {phase !== "quiz" && (
+        <>
+          <div className="mb-3 rounded-lg border border-border bg-muted/50 p-3 text-xs text-muted-foreground">
+            <strong className="text-foreground">Biodiversity scale:</strong> 1–2 different species = Low · 3–4 = Medium · 5–6 = High
+          </div>
+          <div className="grid grid-cols-3 gap-3 rounded-xl bg-muted p-4 sm:grid-cols-6">
+            {mix.map((i, idx) => (
+              <button
+                key={idx}
+                onClick={() => phase === "fix" && setSlot(idx)}
+                className={`rounded-lg p-1 ${slot === idx ? "ring-2 ring-primary" : ""} ${phase === "fix" ? "hover:bg-card" : ""}`}
+              >
+                <InsectImage id={i.id} name={i.commonName} className="h-16 w-full" />
+                <div className="mt-1 truncate text-[10px] text-muted-foreground">{i.commonName}</div>
+              </button>
+            ))}
+          </div>
+          <div className="mt-2 text-sm text-muted-foreground">Different species in this mix: <strong className="text-foreground">{unique}</strong></div>
+        </>
+      )}
+
+      {phase === "rate" && (
+        <div className="mt-3 grid grid-cols-3 gap-2">
+          {["Low", "Medium", "High"].map((r) => (
+            <Btn
+              key={r}
+              onClick={() => {
+                const ok = r === rating;
+                setMsg({ ok, text: ok ? `Yes — ${unique} species means ${rating.toLowerCase()} biodiversity. Now swap duplicates to make it more diverse!` : `This mix has ${unique} species, so it is ${rating.toLowerCase()} biodiversity.` });
+                if (ok) onAward(2);
+                setTimeout(() => { setMsg(null); setPhase("fix"); }, 1800);
+              }}
+            >
+              {r} biodiversity
+            </Btn>
+          ))}
+        </div>
+      )}
+
+      {phase === "fix" && (
+        <div className="mt-4">
+          <p className="text-sm text-muted-foreground">
+            {slot === null ? "Tap a repeated bug above, then pick a new species below to swap it in." : "Now pick a replacement:"}
+          </p>
+          <div className="mt-2 grid grid-cols-3 gap-2 sm:grid-cols-6">
+            {bench.map((b) => (
+              <button
+                key={b.id}
+                disabled={slot === null}
+                onClick={() => {
+                  if (slot === null) return;
+                  const next = [...mix];
+                  next[slot] = b;
+                  setMix(next);
+                  setSlot(null);
+                  const u = new Set(next.map((x) => x.id)).size;
+                  if (u >= 5) {
+                    onAward(3);
+                    setMsg({ ok: true, text: "Awesome! Lots of different species = high biodiversity." });
+                    setPhase("done");
+                  }
+                }}
+                className="rounded-lg border border-border bg-card p-1 disabled:opacity-40 hover:bg-muted"
+              >
+                <InsectImage id={b.id} name={b.commonName} className="h-14 w-full" />
+                <div className="mt-1 truncate text-[10px] text-muted-foreground">{b.commonName}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {msg && <Feedback ok={msg.ok} text={msg.text} />}
+    </div>
+  );
+}
+
+/* ================================================================== */
+/* 4. Decomposer Dash                                                  */
+/* ================================================================== */
+const DECOMP_Q = {
+  q: "What does a decomposer insect do?",
+  right: "Breaks down dead leaves and plants into soil",
+  wrong: ["Pollinates flowers", "Eats living crops", "Bites people"],
+};
+const FALLING = ["🍂", "🍁", "🌿", "🪵", "🍄", "🌾"];
+
+function DecomposerDash({ onAward }: { onAward: (n: number) => void }) {
+  const [unlocked, setUnlocked] = useState(false);
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [items, setItems] = useState<{ key: number; x: number; y: number; glyph: string }[]>([]);
+  const [bank, setBank] = useState(0);
+  const [soil, setSoil] = useState(0);
+  const idRef = useRef(0);
+  const decomposer = useMemo(() => rand(POOL.filter((i) => /grub|wireworm|maggot|beetle/i.test(i.commonName))) ?? POOL[0], []);
+  const options = useMemo(() => shuffle([DECOMP_Q.right, ...DECOMP_Q.wrong]), []);
+
+  useEffect(() => {
+    if (!unlocked || soil >= 100) return;
+    const spawn = setInterval(() => {
+      idRef.current += 1;
+      setItems((it) => [...it, { key: idRef.current, x: Math.random() * 85, y: -8, glyph: rand(FALLING) }]);
+    }, 700);
+    const move = setInterval(() => {
+      setItems((it) => it.map((i) => ({ ...i, y: i.y + 4 })).filter((i) => i.y < 100));
+    }, 90);
+    return () => { clearInterval(spawn); clearInterval(move); };
+  }, [unlocked, soil]);
+
+  if (!unlocked)
+    return (
+      <div>
+        <div className="mb-3 flex items-center gap-3 rounded-xl bg-muted p-4">
+          <InsectImage id={decomposer.id} name={decomposer.commonName} className="h-20 w-20" />
+          <div>
+            <div className="font-semibold text-foreground">You are a {decomposer.commonName}!</div>
+            <div className="text-xs text-muted-foreground">Answer one question to unlock composting mode.</div>
+          </div>
+        </div>
+        <p className="mb-2 font-semibold text-foreground">{DECOMP_Q.q}</p>
+        <div className="grid gap-2 sm:grid-cols-2">
+          {options.map((o) => (
+            <Btn
+              key={o}
+              onClick={() => {
+                const ok = o === DECOMP_Q.right;
+                setMsg({ ok, text: ok ? "Composting mode unlocked!" : `Decomposers ${DECOMP_Q.right.toLowerCase()}.` });
+                if (ok) { onAward(2); setTimeout(() => { setMsg(null); setUnlocked(true); }, 1200); }
+                else setTimeout(() => setMsg(null), 1500);
+              }}
+            >
+              {o}
+            </Btn>
+          ))}
+        </div>
+        {msg && <Feedback ok={msg.ok} text={msg.text} />}
+      </div>
+    );
+
+  return (
+    <div>
+      <div className="mb-2 flex items-center justify-between text-sm">
+        <span className="font-semibold text-foreground">Compost bank: {bank}/10</span>
+        <span className="text-muted-foreground">Soil filled: {soil}%</span>
+      </div>
+      <div className="relative h-80 overflow-hidden rounded-xl border border-border bg-gradient-to-b from-sky-200/40 to-secondary/30">
+        {items.map((i) => (
+          <button
+            key={i.key}
+            onClick={() => {
+              setItems((it) => it.filter((x) => x.key !== i.key));
+              setBank((b) => Math.min(10, b + 1));
+            }}
+            className="absolute text-3xl transition-transform hover:scale-125"
+            style={{ left: `${i.x}%`, top: `${i.y}%` }}
+          >
+            {i.glyph}
+          </button>
+        ))}
+        <div className="absolute inset-x-0 bottom-0 bg-[hsl(30_35%_30%)]/70 transition-all" style={{ height: `${soil * 0.6}%` }} />
+        <div className="absolute bottom-1 left-2 text-xs font-semibold text-background">🌱 soil</div>
+      </div>
+      <div className="mt-3 flex items-center gap-3">
+        <Btn
+          tone="primary"
+          disabled={bank < 10 || soil >= 100}
+          onClick={() => { setBank(0); setSoil((s) => Math.min(100, s + 25)); onAward(3); }}
+        >
+          Return compost to the soil
+        </Btn>
+        {soil >= 100 && <span className="text-sm font-semibold text-success">🎉 The soil is full of rich compost!</span>}
+      </div>
+    </div>
+  );
+}
+
+/* ================================================================== */
+/* 5. Pollinator Power                                                 */
+/* ================================================================== */
+function PollinatorPower({ onAward }: { onAward: (n: number) => void }) {
+  const TOTAL = 8;
+  const [round, setRound] = useState(0);
+  const [score, setScore] = useState(0);
+  const [pollen, setPollen] = useState(0);
+  const [stage, setStage] = useState<"id" | "land">("id");
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const visitor = useMemo(
+    () => (Math.random() < 0.5 ? rand(pollinators) : rand(POOL.filter((i) => !pollinators.includes(i)))),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [round],
+  );
+  const isPol = pollinators.includes(visitor);
+
+  if (round >= TOTAL) return <Done score={score} total={TOTAL} onRestart={() => { setRound(0); setScore(0); setPollen(0); setStage("id"); }} />;
+
+  return (
+    <div>
+      <Progress round={round} total={TOTAL} score={score} />
+      <div className="relative grid place-items-center rounded-2xl bg-gradient-to-b from-sky-200/40 to-success/20 p-8">
+        <div className="text-6xl">🌻</div>
+        <div className="mt-1 text-xs text-muted-foreground">Your flower · {pollen} pollen collected</div>
+        <div className="mt-4 flex flex-col items-center rounded-xl bg-card/80 p-3">
+          <InsectImage id={visitor.id} name={visitor.commonName} className="h-32 w-32" />
+          <div className="mt-2 font-semibold text-foreground">{visitor.commonName}</div>
+        </div>
+      </div>
+
+      {stage === "id" ? (
+        <div className="mt-4 grid grid-cols-2 gap-3">
+          {[true, false].map((v) => (
+            <Btn
+              key={String(v)}
+              onClick={() => {
+                const ok = v === isPol;
+                if (ok) { setScore((s) => s + 1); onAward(1); }
+                setMsg({ ok, text: ok ? (isPol ? "Yes, a pollinator! Should it land?" : "Right — not a pollinator.") : isPol ? "It IS a pollinator — it moves pollen between flowers." : "Not a pollinator — it feeds on plants instead." });
+                setTimeout(() => { setMsg(null); if (isPol) setStage("land"); else setRound((r) => r + 1); }, 1500);
+              }}
+            >
+              {v ? "🌸 Pollinator" : "🚫 Not a pollinator"}
+            </Btn>
+          ))}
+        </div>
+      ) : (
+        <div className="mt-4 grid grid-cols-2 gap-3">
+          <Btn onClick={() => { setPollen((p) => p + 1); onAward(1); setStage("id"); setRound((r) => r + 1); }}>✅ Let it land and collect pollen</Btn>
+          <Btn onClick={() => { setStage("id"); setRound((r) => r + 1); }}>🚪 Send it away</Btn>
+        </div>
+      )}
+      {msg && <Feedback ok={msg.ok} text={msg.text} />}
+    </div>
+  );
+}
+
+/* ================================================================== */
+/* 6. Predator vs. Pest                                                */
+/* ================================================================== */
+const PREDATOR_FOR: Record<string, string[]> = {
+  aphid: ["seven-spotted-lady-beetle", "green-lacewing", "syrphid-fly", "asian-lady-beetle"],
+  caterpillar: ["braconid-wasp", "ground-beetle", "spined-soldier-bug"],
+  default: ["ground-beetle", "assassin-bug", "big-eyed-bug"],
+};
+function predatorsFor(pest: Insect): Insect[] {
+  const key = /aphid/i.test(pest.commonName) || /aphid/i.test(pest.hosts) ? "aphid" : /worm|caterpillar|moth|borer/i.test(pest.commonName) ? "caterpillar" : "default";
+  const ids = PREDATOR_FOR[key];
+  const found = POOL.filter((i) => ids.includes(i.id));
+  return found.length ? found : helpers.slice(0, 3);
+}
+
+function PredatorVsPest({ onAward }: { onAward: (n: number) => void }) {
+  const TOTAL = 5;
+  const [round, setRound] = useState(0);
+  const [score, setScore] = useState(0);
+  const [stage, setStage] = useState<"pick" | "quiz">("pick");
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const pest = useMemo(() => rand(pests), [round]);
+  const good = useMemo(() => predatorsFor(pest), [pest]);
+  const choices = useMemo(() => shuffle([good[0], ...shuffle(pests.filter((p) => p.id !== pest.id)).slice(0, 2)]), [pest, good]);
+  const quiz = useMemo(
+    () => ({
+      q: `What does the ${good[0].commonName} do in a field?`,
+      right: "It eats pest insects and protects the crop",
+      wrong: ["It chews holes in leaves", "It spreads weed seeds"],
+    }),
+    [good],
+  );
+  const quizOpts = useMemo(() => shuffle([quiz.right, ...quiz.wrong]), [quiz]);
+
+  if (round >= TOTAL) return <Done score={score} total={TOTAL} onRestart={() => { setRound(0); setScore(0); setStage("pick"); }} />;
+
+  return (
+    <div>
+      <Progress round={round} total={TOTAL} score={score} />
+      <div className="flex items-center justify-center gap-6 rounded-2xl bg-gradient-to-r from-destructive/10 to-success/10 p-6">
+        <div className="text-center">
+          <InsectImage id={pest.id} name={pest.commonName} className="h-32 w-32" />
+          <div className="mt-1 text-sm font-semibold text-destructive">{pest.commonName}</div>
+          <div className="text-[11px] text-muted-foreground">Pest on {pest.hosts}</div>
+        </div>
+        <div className="text-3xl font-black text-muted-foreground">VS</div>
+        <div className="grid h-32 w-32 place-items-center rounded-xl border-2 border-dashed border-border text-4xl">❓</div>
+      </div>
+
+      {stage === "pick" ? (
+        <div className="mt-4 grid gap-3 sm:grid-cols-3">
+          {choices.map((c) => (
+            <button
+              key={c.id}
+              onClick={() => {
+                const ok = c.id === good[0].id;
+                if (ok) { setScore((s) => s + 1); onAward(2); }
+                setMsg({ ok, text: ok ? `${c.commonName} hunts this pest!` : `${good[0].commonName} is the predator that eats ${pest.commonName}.` });
+                setTimeout(() => { setMsg(null); setStage("quiz"); }, 1600);
+              }}
+              className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-3 hover:bg-muted"
+            >
+              <InsectImage id={c.id} name={c.commonName} className="h-20 w-20" />
+              <span className="text-xs font-medium">{c.commonName}</span>
+            </button>
+          ))}
+        </div>
+      ) : (
+        <div className="mt-4">
+          <p className="mb-2 font-semibold text-foreground">{quiz.q}</p>
+          <div className="grid gap-2">
+            {quizOpts.map((o) => (
+              <Btn
+                key={o}
+                onClick={() => {
+                  const ok = o === quiz.right;
+                  if (ok) { setScore((s) => s + 1); onAward(1); }
+                  setMsg({ ok, text: ok ? "Correct!" : quiz.right });
+                  setTimeout(() => { setMsg(null); setStage("pick"); setRound((r) => r + 1); }, 1400);
+                }}
+              >
+                {o}
+              </Btn>
+            ))}
+          </div>
+        </div>
+      )}
+      {msg && <Feedback ok={msg.ok} text={msg.text} />}
+    </div>
+  );
+}
+
+/* ================================================================== */
+/* 7. Beneficial Sort                                                  */
+/* ================================================================== */
+function BeneficialSort({ onAward }: { onAward: (n: number) => void }) {
+  const FIELDS = 3;
+  const [field, setField] = useState(0);
+  const [phase, setPhase] = useState<"collect" | "sort" | "review">("collect");
+  const [left, setLeft] = useState(15);
+  const [caught, setCaught] = useState<Insect[]>([]);
+  const [answers, setAnswers] = useState<Record<string, boolean>>({});
+  const [totalRight, setTotalRight] = useState(0);
+
+  const spread = useMemo(
+    () => shuffle(POOL).slice(0, 10).map((i) => ({ i, x: 5 + Math.random() * 82, y: 8 + Math.random() * 74 })),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [field],
+  );
+
+  useEffect(() => {
+    if (phase !== "collect") return;
+    setLeft(15);
+    const t = setInterval(() => setLeft((s) => {
+      if (s <= 1) { clearInterval(t); setPhase("sort"); return 0; }
+      return s - 1;
+    }), 1000);
+    return () => clearInterval(t);
+  }, [phase, field]);
+
+  if (field >= FIELDS)
+    return <Done score={totalRight} total={0} onRestart={() => { setField(0); setTotalRight(0); setCaught([]); setAnswers({}); setPhase("collect"); }} />;
+
+  return (
+    <div>
+      <div className="mb-2 flex items-center justify-between text-sm">
+        <span className="font-semibold text-foreground">Field {field + 1} of {FIELDS}</span>
+        {phase === "collect" && <span className="text-muted-foreground">⏱ {left}s · collected {caught.length}</span>}
+      </div>
+
+      {phase === "collect" && (
+        <div className="relative h-96 overflow-hidden rounded-2xl bg-gradient-to-b from-sky-200/50 via-success/25 to-[hsl(90_40%_35%)]/40">
+          {spread.map(({ i, x, y }) =>
+            caught.some((c) => c.id === i.id) ? null : (
+              <button
+                key={i.id}
+                onClick={() => setCaught((c) => [...c, i])}
+                className="absolute h-16 w-16 overflow-hidden rounded-full border-2 border-card shadow-md transition hover:scale-110"
+                style={{ left: `${x}%`, top: `${y}%` }}
+              >
+                <InsectImage id={i.id} name={i.commonName} className="h-full w-full" rounded={false} />
+              </button>
+            ),
+          )}
+        </div>
+      )}
+
+      {phase === "sort" && (
+        <div>
+          <p className="mb-3 text-sm text-muted-foreground">Sort each bug you collected: helper (beneficial) or pest?</p>
+          <div className="space-y-2">
+            {caught.map((i) => (
+              <div key={i.id} className="flex items-center gap-3 rounded-lg border border-border bg-card p-2">
+                <InsectImage id={i.id} name={i.commonName} className="h-14 w-14" />
+                <span className="flex-1 text-sm font-medium">{i.commonName}</span>
+                <button onClick={() => setAnswers((a) => ({ ...a, [i.id]: true }))} className={`rounded-md px-3 py-1.5 text-xs font-semibold ${answers[i.id] === true ? "bg-success text-background" : "border border-border"}`}>Helper</button>
+                <button onClick={() => setAnswers((a) => ({ ...a, [i.id]: false }))} className={`rounded-md px-3 py-1.5 text-xs font-semibold ${answers[i.id] === false ? "bg-destructive text-background" : "border border-border"}`}>Pest</button>
+              </div>
+            ))}
+            {caught.length === 0 && <p className="text-sm text-muted-foreground">You didn't collect any bugs this time!</p>}
+          </div>
+          <div className="mt-3 text-right">
+            <Btn
+              tone="primary"
+              onClick={() => {
+                const right = caught.filter((i) => answers[i.id] === isHelper(i)).length;
+                setTotalRight((t) => t + right);
+                onAward(right);
+                setPhase("review");
+              }}
+            >
+              Submit sort
+            </Btn>
+          </div>
+        </div>
+      )}
+
+      {phase === "review" && (
+        <div>
+          <div className="space-y-2">
+            {caught.map((i) => {
+              const ok = answers[i.id] === isHelper(i);
+              return (
+                <div key={i.id} className={`flex items-center gap-3 rounded-lg border p-2 text-sm ${ok ? "border-success/40 bg-success/10" : "border-destructive/40 bg-destructive/10"}`}>
+                  <InsectImage id={i.id} name={i.commonName} className="h-12 w-12" />
+                  <span className="flex-1 font-medium">{i.commonName}</span>
+                  <span>{isHelper(i) ? "Beneficial helper" : "Pest"}</span>
+                  {ok ? <CheckCircle2 className="h-4 w-4 text-success" /> : <XCircle className="h-4 w-4 text-destructive" />}
+                </div>
+              );
+            })}
+          </div>
+          <div className="mt-3 text-right">
+            <Btn tone="primary" onClick={() => { setField((f) => f + 1); setCaught([]); setAnswers({}); setPhase("collect"); }}>Next field →</Btn>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ================================================================== */
+/* 8. Invasive Impact                                                  */
+/* ================================================================== */
+const IMPACTS: Record<string, string> = {
+  "spotted-lantern-fly": "Sucks sap from trees and grapevines and coats them in sticky honeydew",
+  "spongy-moth": "Caterpillars strip the leaves off whole forests of trees",
+  "emerald-ash-borer": "Larvae tunnel under bark and kill ash trees",
+  "japanese-beetle": "Adults skeletonize leaves while grubs chew grass roots",
+  "asian-longhorn-beetle": "Bores big holes in hardwood trees until they fall",
+  "brown-marmorated-stink-bug": "Pierces fruit and vegetables, leaving dimples and rot",
+  "soybean-aphid": "Multiplies fast and drains sap from soybean plants",
+};
+function impactFor(i: Insect) {
+  return IMPACTS[i.id] ?? `Spreads quickly and damages ${i.hosts.toLowerCase()} where it has no natural enemies`;
+}
+
+function InvasiveImpact({ onAward }: { onAward: (n: number) => void }) {
+  const ROUNDS = 3;
+  const [round, setRound] = useState(0);
+  const [score, setScore] = useState(0);
+  const [submitted, setSubmitted] = useState(false);
+  const [pick, setPick] = useState<Record<string, string>>({});
+  const [sel, setSel] = useState<string | null>(null);
+
+  const set = useMemo(() => shuffle(invasives.length >= 4 ? invasives : pests).slice(0, 4), [round]);
+  const impacts = useMemo(() => shuffle(set.map((i) => impactFor(i))), [set]);
+
+  if (round >= ROUNDS) return <Done score={score} total={ROUNDS * 4} onRestart={() => { setRound(0); setScore(0); setPick({}); setSubmitted(false); }} />;
+
+  return (
+    <div>
+      <Progress round={round} total={ROUNDS} score={score} />
+      <p className="mb-3 text-sm text-muted-foreground">Tap an insect, then tap the impact it causes.</p>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-2">
+          {set.map((i) => (
+            <button
+              key={i.id}
+              onClick={() => !submitted && setSel(i.id)}
+              className={`flex w-full items-center gap-2 rounded-lg border p-2 text-left ${sel === i.id ? "border-primary bg-primary/10" : "border-border bg-card"}`}
+            >
+              <InsectImage id={i.id} name={i.commonName} className="h-14 w-14" />
+              <div className="flex-1">
+                <div className="text-sm font-semibold">{i.commonName}</div>
+                <div className="text-[11px] text-muted-foreground">{pick[i.id] ? `→ ${pick[i.id].slice(0, 40)}…` : "not matched yet"}</div>
+              </div>
+              {submitted && (pick[i.id] === impactFor(i) ? <CheckCircle2 className="h-4 w-4 text-success" /> : <XCircle className="h-4 w-4 text-destructive" />)}
+            </button>
+          ))}
+        </div>
+        <div className="space-y-2">
+          {impacts.map((im) => (
+            <button
+              key={im}
+              onClick={() => { if (!submitted && sel) { setPick((p) => ({ ...p, [sel]: im })); setSel(null); } }}
+              className="w-full rounded-lg border border-border bg-card p-2 text-left text-xs hover:bg-muted"
+            >
+              {im}
+            </button>
+          ))}
+        </div>
+      </div>
+      {submitted && (
+        <div className="mt-3 space-y-1 text-xs">
+          {set.map((i) => (
+            <div key={i.id} className={pick[i.id] === impactFor(i) ? "text-success" : "text-destructive"}>
+              <strong>{i.commonName}:</strong> {impactFor(i)}
+            </div>
+          ))}
+        </div>
+      )}
+      <div className="mt-4 text-right">
+        {submitted ? (
+          <Btn tone="primary" onClick={() => { setRound((r) => r + 1); setPick({}); setSubmitted(false); }}>Next round →</Btn>
+        ) : (
+          <Btn
+            tone="primary"
+            disabled={Object.keys(pick).length < 4}
+            onClick={() => {
+              const right = set.filter((i) => pick[i.id] === impactFor(i)).length;
+              setScore((s) => s + right);
+              onAward(right);
+              setSubmitted(true);
+            }}
+          >
+            Submit matches
+          </Btn>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ================================================================== */
+/* 9. Connect the Web                                                  */
+/* ================================================================== */
+function ConnectTheWeb({ onAward }: { onAward: (n: number) => void }) {
+  const ROUNDS = 5;
+  const [round, setRound] = useState(0);
+  const [score, setScore] = useState(0);
+  const [order, setOrder] = useState<string[]>([]);
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+
+  const chain = useMemo(() => {
+    const pest = rand(pests);
+    const pred = rand(helpers.filter((h) => h.role === "Beneficial")) ?? helpers[0];
+    const dec = rand(POOL.filter((i) => /grub|maggot|wireworm/i.test(i.commonName))) ?? POOL[0];
+    return [
+      { key: "plant", label: `Plant: ${pest.hosts.split(",")[0]}`, glyph: "🌱", level: "Primary producer" },
+      { key: pest.id, label: pest.commonName, insect: pest, level: "Primary consumer" },
+      { key: pred.id, label: pred.commonName, insect: pred, level: "Secondary consumer" },
+      { key: dec.id, label: dec.commonName, insect: dec, level: "Decomposer" },
+    ];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [round]);
+  const jumbled = useMemo(() => shuffle(chain), [chain]);
+
+  if (round >= ROUNDS) return <Done score={score} total={ROUNDS} onRestart={() => { setRound(0); setScore(0); setOrder([]); }} />;
+
+  return (
+    <div>
+      <Progress round={round} total={ROUNDS} score={score} />
+      <p className="mb-3 text-sm text-muted-foreground">Tap in order: primary producer → primary consumer → secondary consumer → decomposer.</p>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {jumbled.map((c) => {
+          const pos = order.indexOf(c.key);
+          return (
+            <button
+              key={c.key}
+              disabled={pos >= 0 || !!msg}
+              onClick={() => setOrder((o) => [...o, c.key])}
+              className={`rounded-xl border p-3 text-center ${pos >= 0 ? "border-primary bg-primary/10" : "border-border bg-card hover:bg-muted"}`}
+            >
+              {"insect" in c && c.insect ? (
+                <InsectImage id={c.insect.id} name={c.label} className="mx-auto h-20 w-20" />
+              ) : (
+                <div className="mx-auto grid h-20 w-20 place-items-center text-5xl">{c.glyph}</div>
+              )}
+              <div className="mt-1 text-xs font-medium">{c.label}</div>
+              {pos >= 0 && <div className="text-[10px] text-primary">#{pos + 1}</div>}
+            </button>
+          );
+        })}
+      </div>
+      <div className="mt-3 flex items-center gap-2">
+        <Btn onClick={() => setOrder([])}>Clear</Btn>
+        <Btn
+          tone="primary"
+          disabled={order.length < 4 || !!msg}
+          onClick={() => {
+            const ok = order.every((k, idx) => k === chain[idx].key);
+            if (ok) { setScore((s) => s + 1); onAward(2); }
+            setMsg({ ok, text: ok ? "Perfect web!" : `Correct order: ${chain.map((c) => c.label).join(" → ")}` });
+            setTimeout(() => { setMsg(null); setOrder([]); setRound((r) => r + 1); }, 2200);
+          }}
+        >
+          Check web
+        </Btn>
+      </div>
+      {msg && <Feedback ok={msg.ok} text={msg.text} />}
+    </div>
+  );
+}
+
+/* ================================================================== */
+/* 10. Find the Disease                                                */
+/* ================================================================== */
+const VECTORS: Record<string, { disease: string; wrong: string[] }> = {
+  "corn-flea-beetle": { disease: "Spreads Stewart's wilt bacteria to corn", wrong: ["Carries a virus that infects cattle", "Spreads mildew on apples"] },
+  "potato-leafhopper": { disease: "Causes hopperburn and spreads plant diseases", wrong: ["Carries rabies", "Spreads soil fungus to trees"] },
+  "corn-leaf-aphid": { disease: "Spreads plant viruses like maize dwarf mosaic", wrong: ["Carries malaria", "Spreads Dutch elm disease"] },
+  "striped-cucumber-beetle": { disease: "Spreads bacterial wilt to cucumbers and melons", wrong: ["Carries Lyme disease", "Spreads apple scab"] },
+  "soybean-thrips": { disease: "Spreads soybean vein necrosis virus", wrong: ["Carries the flu", "Spreads corn smut"] },
+};
+const VECTOR_IDS = Object.keys(VECTORS);
+
+function FindTheDisease({ onAward }: { onAward: (n: number) => void }) {
+  const [phase, setPhase] = useState<"search" | "quiz" | "done">("search");
+  const [left, setLeft] = useState(15);
+  const [found, setFound] = useState<string[]>([]);
+  const [qi, setQi] = useState(0);
+  const [right, setRight] = useState(0);
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+
+  const vectors = useMemo(() => POOL.filter((i) => VECTOR_IDS.includes(i.id)), []);
+  const board = useMemo(
+    () => shuffle([...vectors, ...shuffle(POOL.filter((i) => !VECTOR_IDS.includes(i.id))).slice(0, 8)]).map((i) => ({
+      i, x: 4 + Math.random() * 84, y: 6 + Math.random() * 78,
+    })),
+    [vectors],
+  );
+
+  useEffect(() => {
+    if (phase !== "search") return;
+    const t = setInterval(() => setLeft((s) => {
+      if (s <= 1) { clearInterval(t); setPhase("quiz"); return 0; }
+      return s - 1;
+    }), 1000);
+    return () => clearInterval(t);
+  }, [phase]);
+
+  const foundVectors = vectors.filter((v) => found.includes(v.id));
+
+  if (phase === "search")
+    return (
+      <div>
+        <div className="mb-2 flex justify-between text-sm">
+          <span className="font-semibold text-foreground">Click the disease-carrying insects!</span>
+          <span className="text-muted-foreground">⏱ {left}s · found {foundVectors.length}/{vectors.length}</span>
+        </div>
+        <div className="relative h-96 overflow-hidden rounded-2xl bg-gradient-to-br from-accent/25 to-secondary/25">
+          {board.map(({ i, x, y }) => (
+            <button
+              key={i.id}
+              onClick={() => setFound((f) => (f.includes(i.id) ? f : [...f, i.id]))}
+              className={`absolute h-16 w-16 overflow-hidden rounded-full border-2 shadow transition hover:scale-110 ${found.includes(i.id) ? (VECTOR_IDS.includes(i.id) ? "border-success" : "border-destructive") : "border-card"}`}
+              style={{ left: `${x}%`, top: `${y}%` }}
+            >
+              <InsectImage id={i.id} name={i.commonName} className="h-full w-full" rounded={false} />
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+
+  if (phase === "quiz") {
+    if (qi >= foundVectors.length)
+      return (
+        <div className="rounded-xl border border-primary/30 bg-primary/5 p-6 text-center">
+          <div className="text-4xl">🔬</div>
+          <p className="mt-2 font-semibold text-foreground">You found {foundVectors.length} of {vectors.length} disease carriers.</p>
+          <p className="text-sm text-muted-foreground">You matched {right} impacts correctly.</p>
+          <button onClick={() => { setPhase("search"); setLeft(15); setFound([]); setQi(0); setRight(0); }} className="mt-4 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground">Play again</button>
+        </div>
+      );
+    const v = foundVectors[qi];
+    const info = VECTORS[v.id];
+    const opts = shuffle([info.disease, ...info.wrong]);
+    return (
+      <div>
+        <div className="grid place-items-center rounded-2xl bg-muted p-6">
+          <InsectImage id={v.id} name={v.commonName} className="h-32 w-32" />
+          <div className="mt-2 font-bold text-foreground">{v.commonName}</div>
+          <p className="text-sm text-muted-foreground">What does this insect spread?</p>
+        </div>
+        <div className="mt-3 grid gap-2">
+          {opts.map((o) => (
+            <Btn
+              key={o}
+              onClick={() => {
+                const ok = o === info.disease;
+                if (ok) { setRight((r) => r + 1); onAward(2); }
+                setMsg({ ok, text: ok ? "Correct!" : info.disease });
+                setTimeout(() => { setMsg(null); setQi((q) => q + 1); }, 1600);
+              }}
+            >
+              {o}
+            </Btn>
+          ))}
+        </div>
+        {msg && <Feedback ok={msg.ok} text={msg.text} />}
+      </div>
+    );
+  }
+  return null;
+}
+
+/* ================================================================== */
+/* 11. Insect Travel                                                   */
+/* ================================================================== */
+const TRAVEL: Record<string, { how: string; part: string }> = {
+  default: { how: "Flying", part: "Wings" },
+};
+function travelFor(i: Insect): { how: string; part: string } {
+  if (/grub|wireworm|maggot|worm|caterpillar/i.test(i.commonName)) return { how: "Crawling", part: "Legs and body muscles" };
+  if (/aphid|thrips|mite/i.test(i.commonName)) return { how: "Wind", part: "Light body and tiny wings" };
+  if (/lantern|longhorn|spongy/i.test(i.commonName)) return { how: "Human traffic", part: "Sticky egg masses that ride on cars and wood" };
+  return TRAVEL.default;
+}
+const TRAVEL_WAYS = ["Wind", "Water", "Human traffic", "Crawling", "Flying", "Animal carrier"];
+
+function InsectTravel({ onAward }: { onAward: (n: number) => void }) {
+  const ROUNDS = 5;
+  const [round, setRound] = useState(0);
+  const [score, setScore] = useState(0);
+  const [stage, setStage] = useState<"how" | "part">("how");
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const bug = useMemo(() => rand(POOL), [round]);
+  const t = travelFor(bug);
+  const partOpts = useMemo(() => shuffle([t.part, "Mouthparts", "Antennae", "Compound eyes"]), [bug]);
+
+  if (round >= ROUNDS) return <Done score={score} total={ROUNDS * 2} onRestart={() => { setRound(0); setScore(0); setStage("how"); }} />;
+
+  return (
+    <div>
+      <Progress round={round} total={ROUNDS} score={score} />
+      <div className="grid place-items-center rounded-2xl bg-gradient-to-br from-secondary/30 to-accent/25 p-6">
+        <InsectImage id={bug.id} name={bug.commonName} stage="adult" className="h-40 w-40" />
+        <div className="mt-2 text-lg font-bold text-foreground">{bug.commonName}</div>
+        <p className="text-sm text-muted-foreground">{stage === "how" ? "How does this insect travel?" : "Which body part helps it travel that way?"}</p>
+      </div>
+      <div className="mt-4 grid gap-2 sm:grid-cols-3">
+        {(stage === "how" ? TRAVEL_WAYS : partOpts).map((o) => (
+          <Btn
+            key={o}
+            onClick={() => {
+              const target = stage === "how" ? t.how : t.part;
+              const ok = o === target;
+              if (ok) { setScore((s) => s + 1); onAward(1); }
+              setMsg({ ok, text: ok ? "That's right!" : `Answer: ${target}` });
+              setTimeout(() => {
+                setMsg(null);
+                if (stage === "how" && ok) setStage("part");
+                else if (stage === "part") { setStage("how"); setRound((r) => r + 1); }
+              }, 1500);
+            }}
+          >
+            {o}
+          </Btn>
+        ))}
+      </div>
+      {msg && <Feedback ok={msg.ok} text={msg.text} />}
+    </div>
+  );
+}
+
+/* ================================================================== */
+/* 12. Life Stages Sequence                                            */
+/* ================================================================== */
+function LifeStagesSequence({ onAward }: { onAward: (n: number) => void }) {
+  const ROUNDS = 4;
+  const [round, setRound] = useState(0);
+  const [score, setScore] = useState(0);
+  const [order, setOrder] = useState<InsectStage[]>([]);
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+
+  const bug = useMemo(() => rand(POOL), [round]);
+  const stages: InsectStage[] = bug.metamorphosis === "Complete" ? ["egg", "larva", "pupa", "adult"] : ["egg", "nymph", "adult"];
+  const jumbled = useMemo(() => shuffle(stages), [bug]);
+
+  if (round >= ROUNDS) return <Done score={score} total={ROUNDS} onRestart={() => { setRound(0); setScore(0); setOrder([]); }} />;
+
+  return (
+    <div>
+      <Progress round={round} total={ROUNDS} score={score} />
+      <div className="mb-3 flex items-center gap-3 rounded-xl bg-muted p-3">
+        <InsectImage id={bug.id} name={bug.commonName} className="h-16 w-16" />
+        <div>
+          <div className="font-semibold text-foreground">{bug.commonName}</div>
+          <div className="text-xs text-muted-foreground">{bug.metamorphosis} metamorphosis · {stages.length} stages</div>
+        </div>
+      </div>
+      <p className="mb-2 text-sm text-muted-foreground">Tap the stages in the right order, from egg to adult.</p>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {jumbled.map((s) => {
+          const pos = order.indexOf(s);
+          const src = getInsectImage(bug.id, s);
+          return (
+            <button
+              key={s}
+              disabled={pos >= 0 || !!msg}
+              onClick={() => setOrder((o) => [...o, s])}
+              className={`rounded-xl border p-2 ${pos >= 0 ? "border-primary bg-primary/10" : "border-border bg-card hover:bg-muted"}`}
+            >
+              {src ? (
+                <img src={src} alt={s} className="h-24 w-full rounded-lg object-cover" />
+              ) : (
+                <div className="grid h-24 place-items-center text-4xl">🥚</div>
+              )}
+              <div className="mt-1 text-xs font-semibold capitalize">{s}</div>
+              {pos >= 0 && <div className="text-[10px] text-primary">#{pos + 1}</div>}
+            </button>
+          );
+        })}
+      </div>
+      <div className="mt-3 flex gap-2">
+        <Btn onClick={() => setOrder([])}>Clear</Btn>
+        <Btn
+          tone="primary"
+          disabled={order.length < stages.length || !!msg}
+          onClick={() => {
+            const ok = order.every((s, idx) => s === stages[idx]);
+            if (ok) { setScore((s) => s + 1); onAward(2); }
+            setMsg({ ok, text: ok ? "Perfect life cycle!" : `Correct order: ${stages.join(" → ")}` });
+            setTimeout(() => { setMsg(null); setOrder([]); setRound((r) => r + 1); }, 2000);
+          }}
+        >
+          Check order
+        </Btn>
+      </div>
+      {msg && <Feedback ok={msg.ok} text={msg.text} />}
+    </div>
+  );
+}
+
+/* ================================================================== */
+/* 13. Build an Insect (3-part body plan)                              */
+/* ================================================================== */
+const BODY_PARTS = [
+  { id: "head", label: "Head", glyph: "🟠", note: "Eyes, antennae and mouthparts" },
+  { id: "thorax", label: "Thorax", glyph: "🟡", note: "Where the 6 legs and wings attach" },
+  { id: "abdomen", label: "Abdomen", glyph: "🟢", note: "Holds the stomach and breathing holes" },
+];
+
+function BuildAnInsect({ onAward }: { onAward: (n: number) => void }) {
+  const [slots, setSlots] = useState<(string | null)[]>([null, null, null]);
+  const [wrong, setWrong] = useState<string | null>(null);
+  const order = ["head", "thorax", "abdomen"];
+  const complete = slots.every((s, i) => s === order[i]);
+
+  function place(partId: string) {
+    const next = slots.findIndex((s) => s === null);
+    if (next < 0) return;
+    if (partId !== order[next]) {
+      setWrong(partId);
+      setTimeout(() => setWrong(null), 500);
+      return;
+    }
+    const copy = [...slots];
+    copy[next] = partId;
+    setSlots(copy);
+    if (next === 2) onAward(3);
+  }
+
+  return (
+    <div>
+      <p className="mb-3 text-sm text-muted-foreground">Every insect has 3 body parts. Tap them in order from front to back.</p>
+      <div className="flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-br from-secondary/25 to-accent/25 p-8">
+        {slots.map((s, idx) => (
+          <div key={idx} className={`grid h-28 w-28 place-items-center rounded-full border-4 border-dashed text-center ${s ? "border-success bg-success/10" : "border-border"}`}>
+            {s ? (
+              <div>
+                <div className="text-4xl">{BODY_PARTS.find((p) => p.id === s)!.glyph}</div>
+                <div className="text-xs font-semibold capitalize">{s}</div>
+              </div>
+            ) : (
+              <span className="text-xs text-muted-foreground">part {idx + 1}</span>
+            )}
+          </div>
+        ))}
+        <div className="ml-1 text-3xl">🦵🦵🦵</div>
+      </div>
+      <div className="mt-4 grid gap-2 sm:grid-cols-3">
+        {BODY_PARTS.map((p) => (
+          <button
+            key={p.id}
+            disabled={slots.includes(p.id)}
+            onClick={() => place(p.id)}
+            className={`rounded-xl border border-border bg-card p-3 text-left transition disabled:opacity-40 hover:bg-muted ${wrong === p.id ? "k5-shake border-destructive" : ""}`}
+          >
+            <div className="text-2xl">{p.glyph}</div>
+            <div className="text-sm font-semibold">{p.label}</div>
+            <div className="text-[11px] text-muted-foreground">{p.note}</div>
+          </button>
+        ))}
+      </div>
+      {complete && (
+        <div className="mt-3">
+          <Feedback ok text="You built an insect: head → thorax → abdomen, with 6 legs on the thorax!" />
+          <Btn onClick={() => setSlots([null, null, null])}>Build another</Btn>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ================================================================== */
+/* 14. Head Position Match                                             */
+/* ================================================================== */
+const HEAD_POSITIONS = [
+  { id: "downward", label: "Downward (hypognathous)", hint: "Chewers that feed below them, like grasshoppers and caterpillars" },
+  { id: "forward", label: "Forward (prognathous)", hint: "Hunters that chase prey, like ground beetles" },
+  { id: "backward", label: "Backward (opisthognathous)", hint: "Sap suckers that tuck their beak back, like aphids and stink bugs" },
+];
+function headPos(i: Insect): string {
+  if (i.order === "Hemiptera") return "backward";
+  if (i.role === "Beneficial" && i.order === "Coleoptera") return "forward";
+  return "downward";
+}
+const HEAD_Q = {
+  q: "Why do some insects have a forward-facing head?",
+  right: "It helps predators chase and grab prey",
+  wrong: ["It helps them sleep", "It keeps rain off their wings"],
+};
+
+function HeadPositionMatch({ onAward }: { onAward: (n: number) => void }) {
+  const ROUNDS = 3;
+  const [round, setRound] = useState(0);
+  const [score, setScore] = useState(0);
+  const [phase, setPhase] = useState<"match" | "quiz">("match");
+  const [matched, setMatched] = useState<string[]>([]);
+  const [selBug, setSelBug] = useState<string | null>(null);
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+
+  const bugs = useMemo(() => {
+    const pick = (pos: string) => rand(POOL.filter((i) => headPos(i) === pos));
+    return shuffle(["downward", "forward", "backward"].map(pick).filter(Boolean));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [round]);
+  const positions = useMemo(() => shuffle(HEAD_POSITIONS), [round]);
+  const quizOpts = useMemo(() => shuffle([HEAD_Q.right, ...HEAD_Q.wrong]), [round]);
+
+  if (round >= ROUNDS) return <Done score={score} total={ROUNDS} onRestart={() => { setRound(0); setScore(0); setMatched([]); setPhase("match"); }} />;
+
+  return (
+    <div>
+      <Progress round={round} total={ROUNDS} score={score} />
+      {phase === "match" ? (
+        <>
+          <p className="mb-3 text-sm text-muted-foreground">Tap an insect, then tap the head position that matches it.</p>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-3 gap-2">
+              {bugs.map((b) => (
+                <button
+                  key={b.id}
+                  disabled={matched.includes(b.id)}
+                  onClick={() => setSelBug(b.id)}
+                  className={`rounded-xl border p-2 text-center ${matched.includes(b.id) ? "border-success bg-success/10" : selBug === b.id ? "border-primary bg-primary/10" : "border-border bg-card"}`}
+                >
+                  <InsectImage id={b.id} name={b.commonName} className="mx-auto h-16 w-16" />
+                  <div className="mt-1 text-[11px] font-medium">{b.commonName}</div>
+                </button>
+              ))}
+            </div>
+            <div className="space-y-2">
+              {positions.map((p) => {
+                const owner = bugs.find((b) => headPos(b) === p.id);
+                const isDone = owner && matched.includes(owner.id);
+                return (
+                  <button
+                    key={p.id}
+                    onClick={() => {
+                      if (!selBug) return;
+                      const bug = bugs.find((b) => b.id === selBug)!;
+                      const ok = headPos(bug) === p.id;
+                      if (ok) {
+                        const nm = [...matched, bug.id];
+                        setMatched(nm);
+                        onAward(1);
+                        if (nm.length === bugs.length) setTimeout(() => setPhase("quiz"), 700);
+                      }
+                      setMsg({ ok, text: ok ? `${bug.commonName}: ${p.hint}` : "Try a different head position." });
+                      setSelBug(null);
+                      setTimeout(() => setMsg(null), 1600);
+                    }}
+                    className={`w-full rounded-lg border p-3 text-left text-sm ${isDone ? "border-success bg-success/10" : "border-border bg-card hover:bg-muted"}`}
+                  >
+                    <div className="font-semibold">{p.label}</div>
+                    <div className="text-[11px] text-muted-foreground">{p.hint}</div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </>
+      ) : (
+        <div>
+          <p className="mb-2 font-semibold text-foreground">{HEAD_Q.q}</p>
+          <div className="grid gap-2">
+            {quizOpts.map((o) => (
+              <Btn
+                key={o}
+                onClick={() => {
+                  const ok = o === HEAD_Q.right;
+                  if (ok) { setScore((s) => s + 1); onAward(2); }
+                  setMsg({ ok, text: ok ? "Correct!" : HEAD_Q.right });
+                  setTimeout(() => { setMsg(null); setMatched([]); setPhase("match"); setRound((r) => r + 1); }, 1600);
+                }}
+              >
+                {o}
+              </Btn>
+            ))}
+          </div>
+        </div>
+      )}
+      {msg && <Feedback ok={msg.ok} text={msg.text} />}
+    </div>
+  );
+}
+
+/* ================================================================== */
+/* 15. IPM Beginner                                                    */
+/* ================================================================== */
+function IPMBeginner({ onAward }: { onAward: (n: number) => void }) {
+  const [seed, setSeed] = useState(0);
+  const [cleared, setCleared] = useState<string[]>([]);
+  const [open, setOpen] = useState<Insect | null>(null);
+  const [step, setStep] = useState<"id" | "manage">("id");
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+
+  const field = useMemo(
+    () => shuffle(POOL).slice(0, 8).map((i) => ({ i, x: 5 + Math.random() * 82, y: 8 + Math.random() * 74 })),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [seed],
+  );
+  const options = useMemo(() => (open ? shuffle([open, ...shuffle(POOL.filter((p) => p.id !== open.id)).slice(0, 3)]) : []), [open]);
+  const doneAll = cleared.length === field.length;
+
+  return (
+    <div>
+      <div className="mb-2 flex items-center justify-between text-sm">
+        <span className="font-semibold text-foreground">Scout the field: {cleared.length}/{field.length} handled</span>
+        {doneAll && <button onClick={() => { setSeed((s) => s + 1); setCleared([]); }} className="text-primary underline">New field</button>}
+      </div>
+      <div className="relative h-96 overflow-hidden rounded-2xl bg-gradient-to-b from-sky-200/50 via-success/20 to-[hsl(95_35%_35%)]/40">
+        {field.map(({ i, x, y }) =>
+          cleared.includes(i.id) ? null : (
+            <button
+              key={i.id}
+              onClick={() => { setOpen(i); setStep("id"); }}
+              className="absolute h-16 w-16 overflow-hidden rounded-full border-2 border-card shadow-md hover:scale-110"
+              style={{ left: `${x}%`, top: `${y}%` }}
+            >
+              <InsectImage id={i.id} name={i.commonName} className="h-full w-full" rounded={false} />
+            </button>
+          ),
+        )}
+        {doneAll && <div className="grid h-full place-items-center text-2xl font-bold text-foreground">🌾 Field cleared!</div>}
+      </div>
+
+      {open && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-foreground/60 p-4">
+          <div className="w-full max-w-md rounded-2xl border border-border bg-card p-5">
+            <InsectImage id={open.id} name="Insect" className="mx-auto h-32 w-32" />
+            {step === "id" ? (
+              <>
+                <p className="mt-3 text-center font-semibold text-foreground">Which insect is this?</p>
+                <div className="mt-2 grid gap-2">
+                  {options.map((o) => (
+                    <Btn
+                      key={o.id}
+                      onClick={() => {
+                        const ok = o.id === open.id;
+                        setMsg({ ok, text: ok ? "Correct ID!" : `This is a ${open.commonName}.` });
+                        setTimeout(() => { setMsg(null); if (ok) setStep("manage"); }, 1300);
+                        if (ok) onAward(1);
+                      }}
+                    >
+                      {o.commonName}
+                    </Btn>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="mt-3 text-center font-semibold text-foreground">Should you manage the {open.commonName}?</p>
+                <div className="mt-2 grid grid-cols-2 gap-2">
+                  {[true, false].map((v) => (
+                    <Btn
+                      key={String(v)}
+                      onClick={() => {
+                        const shouldManage = !isHelper(open);
+                        const ok = v === shouldManage;
+                        setMsg({ ok, text: ok ? (shouldManage ? "Yes — it damages the crop." : "Right — leave helpers alone!") : shouldManage ? "This pest damages the crop, so manage it." : "This one helps the crop — leave it alone." });
+                        if (ok) { onAward(2); setCleared((c) => [...c, open.id]); }
+                        setTimeout(() => { setMsg(null); if (ok) setOpen(null); }, 1600);
+                      }}
+                    >
+                      {v ? "Manage it" : "Leave it alone"}
+                    </Btn>
+                  ))}
+                </div>
+              </>
+            )}
+            {msg && <Feedback ok={msg.ok} text={msg.text} />}
+            <div className="mt-3 text-right">
+              <button onClick={() => setOpen(null)} className="text-xs text-muted-foreground underline">close</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ================================================================== */
+/* 16. Insect Steward                                                  */
+/* ================================================================== */
+const STEWARD_GOOD = [
+  "Plant native flowers nearby so it has food",
+  "Leave a strip of grass and leaves for shelter",
+  "Skip spraying when this insect is active",
+  "Add a water source and a bee house",
+];
+const STEWARD_BAD = ["Spray the whole field to kill it", "Squash every one you find", "Remove all flowers from the field"];
+
+function InsectSteward({ onAward }: { onAward: (n: number) => void }) {
+  const TOTAL = 8;
+  const [round, setRound] = useState(0);
+  const [score, setScore] = useState(0);
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const list = useMemo(() => shuffle(helpers).slice(0, TOTAL), []);
+  const bug = list[round];
+  const opts = useMemo(() => (bug ? shuffle([rand(STEWARD_GOOD), ...shuffle(STEWARD_BAD).slice(0, 2)]) : []), [bug]);
+
+  if (round >= TOTAL || !bug) return <Done score={score} total={TOTAL} onRestart={() => { setRound(0); setScore(0); }} />;
+
+  return (
+    <div>
+      <Progress round={round} total={TOTAL} score={score} />
+      <div className="flex flex-col items-center gap-3 rounded-2xl bg-gradient-to-br from-success/15 to-accent/25 p-6 sm:flex-row">
+        <InsectImage id={bug.id} name={bug.commonName} className="h-32 w-32 shrink-0" />
+        <div>
+          <div className="text-lg font-bold text-foreground">{bug.commonName}</div>
+          <p className="text-sm text-muted-foreground">{describe(bug)}</p>
+          <p className="mt-1 text-sm font-medium text-primary">How should a good steward take care of it?</p>
+        </div>
+      </div>
+      <div className="mt-4 grid gap-2">
+        {opts.map((o) => (
+          <Btn
+            key={o}
+            onClick={() => {
+              const ok = STEWARD_GOOD.includes(o);
+              if (ok) { setScore((s) => s + 1); onAward(2); }
+              setMsg({ ok, text: ok ? "Great stewardship — the helper stays alive and keeps working!" : "That would harm a helpful insect. Choose a care option instead." });
+              setTimeout(() => { setMsg(null); setRound((r) => r + 1); }, 1700);
+            }}
+          >
+            {o}
+          </Btn>
+        ))}
+      </div>
+      {msg && <Feedback ok={msg.ok} text={msg.text} />}
+    </div>
+  );
+}
+
+/* ================================================================== */
+/* Hub                                                                 */
+/* ================================================================== */
+interface BBGame { id: string; name: string; emoji: string; topic: string; blurb: string; render: (a: (n: number) => void) => ReactNode }
+
+export const BUG_BUDDY_GAMES: BBGame[] = [
+  { id: "insect-or-not", name: "Insect or Not?", emoji: "🔎", topic: "Insect definition", blurb: "10 seconds to decide: insect or imposter?", render: (a) => <InsectOrNot onAward={a} /> },
+  { id: "name-insect", name: "Name the Insect", emoji: "🏷️", topic: "Common names", blurb: "Pick the right name from a picture and clue.", render: (a) => <NameTheInsect onAward={a} /> },
+  { id: "mix-match", name: "Insect Mix and Match", emoji: "🌈", topic: "Biodiversity", blurb: "Rate the mix, then swap in new species.", render: (a) => <MixAndMatch onAward={a} /> },
+  { id: "decomposer-dash", name: "Decomposer Dash", emoji: "♻️", topic: "Decomposers", blurb: "Catch leaves and return compost to the soil.", render: (a) => <DecomposerDash onAward={a} /> },
+  { id: "pollinator-power", name: "Pollinator Power", emoji: "🌻", topic: "Pollinators", blurb: "Guard your flower and welcome pollinators.", render: (a) => <PollinatorPower onAward={a} /> },
+  { id: "predator-pest", name: "Predator vs. Pest", emoji: "⚔️", topic: "Predator/pest", blurb: "Send the right predator after each pest.", render: (a) => <PredatorVsPest onAward={a} /> },
+  { id: "beneficial-sort", name: "Beneficial Sort", emoji: "🧺", topic: "Beneficial insects", blurb: "Collect bugs in 15s, then sort them.", render: (a) => <BeneficialSort onAward={a} /> },
+  { id: "invasive-impact", name: "Invasive Impact", emoji: "🚨", topic: "Native & invasive", blurb: "Match invaders to the damage they do.", render: (a) => <InvasiveImpact onAward={a} /> },
+  { id: "connect-web", name: "Connect the Web", emoji: "🕸️", topic: "Food webs", blurb: "Order producer to decomposer.", render: (a) => <ConnectTheWeb onAward={a} /> },
+  { id: "find-disease", name: "Find the Disease", emoji: "🦠", topic: "Disease carriers", blurb: "Spot vectors, then name what they spread.", render: (a) => <FindTheDisease onAward={a} /> },
+  { id: "insect-travel", name: "Insect Travel", emoji: "🧳", topic: "Dispersal", blurb: "How — and with what body part — do they move?", render: (a) => <InsectTravel onAward={a} /> },
+  { id: "life-stages", name: "Life Stages Sequence", emoji: "🥚", topic: "Life stages", blurb: "Put the life stages in order.", render: (a) => <LifeStagesSequence onAward={a} /> },
+  { id: "build-insect", name: "Build an Insect", emoji: "🧱", topic: "3-part body plan", blurb: "Head, thorax, abdomen — in order.", render: (a) => <BuildAnInsect onAward={a} /> },
+  { id: "head-position", name: "Head Position Match", emoji: "🙂", topic: "Head position", blurb: "Match insects to their head positions.", render: (a) => <HeadPositionMatch onAward={a} /> },
+  { id: "ipm-beginner", name: "IPM Beginner", emoji: "🚜", topic: "Basic management", blurb: "ID each field bug and decide what to do.", render: (a) => <IPMBeginner onAward={a} /> },
+  { id: "insect-steward", name: "Insect Steward", emoji: "🌱", topic: "Stewardship", blurb: "Care for beneficial insects.", render: (a) => <InsectSteward onAward={a} /> },
+];
+
+export function BugBuddyGamesHub() {
+  const { pts, add, reset } = useK5Points();
+  const [active, setActive] = useState<BBGame | null>(null);
+
+  if (active)
+    return (
+      <div>
+        <div className="mb-4 flex items-center justify-between">
+          <button onClick={() => setActive(null)} className="inline-flex items-center gap-1 rounded-md border border-border bg-card px-3 py-1.5 text-sm hover:bg-muted">
+            <ArrowLeft className="h-4 w-4" /> All games
+          </button>
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-sm font-semibold text-primary">
+            <Trophy className="h-4 w-4" /> {pts} pts
+          </div>
+        </div>
+        <h3 className="mb-1 text-lg font-bold text-foreground">{active.emoji} {active.name}</h3>
+        <p className="mb-3 text-xs text-muted-foreground">{active.blurb}</p>
+        {active.render(add)}
+      </div>
+    );
+
+  return (
+    <div>
+      <div className="mb-4 flex items-center justify-between rounded-xl border border-primary/30 bg-primary/5 p-3">
+        <div className="inline-flex items-center gap-2">
+          <Sparkles className="h-5 w-5 text-primary" />
+          <div>
+            <div className="text-xs uppercase tracking-wide text-muted-foreground">Bug Buddy points</div>
+            <div className="text-2xl font-bold text-primary">{pts}</div>
+          </div>
+        </div>
+        <button onClick={reset} className="rounded-md border border-border bg-card px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted">
+          <RefreshCcw className="mr-1 inline h-3 w-3" /> Reset
+        </button>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {BUG_BUDDY_GAMES.map((g) => (
+          <button key={g.id} onClick={() => setActive(g)} className="flex flex-col items-start gap-1 rounded-xl border border-border bg-card p-4 text-left transition hover:bg-muted/50 hover:shadow-md">
+            <span className="text-3xl">{g.emoji}</span>
+            <div className="text-[10px] uppercase tracking-wide text-muted-foreground">{g.topic}</div>
+            <div className="font-semibold text-foreground">{g.name}</div>
+            <div className="text-xs text-muted-foreground">{g.blurb}</div>
+            <div className="mt-1 text-[11px] font-medium text-primary">Play →</div>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}

@@ -3,7 +3,6 @@ import { useState } from "react";
 import { Toaster } from "sonner";
 import { AppHeader } from "@/components/AppHeader";
 import { LandingPage } from "@/components/LandingPage";
-import { InsectMarquee } from "@/components/InsectMarquee";
 import { GameScreen } from "@/components/GameScreen";
 import { ResultsScreen } from "@/components/ResultsScreen";
 import { LearningModule } from "@/components/overlays/LearningModule";
@@ -39,7 +38,7 @@ function Index() {
   const [showFeedback, setShowFeedback] = useState(false);
   const [showStats, setShowStats] = useState(false);
   const [learnTier, setLearnTier] = useState<LearningGradeLevel>("elementary");
-  const [practiceTier, setPracticeTier] = useState<GradeLevel>("middle");
+  const [practiceTier, setPracticeTier] = useState<LearningGradeLevel>("elementary");
 
   const mastered = Object.values(engine.insectStats).filter((s) => s.mastered).length;
 
@@ -55,8 +54,6 @@ function Index() {
         onOpenFeedback={() => setShowFeedback(true)}
         onOpenStats={() => setShowStats(true)}
       />
-
-      {engine.screen === "landing" && <InsectMarquee />}
 
       {engine.screen === "landing" && (
         <LandingPage

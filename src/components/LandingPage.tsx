@@ -12,7 +12,7 @@ interface Props {
   speciesMastered: number;
   startGame: (g: GradeLevel) => void;
   onOpenLearning: (tier: LearningGradeLevel) => void;
-  onOpenPractice: (tier: GradeLevel) => void;
+  onOpenPractice: (tier: LearningGradeLevel) => void;
   onOpenFarm: () => void;
   onOpenGlossary: () => void;
   onOpenStats: () => void;
@@ -34,11 +34,11 @@ const DEST_META: Record<Destination, { title: string; icon: typeof Bug; copy: st
 export function LandingPage(p: Props) {
   const [dest, setDest] = useState<Destination | null>(null);
 
-  const levels = dest === "learn" ? LEVELS : LEVELS.filter((l) => l.id !== "collegiate");
+  const levels = dest === "play" ? LEVELS.filter((l) => l.id !== "collegiate") : LEVELS;
 
   const choose = (id: LearningGradeLevel) => {
     if (dest === "learn") p.onOpenLearning(id);
-    else if (dest === "practice") p.onOpenPractice(id as GradeLevel);
+    else if (dest === "practice") p.onOpenPractice(id);
     else if (dest === "play") p.startGame(id as GradeLevel);
     setDest(null);
   };
