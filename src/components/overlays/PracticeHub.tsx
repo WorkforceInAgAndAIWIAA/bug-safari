@@ -41,8 +41,14 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-export function PracticeHub({ onClose }: { onClose: () => void }) {
-  const [tab, setTab] = useState<GradeLevel>("middle");
+export function PracticeHub({
+  onClose,
+  initialTier = "middle",
+}: {
+  onClose: () => void;
+  initialTier?: GradeLevel;
+}) {
+  const [tab, setTab] = useState<GradeLevel>(initialTier);
   const [active, setActive] = useState<MiniGame | null>(null);
 
   return (

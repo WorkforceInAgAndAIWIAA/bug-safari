@@ -11,8 +11,14 @@ const TIERS: { id: LearningGradeLevel; title: string; sub: string; blurb: string
   { id: "collegiate", title: "Field Entomologist", sub: "Collegiate", blurb: "Taxonomy, diagnostics, and resistance management deep dives." },
 ];
 
-export function LearningModule({ onClose }: { onClose: () => void }) {
-  const [tier, setTier] = useState<LearningGradeLevel>("elementary");
+export function LearningModule({
+  onClose,
+  initialTier = "elementary",
+}: {
+  onClose: () => void;
+  initialTier?: LearningGradeLevel;
+}) {
+  const [tier, setTier] = useState<LearningGradeLevel>(initialTier);
   const units = CURRICULUM[tier];
   const firstLessonId = useMemo(() => units[0]?.lessons[0]?.id ?? "", [units]);
   const [lessonId, setLessonId] = useState<string>(firstLessonId);
