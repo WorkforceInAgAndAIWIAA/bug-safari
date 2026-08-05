@@ -161,3 +161,13 @@
   to { transform: translate(120px, -160px) scale(0.4); opacity: 0; }
 }
 .k5-flyaway { animation: k5-flyaway 700ms ease-in forwards; }
+
+@keyframes marquee-x {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.marquee-track { animation: marquee-x 60s linear infinite; }
+.marquee-track:hover { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track { animation: none; }
+}
