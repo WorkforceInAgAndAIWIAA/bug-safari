@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
 import { OverlayShell } from "@/components/OverlayShell";
-import type { GradeLevel } from "@/lib/types";
+import type { GradeLevel, LearningGradeLevel } from "@/lib/types";
 import { GRADE_LABEL } from "@/lib/types";
+import { BugBuddyGamesHub } from "./BugBuddyGames";
 import { insects, type Insect } from "@/data/insects";
 import { Gamepad2, Sparkles, CheckCircle2 } from "lucide-react";
 import { K5PracticeHub } from "./K5PracticeHub";
@@ -14,16 +15,22 @@ interface MiniGame {
   playable?: boolean;
 }
 
-const GAMES: Record<GradeLevel, MiniGame[]> = {
+const TIER_LABEL: Record<LearningGradeLevel, string> = {
+  ...GRADE_LABEL,
+  collegiate: "College Entomologist",
+};
+
+const GAMES: Record<LearningGradeLevel, MiniGame[]> = {
   elementary: [],
-  middle: [
+  middle: [],
+  high: [
     { id: "field-scout", name: "Field Scout", blurb: "Identify by common name + host.", difficulty: "Medium", playable: true },
     { id: "order-up", name: "Order Up", blurb: "Drop each insect into its order.", difficulty: "Medium", playable: true },
     { id: "life-cycle", name: "Life Cycle Sort", blurb: "Complete vs. incomplete metamorphosis.", difficulty: "Medium", playable: true },
     { id: "lookalike", name: "Look-alike Lens", blurb: "Tell apart pairs that fool scouts.", difficulty: "Medium" },
     { id: "natural-enemies", name: "Natural Enemies", blurb: "Match pests to their predators.", difficulty: "Medium" },
   ],
-  high: [
+  collegiate: [
     { id: "scientific-name", name: "Scientific Name", blurb: "Type the binomial from the photo.", difficulty: "Hard", playable: true },
     { id: "family-diag", name: "Family Diagnostics", blurb: "Identify the family from traits.", difficulty: "Hard", playable: true },
     { id: "threshold", name: "Economic Threshold", blurb: "Treat or scout again?", difficulty: "Hard", playable: true },
@@ -43,18 +50,18 @@ function shuffle<T>(arr: T[]): T[] {
 
 export function PracticeHub({
   onClose,
-  initialTier = "middle",
+  initialTier = "elementary",
 }: {
   onClose: () => void;
-  initialTier?: GradeLevel;
+  initialTier?: LearningGradeLevel;
 }) {
-  const [tab, setTab] = useState<GradeLevel>(initialTier);
+  const [tab, setTab] = useState<LearningGradeLevel>(initialTier);
   const [active, setActive] = useState<MiniGame | null>(null);
 
   return (
     <OverlayShell title="Practice Hub" subtitle="Standalone drills · medals coming soon" onClose={onClose}>
       <div className="mb-5 inline-flex flex-wrap rounded-lg border border-border bg-card p-1 text-sm">
-        {(Object.keys(GAMES) as GradeLevel[]).map((g) => (
+        {(Object.keys(GAMES) as LearningGradeLevel[]).map((g) => (
           <button
             key={g}
             onClick={() => setTab(g)}
@@ -62,12 +69,14 @@ export function PracticeHub({
               tab === g ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            {GRADE_LABEL[g]}
+            {TIER_LABEL[g]}
           </button>
         ))}
       </div>
 
       {tab === "elementary" ? (
+        <BugBuddyGamesHub />
+      ) : tab === "middle" ? (
         <K5PracticeHub />
       ) : (
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -93,7 +102,9 @@ export function PracticeHub({
       </div>
       )}
 
-      {active && <QuickDrill game={active} grade={tab} onClose={() => setActive(null)} />}
+      {active && (
+        <QuickDrill game={active} grade={(tab === "collegiate" ? "high" : tab) as GradeLevel} onClose={() => setActive(null)} />
+      )}
     </OverlayShell>
   );
 }

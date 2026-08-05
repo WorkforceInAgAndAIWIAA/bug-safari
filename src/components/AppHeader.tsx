@@ -1,3 +1,6 @@
+import { useEffect, useMemo, useState } from "react";
+import { insects } from "@/data/insects";
+import { getInsectImage } from "@/lib/insectImages";
 import { Bug, BookOpen, Gamepad2, Sprout, Library, MessageSquare, Trophy } from "lucide-react";
 
 interface Props {
@@ -22,10 +25,46 @@ const NavBtn = ({ icon: Icon, label, onClick }: { icon: typeof Bug; label: strin
   </button>
 );
 
+/** Slowly cross-fading species photos that sit behind the header chrome. */
+function HeaderBackdrop() {
+  const shots = useMemo(
+    () =>
+      insects
+        .map((i) => getInsectImage(i.id, "adult"))
+        .filter((s): s is string => !!s)
+        .filter((_, idx) => idx % 3 === 0)
+        .filter((s, i, a) => a.indexOf(s) === i)
+        .slice(0, 24),
+    [],
+  );
+  const [idx, setIdx] = useState(0);
+  useEffect(() => {
+    if (shots.length < 2) return;
+    const t = setInterval(() => setIdx((i) => (i + 1) % shots.length), 6000);
+    return () => clearInterval(t);
+  }, [shots.length]);
+
+  return (
+    <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+      {shots.map((src, i) => (
+        <img
+          key={`${src}-${i}`}
+          src={src}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover transition-opacity duration-[2500ms] ease-in-out"
+          style={{ opacity: i === idx ? 0.35 : 0 }}
+        />
+      ))}
+      <div className="absolute inset-0 bg-background/70" />
+    </div>
+  );
+}
+
 export function AppHeader(props: Props) {
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-background/85 backdrop-blur">
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 px-4 py-3">
+    <header className="sticky top-0 z-50 border-b border-border bg-background/70 backdrop-blur">
+      <HeaderBackdrop />
+      <div className="relative mx-auto flex max-w-7xl items-center justify-between gap-2 px-4 py-3">
         <button onClick={props.onHome} className="flex items-center gap-2 text-left">
           <span className="grid h-9 w-9 place-items-center rounded-lg bg-primary text-primary-foreground">
             <Bug className="h-5 w-5" />
