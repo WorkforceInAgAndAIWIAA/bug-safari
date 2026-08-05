@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Toaster } from "sonner";
 import { AppHeader } from "@/components/AppHeader";
 import { LandingPage } from "@/components/LandingPage";
+import { InsectMarquee } from "@/components/InsectMarquee";
 import { GameScreen } from "@/components/GameScreen";
 import { ResultsScreen } from "@/components/ResultsScreen";
 import { LearningModule } from "@/components/overlays/LearningModule";
@@ -14,6 +15,7 @@ import { FeedbackDialog } from "@/components/overlays/FeedbackDialog";
 import { StatsPanel } from "@/components/overlays/StatsPanel";
 import { useGameEngine } from "@/hooks/useGameEngine";
 import { insects } from "@/data/insects";
+import type { GradeLevel, LearningGradeLevel } from "@/lib/types";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -36,6 +38,8 @@ function Index() {
   const [showReferences, setShowReferences] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
   const [showStats, setShowStats] = useState(false);
+  const [learnTier, setLearnTier] = useState<LearningGradeLevel>("elementary");
+  const [practiceTier, setPracticeTier] = useState<GradeLevel>("middle");
 
   const mastered = Object.values(engine.insectStats).filter((s) => s.mastered).length;
 
@@ -52,6 +56,8 @@ function Index() {
         onOpenStats={() => setShowStats(true)}
       />
 
+      {engine.screen === "landing" && <InsectMarquee />}
+
       {engine.screen === "landing" && (
         <LandingPage
           xp={engine.xp}
@@ -60,8 +66,14 @@ function Index() {
           totalWrong={engine.totalWrong}
           speciesMastered={mastered}
           startGame={engine.startGame}
-          onOpenLearning={() => setShowLearning(true)}
-          onOpenPractice={() => setShowPractice(true)}
+          onOpenLearning={(t) => {
+            setLearnTier(t);
+            setShowLearning(true);
+          }}
+          onOpenPractice={(t) => {
+            setPracticeTier(t);
+            setShowPractice(true);
+          }}
           onOpenFarm={() => setShowFarm(true)}
           onOpenGlossary={() => setShowGlossary(true)}
           onOpenStats={() => setShowStats(true)}
@@ -70,8 +82,8 @@ function Index() {
       {engine.screen === "playing" && <GameScreen engine={engine} onExit={engine.resetToLanding} />}
       {engine.screen === "results" && <ResultsScreen engine={engine} onHome={engine.resetToLanding} />}
 
-      {showLearning && <LearningModule onClose={() => setShowLearning(false)} />}
-      {showPractice && <PracticeHub onClose={() => setShowPractice(false)} />}
+      {showLearning && <LearningModule initialTier={learnTier} onClose={() => setShowLearning(false)} />}
+      {showPractice && <PracticeHub initialTier={practiceTier} onClose={() => setShowPractice(false)} />}
       {showFarm && <FarmMode onClose={() => setShowFarm(false)} />}
       {showGlossary && <Glossary onClose={() => setShowGlossary(false)} />}
       {showReferences && <ReferencesPage onClose={() => setShowReferences(false)} />}
