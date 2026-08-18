@@ -297,25 +297,51 @@ const BIO_Q = [
   { q: "Why is a biodiverse field healthier?", a: ["Many species keep each other in balance", "It looks nicer", "It has fewer plants", "It rains more"] },
 ];
 
+const MIX_FIELDS = ["Backyard garden", "Corn field edge", "Prairie meadow"];
+const MIX_ROUNDS = MIX_FIELDS.length;
+
+function makeMix() {
+  const base = shuffle(POOL).slice(0, 3);
+  return shuffle([base[0], base[0], base[0], base[1], base[1], base[2]]);
+}
+
 function MixAndMatch({ onAward }: { onAward: (n: number) => void }) {
-  const [phase, setPhase] = useState<"quiz" | "rate" | "fix" | "done">("quiz");
-  const [quiz] = useState(() => rand(BIO_Q));
-  const [opts] = useState(() => shuffle(rand(BIO_Q) === null ? [] : []));
-  const [quizOpts] = useState(() => shuffle(quiz.a));
+  const [round, setRound] = useState(0);
+  const [score, setScore] = useState(0);
+  const [phase, setPhase] = useState<"quiz" | "rate" | "fix" | "cleared" | "done">("quiz");
+  const [quiz, setQuiz] = useState(() => rand(BIO_Q));
+  const [quizOpts, setQuizOpts] = useState(() => shuffle(rand(BIO_Q).a));
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
-  const [mix, setMix] = useState<Insect[]>(() => {
-    const base = shuffle(POOL).slice(0, 3);
-    return shuffle([base[0], base[0], base[0], base[1], base[1], base[2]]);
-  });
-  const [bench] = useState<Insect[]>(() => shuffle(POOL).slice(0, 6));
+  const [mix, setMix] = useState<Insect[]>(makeMix);
+  const [bench, setBench] = useState<Insect[]>(() => shuffle(POOL).slice(0, 6));
   const [slot, setSlot] = useState<number | null>(null);
-  void opts;
 
   const unique = new Set(mix.map((i) => i.id)).size;
   const rating = unique <= 2 ? "Low" : unique <= 4 ? "Medium" : "High";
 
+  const startRound = (next: number) => {
+    const q = rand(BIO_Q);
+    setQuiz(q);
+    setQuizOpts(shuffle(q.a));
+    setMix(makeMix());
+    setBench(shuffle(POOL).slice(0, 6));
+    setSlot(null);
+    setMsg(null);
+    setRound(next);
+    setPhase("quiz");
+  };
+
+  const restart = () => {
+    setScore(0);
+    startRound(0);
+  };
+
+  if (phase === "done") return <Done score={score} total={MIX_ROUNDS * 3} onRestart={restart} />;
+
   return (
     <div>
+      <Progress round={round} total={MIX_ROUNDS} score={score} />
+      <div className="mb-3 text-sm font-semibold text-foreground">🌿 Field {round + 1}: {MIX_FIELDS[round]}</div>
       {phase === "quiz" && (
         <div>
           <p className="mb-3 text-base font-semibold text-foreground">{quiz.q}</p>
@@ -326,7 +352,7 @@ function MixAndMatch({ onAward }: { onAward: (n: number) => void }) {
                 onClick={() => {
                   const ok = o === quiz.a[0];
                   setMsg({ ok, text: ok ? "Right! Now look at this mix of bugs." : `The answer is: ${quiz.a[0]}` });
-                  if (ok) onAward(2);
+                  if (ok) { onAward(2); setScore((s) => s + 1); }
                   setTimeout(() => { setMsg(null); setPhase("rate"); }, 1500);
                 }}
               >
@@ -337,7 +363,7 @@ function MixAndMatch({ onAward }: { onAward: (n: number) => void }) {
         </div>
       )}
 
-      {phase !== "quiz" && (
+      {(phase === "rate" || phase === "fix" || phase === "cleared") && (
         <>
           <div className="mb-3 rounded-lg border border-border bg-muted/50 p-3 text-xs text-muted-foreground">
             <strong className="text-foreground">Biodiversity scale:</strong> 1–2 different species = Low · 3–4 = Medium · 5–6 = High
@@ -366,7 +392,7 @@ function MixAndMatch({ onAward }: { onAward: (n: number) => void }) {
               onClick={() => {
                 const ok = r === rating;
                 setMsg({ ok, text: ok ? `Yes — ${unique} species means ${rating.toLowerCase()} biodiversity. Now swap duplicates to make it more diverse!` : `This mix has ${unique} species, so it is ${rating.toLowerCase()} biodiversity.` });
-                if (ok) onAward(2);
+                if (ok) { onAward(2); setScore((s) => s + 1); }
                 setTimeout(() => { setMsg(null); setPhase("fix"); }, 1800);
               }}
             >
@@ -395,8 +421,9 @@ function MixAndMatch({ onAward }: { onAward: (n: number) => void }) {
                   const u = new Set(next.map((x) => x.id)).size;
                   if (u >= 5) {
                     onAward(3);
-                    setMsg({ ok: true, text: "Awesome! Lots of different species = high biodiversity." });
-                    setPhase("done");
+                    setScore((s) => s + 1);
+                    setMsg({ ok: true, text: `Awesome! ${MIX_FIELDS[round]} now has high biodiversity.` });
+                    setPhase("cleared");
                   }
                 }}
                 className="rounded-lg border border-border bg-card p-1 disabled:opacity-40 hover:bg-muted"
