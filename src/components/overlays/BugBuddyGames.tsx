@@ -475,7 +475,6 @@ function DecomposerDash({ onAward }: { onAward: (n: number) => void }) {
   const [soil, setSoil] = useState(0);
   const [trail, setTrail] = useState<{ x: number; y: number }[]>([]);
   const [slicing, setSlicing] = useState(false);
-  const [missed, setMissed] = useState(0);
   const [caught, setCaught] = useState(0);
   const fieldRef = useRef<HTMLDivElement | null>(null);
   const idRef = useRef(0);
