@@ -27,7 +27,6 @@ const POOL = ALL.filter((i) => hasInsectImage(i.id));
 const helpers = POOL.filter((i) => i.role === "Beneficial" || i.role === "Pollinator" || i.role === "Pollinator/Pest");
 const pollinators = POOL.filter((i) => i.role === "Pollinator" || i.role === "Pollinator/Pest");
 const pests = POOL.filter((i) => i.role === "Pest" || i.role === "Invasive Pest");
-const invasives = POOL.filter((i) => i.role === "Invasive Pest");
 const isHelper = (i: Insect) => helpers.some((h) => h.id === i.id);
 
 const POINTS_KEY = "entoquest.k5.points";
