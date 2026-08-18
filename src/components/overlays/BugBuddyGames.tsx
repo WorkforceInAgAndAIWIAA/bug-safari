@@ -477,7 +477,6 @@ function DecomposerDash({ onAward }: { onAward: (n: number) => void }) {
   const [slicing, setSlicing] = useState(false);
   const [missed, setMissed] = useState(0);
   const [caught, setCaught] = useState(0);
-  const [warn, setWarn] = useState<string | null>(null);
   const fieldRef = useRef<HTMLDivElement | null>(null);
   const idRef = useRef(0);
   const decomposer = useMemo(() => rand(POOL.filter((i) => /grub|wireworm|maggot|beetle/i.test(i.commonName))) ?? POOL[0], []);
