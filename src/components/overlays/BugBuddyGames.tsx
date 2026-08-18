@@ -879,8 +879,8 @@ function PredatorVsPest({ onAward }: { onAward: (n: number) => void }) {
                 }}
                 className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-3 hover:bg-muted"
               >
-                <div className="grid h-24 w-24 place-items-center rounded-xl bg-muted text-5xl">
-                  <c.icon className="h-12 w-12 text-primary" />
+                <div className="grid h-24 w-24 place-items-center rounded-xl bg-primary text-5xl">
+                  <c.icon className="h-14 w-14 fill-current text-primary-foreground" />
                 </div>
                 <span className="text-xs font-medium">{c.name}</span>
               </button>
