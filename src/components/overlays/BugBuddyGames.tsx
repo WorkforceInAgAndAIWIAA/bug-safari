@@ -962,12 +962,19 @@ function PredatorVsPest({ onAward }: { onAward: (n: number) => void }) {
                   });
                   setStage("won");
                 }}
-                className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-3 hover:bg-muted"
+                className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-3 text-left hover:bg-muted"
               >
                 <div className="grid h-24 w-24 place-items-center rounded-xl bg-primary text-5xl shadow-inner">
                   <c.icon className="h-14 w-14 text-primary-foreground" strokeWidth={2.5} />
                 </div>
-                <span className="text-xs font-medium">{c.name}</span>
+                <div className="w-full">
+                  <div className="text-center text-xs font-bold text-foreground">{c.name}</div>
+                  <ul className="mt-1 ml-4 list-disc text-[11px] leading-snug text-muted-foreground">
+                    {c.bullets.map((b) => (
+                      <li key={b}>{b}</li>
+                    ))}
+                  </ul>
+                </div>
               </button>
             ))}
           </div>
