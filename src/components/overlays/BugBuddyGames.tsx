@@ -475,22 +475,45 @@ function DecomposerDash({ onAward }: { onAward: (n: number) => void }) {
   const [soil, setSoil] = useState(0);
   const [trail, setTrail] = useState<{ x: number; y: number }[]>([]);
   const [slicing, setSlicing] = useState(false);
+  const [missed, setMissed] = useState(0);
+  const [caught, setCaught] = useState(0);
+  const [warn, setWarn] = useState<string | null>(null);
   const fieldRef = useRef<HTMLDivElement | null>(null);
   const idRef = useRef(0);
   const decomposer = useMemo(() => rand(POOL.filter((i) => /grub|wireworm|maggot|beetle/i.test(i.commonName))) ?? POOL[0], []);
   const options = useMemo(() => shuffle([DECOMP_Q.right, ...DECOMP_Q.wrong]), []);
+
+  const level = Math.min(5, 1 + Math.floor(caught / 6));
+  const fallStep = 2.6 + (level - 1) * 1.1;
+  const spawnMs = Math.max(420, 900 - (level - 1) * 120);
 
   useEffect(() => {
     if (!unlocked || soil >= 100) return;
     const spawn = setInterval(() => {
       idRef.current += 1;
       setItems((it) => [...it, { key: idRef.current, x: Math.random() * 85, y: -8, glyph: rand(FALLING) }]);
-    }, 1400);
+    }, spawnMs);
     const move = setInterval(() => {
-      setItems((it) => it.map((i) => ({ ...i, y: i.y + 1.4 })).filter((i) => i.y < 100));
-    }, 110);
+      setItems((it) => {
+        const moved = it.map((i) => ({ ...i, y: i.y + fallStep }));
+        const kept = moved.filter((i) => i.y < 100);
+        const lost = moved.length - kept.length;
+        if (lost > 0) {
+          setMissed((m) => m + lost);
+          setSoil((s) => Math.max(0, s - 4 * lost));
+          setWarn("Litter piled up on the surface — bare topsoil washes away and loses nutrients!");
+        }
+        return kept;
+      });
+    }, 100);
     return () => { clearInterval(spawn); clearInterval(move); };
-  }, [unlocked, soil]);
+  }, [unlocked, soil, fallStep, spawnMs]);
+
+  useEffect(() => {
+    if (!warn) return;
+    const t = setTimeout(() => setWarn(null), 1600);
+    return () => clearTimeout(t);
+  }, [warn]);
 
   const swipeAt = (clientX: number, clientY: number) => {
     const el = fieldRef.current;
@@ -502,7 +525,10 @@ function DecomposerDash({ onAward }: { onAward: (n: number) => void }) {
     setItems((it) => {
       const kept = it.filter((i) => Math.abs(i.x + 3 - x) > 9 || Math.abs(i.y + 4 - y) > 11);
       const sliced = it.length - kept.length;
-      if (sliced > 0) setBank((b) => Math.min(10, b + sliced));
+      if (sliced > 0) {
+        setBank((b) => Math.min(10, b + sliced));
+        setCaught((c) => c + sliced);
+      }
       return kept;
     });
   };
@@ -547,11 +573,12 @@ function DecomposerDash({ onAward }: { onAward: (n: number) => void }) {
     <div>
       <div className="mb-2 flex items-center justify-between text-sm">
         <span className="font-semibold text-foreground">Compost bank: {bank}/10</span>
-        <span className="text-muted-foreground">Topsoil health: {soil}%</span>
+        <span className="text-muted-foreground">Level {level} · Missed {missed} · Topsoil health: {soil}%</span>
       </div>
       <p className="mb-2 text-xs text-muted-foreground">
-        Swipe across the falling leaves and litter to slice them up — chewed-up litter builds rich <strong>topsoil</strong> that holds water and feeds plant roots.
+        Swipe across the falling leaves and litter to slice them up — chewed-up litter builds rich <strong>topsoil</strong> that holds water and feeds plant roots. Every piece that hits the ground uncomposted erodes 4% of your topsoil health, and the litter falls faster as you level up.
       </p>
+      {warn && <p className="mb-2 text-xs font-semibold text-destructive">⚠️ {warn}</p>}
       <div
         ref={fieldRef}
         onPointerDown={(e) => { setSlicing(true); e.currentTarget.setPointerCapture(e.pointerId); swipeAt(e.clientX, e.clientY); }}
