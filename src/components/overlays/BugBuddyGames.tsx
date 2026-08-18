@@ -466,6 +466,11 @@ const DECOMP_Q = {
   wrong: ["Pollinates flowers", "Eats living crops", "Bites people"],
 };
 const FALLING = ["🍂", "🍁", "🌿", "🪵", "🍄", "🌾"];
+const DECOMP_ROUNDS = [
+  { name: "Backyard compost pile", glyph: "🍂", fact: "Healthy topsoil in a backyard pile feeds worms, microbes, and plant roots." },
+  { name: "Farm field edge", glyph: "🌾", fact: "Rich topsoil on a farm holds water so crops grow strong during dry spells." },
+  { name: "Forest floor", glyph: "🍄", fact: "A healthy forest floor supports trees, mushrooms, and a whole underground ecosystem." },
+];
 
 function DecomposerDash({ onAward }: { onAward: (n: number) => void }) {
   const [unlocked, setUnlocked] = useState(false);
@@ -476,6 +481,8 @@ function DecomposerDash({ onAward }: { onAward: (n: number) => void }) {
   const [trail, setTrail] = useState<{ x: number; y: number }[]>([]);
   const [slicing, setSlicing] = useState(false);
   const [caught, setCaught] = useState(0);
+  const [round, setRound] = useState(0);
+  const [phase, setPhase] = useState<"playing" | "cleared" | "done">("playing");
   const fieldRef = useRef<HTMLDivElement | null>(null);
   const idRef = useRef(0);
   const decomposer = useMemo(() => rand(POOL.filter((i) => /grub|wireworm|maggot|beetle/i.test(i.commonName))) ?? POOL[0], []);
@@ -486,16 +493,16 @@ function DecomposerDash({ onAward }: { onAward: (n: number) => void }) {
   const spawnMs = Math.max(600, 1200 - (level - 1) * 140);
 
   useEffect(() => {
-    if (!unlocked || soil >= 100) return;
+    if (!unlocked || phase !== "playing") return;
     const spawn = setInterval(() => {
       idRef.current += 1;
-      setItems((it) => [...it, { key: idRef.current, x: Math.random() * 85, y: -8, glyph: rand(FALLING) }]);
+      setItems((it) => [...it, { key: idRef.current, x: Math.random() * 85, y: -8, glyph: DECOMP_ROUNDS[round].glyph }]);
     }, spawnMs);
     const move = setInterval(() => {
       setItems((it) => it.map((i) => ({ ...i, y: i.y + fallStep })).filter((i) => i.y < 100));
     }, 100);
     return () => { clearInterval(spawn); clearInterval(move); };
-  }, [unlocked, soil, fallStep, spawnMs]);
+  }, [unlocked, phase, fallStep, spawnMs, round]);
 
   useEffect(() => {
     if (bank >= 10) {
@@ -504,6 +511,15 @@ function DecomposerDash({ onAward }: { onAward: (n: number) => void }) {
       onAward(3);
     }
   }, [bank, onAward]);
+
+  useEffect(() => {
+    if (soil >= 100 && phase === "playing") {
+      setPhase("cleared");
+      setItems([]);
+      setTrail([]);
+      onAward(5);
+    }
+  }, [soil, phase, onAward]);
 
   const swipeAt = (clientX: number, clientY: number) => {
     const el = fieldRef.current;
@@ -528,6 +544,29 @@ function DecomposerDash({ onAward }: { onAward: (n: number) => void }) {
     const t = setTimeout(() => setTrail((p) => p.slice(1)), 90);
     return () => clearTimeout(t);
   }, [trail]);
+
+  const nextRound = () => {
+    if (round + 1 >= DECOMP_ROUNDS.length) {
+      setPhase("done");
+    } else {
+      setRound((r) => r + 1);
+      setSoil(0);
+      setBank(0);
+      setPhase("playing");
+      setItems([]);
+      setTrail([]);
+    }
+  };
+
+  const restart = () => {
+    setRound(0);
+    setSoil(0);
+    setBank(0);
+    setCaught(0);
+    setItems([]);
+    setTrail([]);
+    setPhase("playing");
+  };
 
   if (!unlocked)
     return (
@@ -559,14 +598,45 @@ function DecomposerDash({ onAward }: { onAward: (n: number) => void }) {
       </div>
     );
 
+  if (phase === "done") {
+    return (
+      <div className="rounded-xl border border-primary/30 bg-primary/5 p-6 text-center">
+        <div className="text-4xl">🌱</div>
+        <div className="mt-2 text-xl font-bold text-foreground">Ecosystem restored!</div>
+        <p className="mt-1 text-sm text-muted-foreground">
+          You built healthy topsoil across three habitats. Healthy topsoil supports plants, insects, and the whole ecosystem.
+        </p>
+        <button onClick={restart} className="mt-4 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90">
+          Play again
+        </button>
+      </div>
+    );
+  }
+
+  if (phase === "cleared") {
+    return (
+      <div className="rounded-xl border border-success/30 bg-success/10 p-6 text-center">
+        <div className="text-4xl">🎉</div>
+        <div className="mt-2 text-xl font-bold text-foreground">{DECOMP_ROUNDS[round].name} — topsoil healthy!</div>
+        <p className="mt-2 text-sm text-foreground">{DECOMP_ROUNDS[round].fact}</p>
+        <button
+          onClick={nextRound}
+          className="mt-4 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+        >
+          {round + 1 >= DECOMP_ROUNDS.length ? "Finish game 🌟" : `Next habitat →`}
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="mb-2 flex items-center justify-between text-sm">
         <span className="font-semibold text-foreground">Compost bank: {bank}/10</span>
-        <span className="text-muted-foreground">Level {level} · Topsoil health: {soil}%</span>
+        <span className="text-muted-foreground">Habitat {round + 1} of {DECOMP_ROUNDS.length} · Level {level} · Topsoil health: {soil}%</span>
       </div>
       <p className="mb-2 text-xs text-muted-foreground">
-        Swipe across the falling leaves and litter to slice them up — chewed-up litter builds rich <strong>topsoil</strong> that holds water and feeds plant roots. Collect 10 pieces and they automatically return to the soil. The litter falls a little faster as you level up.
+        Swipe across the falling leaves and litter to slice them up — chewed-up litter builds rich <strong>topsoil</strong> that holds water and feeds plant roots. Collect 10 pieces and they automatically return to the soil. Build healthy topsoil to support the ecosystem!
       </p>
       <div
         ref={fieldRef}
@@ -602,8 +672,8 @@ function DecomposerDash({ onAward }: { onAward: (n: number) => void }) {
         <div className="absolute inset-x-0 bottom-0 bg-[hsl(30_35%_30%)]/70 transition-all" style={{ height: `${soil * 0.6}%` }} />
         <div className="absolute bottom-1 left-2 text-xs font-semibold text-background">🌱 topsoil</div>
       </div>
-      {soil >= 100 && (
-        <div className="mt-3 text-sm font-semibold text-success">🎉 Healthy topsoil! Rich compost means strong roots and less erosion.</div>
+      {soil >= 75 && (
+        <div className="mt-3 text-sm font-semibold text-success">Topsoil is getting healthy — it will soon support a living ecosystem!</div>
       )}
     </div>
   );
