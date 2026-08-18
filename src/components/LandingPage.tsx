@@ -166,7 +166,7 @@ export function LandingPage(p: Props) {
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex items-center gap-3">
-      <span className="h-px w-8 bg-accent" />
+      <span className="h-px w-8 bg-primary" />
       <span className="text-[11px] font-bold uppercase tracking-[0.3em] text-muted-foreground">{children}</span>
     </div>
   );
@@ -193,7 +193,7 @@ function SmallTile({ icon: Icon, title, desc, onClick }: { icon: typeof Bug; tit
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-3 rounded-md border border-border bg-card p-3.5 text-left transition hover:border-accent hover:bg-muted/40"
+      className="flex items-center gap-3 rounded-md border border-border bg-card p-3.5 text-left transition hover:border-primary hover:bg-muted/40"
     >
       <Icon className="h-5 w-5 shrink-0 text-primary" />
       <div>
@@ -206,10 +206,10 @@ function SmallTile({ icon: Icon, title, desc, onClick }: { icon: typeof Bug; tit
 
 function Stat({ icon: Icon, label, value }: { icon: typeof Bug; label: string; value: number }) {
   return (
-    <div className="inline-flex items-center gap-2 border-l-2 border-accent pl-3 text-sm">
-      <Icon className="h-4 w-4 text-accent" />
+    <div className="inline-flex items-center gap-2 border-l-2 border-primary-foreground pl-3 text-sm">
+      <Icon className="h-4 w-4 text-primary-foreground" />
       <span className="font-display text-lg font-extrabold text-primary-foreground">{value}</span>
-      <span className="text-xs uppercase tracking-wider text-primary-foreground/70">{label}</span>
+      <span className="text-xs uppercase tracking-wider text-primary-foreground/80">{label}</span>
     </div>
   );
 }
