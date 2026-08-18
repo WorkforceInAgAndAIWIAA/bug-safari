@@ -512,12 +512,6 @@ function DecomposerDash({ onAward }: { onAward: (n: number) => void }) {
     }
   }, [bank, onAward]);
 
-  useEffect(() => {
-    if (!warn) return;
-    const t = setTimeout(() => setWarn(null), 1600);
-    return () => clearTimeout(t);
-  }, [warn]);
-
   const swipeAt = (clientX: number, clientY: number) => {
     const el = fieldRef.current;
     if (!el) return;
