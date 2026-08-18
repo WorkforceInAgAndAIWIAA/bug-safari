@@ -761,26 +761,111 @@ type KnightCard = {
   icon: LucideIcon;
   helpful: boolean;
   reason: string;
+  bullets: string[];
 };
 
 const HELPFUL_KNIGHTS: KnightCard[] = [
-  { name: "Sir Chomps-a-Lot", icon: Bug, helpful: true, reason: "eats plant-munching pests so plants can grow strong" },
-  { name: "Lady Lace-a-Lot", icon: Target, helpful: true, reason: "traps soft, sap-sucking pests in her sticky lace" },
-  { name: "Count Crunch", icon: Sword, helpful: true, reason: "crunches caterpillars and beetle pests with mighty jaws" },
-  { name: "Dame Dash", icon: Zap, helpful: true, reason: "runs fast and catches pests before they escape" },
-  { name: "Sir Sting-a-Lot", icon: Shield, helpful: true, reason: "stops pest eggs from hatching, protecting the garden" },
+  {
+    name: "Sir Chomps-a-Lot",
+    icon: Bug,
+    helpful: true,
+    reason: "eats plant-munching pests so plants can grow strong",
+    bullets: ["Hunts plant-eating pests like beetles and caterpillars", "Protects leaves and roots from chewing damage", "Helps plants stay strong so the garden can thrive"],
+  },
+  {
+    name: "Lady Lace-a-Lot",
+    icon: Target,
+    helpful: true,
+    reason: "traps soft, sap-sucking pests in her sticky lace",
+    bullets: ["Lays eggs that hatch into pest-eating larvae", "Catches soft, sap-sucking pests in sticky silk", "Keeps aphid and mite populations from exploding"],
+  },
+  {
+    name: "Count Crunch",
+    icon: Sword,
+    helpful: true,
+    reason: "crunches caterpillars and beetle pests with mighty jaws",
+    bullets: ["Crunches through caterpillars and beetle pests", "Breaks up pest groups before they can spread", "Returns nutrients to the soil when finished"],
+  },
+  {
+    name: "Dame Dash",
+    icon: Zap,
+    helpful: true,
+    reason: "runs fast and catches pests before they escape",
+    bullets: ["Sprints after hopping and flying pests", "Catches pests before they can lay eggs", "Patrols the garden day and night"],
+  },
+  {
+    name: "Sir Sting-a-Lot",
+    icon: Shield,
+    helpful: true,
+    reason: "stops pest eggs from hatching, protecting the garden",
+    bullets: ["Finds pest eggs and lays eggs inside them", "Stops new pests from hatching", "Works quietly in the background like a secret guard"],
+  },
 ];
 
 const UNHELPFUL_KNIGHTS: KnightCard[] = [
-  { name: "Sir Leaf-Sampler", icon: Leaf, helpful: false, reason: "eats the same plants as the pest, so the garden gets doubly damaged" },
-  { name: "Lord Wilt-Worsener", icon: AlertTriangle, helpful: false, reason: "spreads sickness that makes plants weaker" },
-  { name: "Baron Root-Nibbler", icon: Carrot, helpful: false, reason: "munches roots underground, hurting plants from below" },
-  { name: "Dame Distracted", icon: Flower2, helpful: false, reason: "spends all day smelling flowers and forgets to hunt pests" },
-  { name: "Sir Snooze-a-Lot", icon: Moon, helpful: false, reason: "naps under a leaf while pests march past the castle" },
-  { name: "Count Confused", icon: HelpCircle, helpful: false, reason: "chases the wrong bugs and leaves the real pests alone" },
-  { name: "Lady Lazy", icon: Armchair, helpful: false, reason: "too comfy to patrol the castle garden" },
-  { name: "Sir Sap-Sipper", icon: Bug, helpful: false, reason: "drinks plant sap just like the pest, so plants stay thirsty" },
-  { name: "Baron Bystander", icon: Eye, helpful: false, reason: "watches the pests but never stops them" },
+  {
+    name: "Sir Leaf-Sampler",
+    icon: Leaf,
+    helpful: false,
+    reason: "eats the same plants as the pest, so the garden gets doubly damaged",
+    bullets: ["Eats the same leaves the pest is damaging", "Doubles the harm to garden plants", "Competes with crops for food and sunlight"],
+  },
+  {
+    name: "Lord Wilt-Worsener",
+    icon: AlertTriangle,
+    helpful: false,
+    reason: "spreads sickness that makes plants weaker",
+    bullets: ["Carries plant sickness from leaf to leaf", "Makes plants yellow, wilt, and die faster", "Weakens the whole garden, not just one plant"],
+  },
+  {
+    name: "Baron Root-Nibbler",
+    icon: Carrot,
+    helpful: false,
+    reason: "munches roots underground, hurting plants from below",
+    bullets: ["Chews on roots underground where no one sees", "Blocks plants from drinking water", "Makes stems wobble and fall over"],
+  },
+  {
+    name: "Dame Distracted",
+    icon: Flower2,
+    helpful: false,
+    reason: "spends all day smelling flowers and forgets to hunt pests",
+    bullets: ["Loves visiting flowers for nectar", "Forgets to patrol for pests", "Lets invaders walk right past the castle gate"],
+  },
+  {
+    name: "Sir Snooze-a-Lot",
+    icon: Moon,
+    helpful: false,
+    reason: "naps under a leaf while pests march past the castle",
+    bullets: ["Sleeps under leaves during the day", "Misses pests marching into the garden", "Wakes up too late to help"],
+  },
+  {
+    name: "Count Confused",
+    icon: HelpCircle,
+    helpful: false,
+    reason: "chases the wrong bugs and leaves the real pests alone",
+    bullets: ["Chases harmless bugs instead of pests", "Wastes energy on the wrong target", "Leaves the real invaders alone"],
+  },
+  {
+    name: "Lady Lazy",
+    icon: Armchair,
+    helpful: false,
+    reason: "too comfy to patrol the castle garden",
+    bullets: ["Stays in one spot all day", "Never patrols the castle garden", "Lets pests settle in and multiply"],
+  },
+  {
+    name: "Sir Sap-Sipper",
+    icon: Bug,
+    helpful: false,
+    reason: "drinks plant sap just like the pest, so plants stay thirsty",
+    bullets: ["Drinks the same plant juices as the pest", "Makes leaves curl and turn yellow", "Competes with plants for their own food"],
+  },
+  {
+    name: "Baron Bystander",
+    icon: Eye,
+    helpful: false,
+    reason: "watches the pests but never stops them",
+    bullets: ["Watches pests but never stops them", "Does not hunt or trap invaders", "The garden keeps getting damaged"],
+  },
 ];
 
 function helpfulKnightFor(pest: Insect): KnightCard {
