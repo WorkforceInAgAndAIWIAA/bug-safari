@@ -113,9 +113,9 @@ export function LandingPage(p: Props) {
           <section>
             <SectionLabel>Choose your path</SectionLabel>
             <div className="mt-8 grid gap-6 sm:grid-cols-3">
-              <BigTile icon={BookOpen} title="Learn" desc="Topic guides by grade level" tone="from-accent/40 to-secondary/25" onClick={() => setDest("learn")} />
-              <BigTile icon={Gamepad2} title="Practice" desc="Mini-games and drills" tone="from-secondary/40 to-primary/20" onClick={() => setDest("practice")} />
-              <BigTile icon={Sprout} title="Play" desc="Official scored runs" tone="from-primary/25 to-accent/25" onClick={() => setDest("play")} />
+              <BigTile icon={BookOpen} title="Learn" desc="Topic guides by grade level" tone="from-primary/50 to-secondary/30" onClick={() => setDest("learn")} />
+              <BigTile icon={Gamepad2} title="Practice" desc="Mini-games and drills" tone="from-secondary/50 to-primary/30" onClick={() => setDest("practice")} />
+              <BigTile icon={Sprout} title="Play" desc="Official scored runs" tone="from-primary/40 to-accent/30" onClick={() => setDest("play")} />
             </div>
           </section>
 
