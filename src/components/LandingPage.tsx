@@ -144,9 +144,9 @@ export function LandingPage(p: Props) {
               <button
                 key={l.id}
                 onClick={() => choose(l.id)}
-                className="group relative overflow-hidden rounded-md border border-border bg-card p-6 text-left transition hover:-translate-y-0.5 hover:border-accent hover:shadow-lg"
+                className="group relative overflow-hidden rounded-md border border-border bg-card p-6 text-left transition hover:-translate-y-0.5 hover:border-primary hover:shadow-lg"
               >
-                <span className="absolute inset-x-0 top-0 h-1 origin-left scale-x-0 bg-accent transition-transform group-hover:scale-x-100" />
+                <span className="absolute inset-x-0 top-0 h-1 origin-left scale-x-0 bg-primary transition-transform group-hover:scale-x-100" />
                 <div className="font-display text-4xl font-black tracking-tighter text-primary">{l.title}</div>
                 <div className="mt-1 text-xs font-bold uppercase tracking-[0.2em] text-accent">{l.sub}</div>
                 <p className="mt-3 text-xs leading-relaxed text-muted-foreground">{l.blurb}</p>
