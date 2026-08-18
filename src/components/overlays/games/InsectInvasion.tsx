@@ -464,7 +464,7 @@ function FinalLevel({ finish, addScore, bump }: { finish: (stars: number) => voi
           <Btn tone="primary" onClick={() => {
             const nextIdx = idx + 1;
             setMsg(null);
-            if (nextIdx >= MISSIONS.length) finishNow(right + (msg.ok ? 0 : 0));
+            if (nextIdx >= MISSIONS.length) finishNow(right);
             else setIdx(nextIdx);
           }}>
             {idx + 1 >= MISSIONS.length ? "Finish mission" : "Next mission"} <ArrowRight className="ml-1 inline h-3 w-3" />
