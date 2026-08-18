@@ -643,7 +643,7 @@ function DecomposerDash({ onAward }: { onAward: (n: number) => void }) {
   return (
     <div>
       <div className="mb-2 flex items-center justify-between text-sm">
-        <span className="font-semibold text-foreground">Compost bank: {bank}/10</span>
+        <span className="font-semibold text-foreground">Compost bank: {bank}/8</span>
         <span className="text-muted-foreground">Habitat {round + 1} of {DECOMP_ROUNDS.length} · Level {level} · Topsoil health: {soil}%</span>
       </div>
       <p className="mb-2 text-xs text-muted-foreground">
