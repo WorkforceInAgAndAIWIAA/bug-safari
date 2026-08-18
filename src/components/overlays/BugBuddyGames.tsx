@@ -1071,15 +1071,34 @@ function BeneficialSort({ onAward }: { onAward: (n: number) => void }) {
     [field],
   );
 
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
   useEffect(() => {
     if (phase !== "collect") return;
     setLeft(15);
-    const t = setInterval(() => setLeft((s) => {
-      if (s <= 1) { clearInterval(t); setPhase("sort"); return 0; }
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => setLeft((s) => {
+      if (s <= 1) {
+        if (timerRef.current) clearInterval(timerRef.current);
+        timerRef.current = null;
+        setPhase("sort");
+        return 0;
+      }
       return s - 1;
     }), 1000);
-    return () => clearInterval(t);
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+      timerRef.current = null;
+    };
   }, [phase, field]);
+
+  useEffect(() => {
+    if (phase === "collect" && caught.length === BUGS_PER_FIELD) {
+      if (timerRef.current) clearInterval(timerRef.current);
+      timerRef.current = null;
+      setPhase("sort");
+    }
+  }, [phase, caught.length]);
 
   const submitSort = () => {
     const right = caught.filter((i) => answers[i.id] === isHelper(i)).length;
