@@ -2175,7 +2175,7 @@ export const BUG_BUDDY_GAMES: BBGame[] = [
   { id: "web-of-life", name: "Web of Life: Story of the Meadow", emoji: "🕸️", topic: "Food webs", blurb: "Explore a meadow, build food chains into a web, then predict what happens when things change.", render: (a, onClose) => <WebOfLife onAward={a} onClose={onClose} /> },
   { id: "pull-the-string", name: "Pull the String", emoji: "🪢", topic: "Ecosystem balance", blurb: "Tug one strand of the web, watch the ripple, then build and rescue a balanced ecosystem.", render: (a, onClose) => <PullTheString onAward={a} onClose={onClose} /> },
   { id: "find-disease", name: "Find the Disease", emoji: "🦠", topic: "Disease carriers", blurb: "Spot vectors, then name what they spread.", render: (a) => <FindTheDisease onAward={a} /> },
-  { id: "insect-travel", name: "Insect Travel", emoji: "🧳", topic: "Dispersal", blurb: "How — and with what body part — do they move?", render: (a) => <InsectTravel onAward={a} /> },
+  { id: "insect-travel", name: "Insect Travel", emoji: "🧳", topic: "Dispersal", blurb: "Be the insect: pick how to travel — wind, wings, water, animals or a ride with people.", render: (a) => <InsectTravel onAward={a} /> },
   { id: "life-stages", name: "Life Stages Sequence", emoji: "🥚", topic: "Life stages", blurb: "Put the life stages in order.", render: (a) => <LifeStagesSequence onAward={a} /> },
   { id: "build-insect", name: "Build an Insect", emoji: "🧱", topic: "3-part body plan", blurb: "Head, thorax, abdomen — in order.", render: (a) => <BuildAnInsect onAward={a} /> },
   { id: "head-position", name: "Head Position Match", emoji: "🙂", topic: "Head position", blurb: "Match insects to their head positions.", render: (a) => <HeadPositionMatch onAward={a} /> },
