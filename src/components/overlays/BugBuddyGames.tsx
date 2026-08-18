@@ -609,16 +609,9 @@ function DecomposerDash({ onAward }: { onAward: (n: number) => void }) {
         <div className="absolute inset-x-0 bottom-0 bg-[hsl(30_35%_30%)]/70 transition-all" style={{ height: `${soil * 0.6}%` }} />
         <div className="absolute bottom-1 left-2 text-xs font-semibold text-background">🌱 topsoil</div>
       </div>
-      <div className="mt-3 flex items-center gap-3">
-        <Btn
-          tone="primary"
-          disabled={bank < 10 || soil >= 100}
-          onClick={() => { setBank(0); setSoil((s) => Math.min(100, s + 25)); onAward(3); }}
-        >
-          Return compost to the topsoil
-        </Btn>
-        {soil >= 100 && <span className="text-sm font-semibold text-success">🎉 Healthy topsoil! Rich compost means strong roots and less erosion.</span>}
-      </div>
+      {soil >= 100 && (
+        <div className="mt-3 text-sm font-semibold text-success">🎉 Healthy topsoil! Rich compost means strong roots and less erosion.</div>
+      )}
     </div>
   );
 }
