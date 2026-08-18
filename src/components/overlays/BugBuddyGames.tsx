@@ -484,8 +484,8 @@ function DecomposerDash({ onAward }: { onAward: (n: number) => void }) {
   const options = useMemo(() => shuffle([DECOMP_Q.right, ...DECOMP_Q.wrong]), []);
 
   const level = Math.min(5, 1 + Math.floor(caught / 6));
-  const fallStep = 2.6 + (level - 1) * 1.1;
-  const spawnMs = Math.max(420, 900 - (level - 1) * 120);
+  const fallStep = 1.8 + (level - 1) * 0.7;
+  const spawnMs = Math.max(600, 1200 - (level - 1) * 140);
 
   useEffect(() => {
     if (!unlocked || soil >= 100) return;
