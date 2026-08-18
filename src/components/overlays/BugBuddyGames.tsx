@@ -462,7 +462,7 @@ function MixAndMatch({ onAward }: { onAward: (n: number) => void }) {
 /* ================================================================== */
 const DECOMP_Q = {
   q: "What does a decomposer insect do?",
-  right: "Breaks down dead leaves and plants into soil",
+  right: "Breaks down dead leaves and plants into healthy topsoil",
   wrong: ["Pollinates flowers", "Eats living crops", "Bites people"],
 };
 const FALLING = ["🍂", "🍁", "🌿", "🪵", "🍄", "🌾"];
@@ -473,6 +473,9 @@ function DecomposerDash({ onAward }: { onAward: (n: number) => void }) {
   const [items, setItems] = useState<{ key: number; x: number; y: number; glyph: string }[]>([]);
   const [bank, setBank] = useState(0);
   const [soil, setSoil] = useState(0);
+  const [trail, setTrail] = useState<{ x: number; y: number }[]>([]);
+  const [slicing, setSlicing] = useState(false);
+  const fieldRef = useRef<HTMLDivElement | null>(null);
   const idRef = useRef(0);
   const decomposer = useMemo(() => rand(POOL.filter((i) => /grub|wireworm|maggot|beetle/i.test(i.commonName))) ?? POOL[0], []);
   const options = useMemo(() => shuffle([DECOMP_Q.right, ...DECOMP_Q.wrong]), []);
@@ -482,12 +485,33 @@ function DecomposerDash({ onAward }: { onAward: (n: number) => void }) {
     const spawn = setInterval(() => {
       idRef.current += 1;
       setItems((it) => [...it, { key: idRef.current, x: Math.random() * 85, y: -8, glyph: rand(FALLING) }]);
-    }, 700);
+    }, 1400);
     const move = setInterval(() => {
-      setItems((it) => it.map((i) => ({ ...i, y: i.y + 4 })).filter((i) => i.y < 100));
-    }, 90);
+      setItems((it) => it.map((i) => ({ ...i, y: i.y + 1.4 })).filter((i) => i.y < 100));
+    }, 110);
     return () => { clearInterval(spawn); clearInterval(move); };
   }, [unlocked, soil]);
+
+  const swipeAt = (clientX: number, clientY: number) => {
+    const el = fieldRef.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const x = ((clientX - r.left) / r.width) * 100;
+    const y = ((clientY - r.top) / r.height) * 100;
+    setTrail((t) => [...t.slice(-14), { x, y }]);
+    setItems((it) => {
+      const kept = it.filter((i) => Math.abs(i.x + 3 - x) > 9 || Math.abs(i.y + 4 - y) > 11);
+      const sliced = it.length - kept.length;
+      if (sliced > 0) setBank((b) => Math.min(10, b + sliced));
+      return kept;
+    });
+  };
+
+  useEffect(() => {
+    if (!trail.length) return;
+    const t = setTimeout(() => setTrail((p) => p.slice(1)), 90);
+    return () => clearTimeout(t);
+  }, [trail]);
 
   if (!unlocked)
     return (
@@ -523,24 +547,44 @@ function DecomposerDash({ onAward }: { onAward: (n: number) => void }) {
     <div>
       <div className="mb-2 flex items-center justify-between text-sm">
         <span className="font-semibold text-foreground">Compost bank: {bank}/10</span>
-        <span className="text-muted-foreground">Soil filled: {soil}%</span>
+        <span className="text-muted-foreground">Topsoil health: {soil}%</span>
       </div>
-      <div className="relative h-80 overflow-hidden rounded-xl border border-border bg-gradient-to-b from-sky-200/40 to-secondary/30">
+      <p className="mb-2 text-xs text-muted-foreground">
+        Swipe across the falling leaves and litter to slice them up — chewed-up litter builds rich <strong>topsoil</strong> that holds water and feeds plant roots.
+      </p>
+      <div
+        ref={fieldRef}
+        onPointerDown={(e) => { setSlicing(true); e.currentTarget.setPointerCapture(e.pointerId); swipeAt(e.clientX, e.clientY); }}
+        onPointerMove={(e) => { if (slicing) swipeAt(e.clientX, e.clientY); }}
+        onPointerUp={() => { setSlicing(false); setTrail([]); }}
+        onPointerLeave={() => { setSlicing(false); setTrail([]); }}
+        className="relative h-80 touch-none select-none overflow-hidden rounded-xl border border-border bg-gradient-to-b from-sky-200/40 to-secondary/30"
+      >
         {items.map((i) => (
-          <button
+          <div
             key={i.key}
-            onClick={() => {
-              setItems((it) => it.filter((x) => x.key !== i.key));
-              setBank((b) => Math.min(10, b + 1));
-            }}
-            className="absolute text-3xl transition-transform hover:scale-125"
+            className="pointer-events-none absolute text-3xl"
             style={{ left: `${i.x}%`, top: `${i.y}%` }}
           >
             {i.glyph}
-          </button>
+          </div>
         ))}
+        {trail.length > 1 && (
+          <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <polyline
+              points={trail.map((p) => `${p.x},${p.y}`).join(" ")}
+              fill="none"
+              stroke="currentColor"
+              className="text-primary"
+              strokeWidth={1.2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              opacity={0.8}
+            />
+          </svg>
+        )}
         <div className="absolute inset-x-0 bottom-0 bg-[hsl(30_35%_30%)]/70 transition-all" style={{ height: `${soil * 0.6}%` }} />
-        <div className="absolute bottom-1 left-2 text-xs font-semibold text-background">🌱 soil</div>
+        <div className="absolute bottom-1 left-2 text-xs font-semibold text-background">🌱 topsoil</div>
       </div>
       <div className="mt-3 flex items-center gap-3">
         <Btn
@@ -548,9 +592,9 @@ function DecomposerDash({ onAward }: { onAward: (n: number) => void }) {
           disabled={bank < 10 || soil >= 100}
           onClick={() => { setBank(0); setSoil((s) => Math.min(100, s + 25)); onAward(3); }}
         >
-          Return compost to the soil
+          Return compost to the topsoil
         </Btn>
-        {soil >= 100 && <span className="text-sm font-semibold text-success">🎉 The soil is full of rich compost!</span>}
+        {soil >= 100 && <span className="text-sm font-semibold text-success">🎉 Healthy topsoil! Rich compost means strong roots and less erosion.</span>}
       </div>
     </div>
   );
