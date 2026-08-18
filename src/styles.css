@@ -19,6 +19,8 @@
  */
 
 @theme inline {
+  --font-sans: "Figtree", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Outfit", ui-sans-serif, system-ui, sans-serif;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -64,42 +66,42 @@
 }
 
 :root {
-  --radius: 0.625rem;
-  /* Entomology theme: warm amber + deep forest, on a soft parchment background */
-  --background: oklch(0.985 0.012 95);
-  --foreground: oklch(0.22 0.04 80);
+  --radius: 0.5rem;
+  /* Steel & Amber: deep slate blue with a gold accent on warm paper */
+  --background: oklch(0.968 0.006 90);
+  --foreground: oklch(0.26 0.035 245);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.22 0.04 80);
+  --card-foreground: oklch(0.26 0.035 245);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.22 0.04 80);
-  --primary: oklch(0.42 0.08 145);          /* deep forest green */
-  --primary-foreground: oklch(0.985 0.012 95);
-  --secondary: oklch(0.72 0.16 70);         /* warm amber */
-  --secondary-foreground: oklch(0.22 0.04 80);
-  --muted: oklch(0.94 0.02 85);
-  --muted-foreground: oklch(0.45 0.03 80);
-  --accent: oklch(0.78 0.18 60);            /* honey */
-  --accent-foreground: oklch(0.22 0.04 80);
+  --popover-foreground: oklch(0.26 0.035 245);
+  --primary: oklch(0.38 0.055 244);         /* deep steel */
+  --primary-foreground: oklch(0.975 0.006 90);
+  --secondary: oklch(0.53 0.088 246);       /* mid steel blue */
+  --secondary-foreground: oklch(0.98 0.004 90);
+  --muted: oklch(0.93 0.008 90);
+  --muted-foreground: oklch(0.5 0.02 245);
+  --accent: oklch(0.81 0.13 85);            /* amber */
+  --accent-foreground: oklch(0.26 0.035 245);
   --destructive: oklch(0.55 0.22 27);
-  --destructive-foreground: oklch(0.985 0.012 95);
-  --border: oklch(0.88 0.02 85);
-  --input: oklch(0.88 0.02 85);
-  --ring: oklch(0.72 0.16 70);
+  --destructive-foreground: oklch(0.985 0.006 90);
+  --border: oklch(0.885 0.008 90);
+  --input: oklch(0.885 0.008 90);
+  --ring: oklch(0.81 0.13 85);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.97 0.015 90);
-  --sidebar-foreground: oklch(0.22 0.04 80);
-  --sidebar-primary: oklch(0.42 0.08 145);
-  --sidebar-primary-foreground: oklch(0.985 0.012 95);
-  --sidebar-accent: oklch(0.94 0.02 85);
-  --sidebar-accent-foreground: oklch(0.22 0.04 80);
-  --sidebar-border: oklch(0.88 0.02 85);
-  --sidebar-ring: oklch(0.72 0.16 70);
-  --success: oklch(0.62 0.16 145);
-  --success-foreground: oklch(0.985 0.012 95);
+  --sidebar: oklch(0.955 0.006 90);
+  --sidebar-foreground: oklch(0.26 0.035 245);
+  --sidebar-primary: oklch(0.38 0.055 244);
+  --sidebar-primary-foreground: oklch(0.975 0.006 90);
+  --sidebar-accent: oklch(0.93 0.008 90);
+  --sidebar-accent-foreground: oklch(0.26 0.035 245);
+  --sidebar-border: oklch(0.885 0.008 90);
+  --sidebar-ring: oklch(0.81 0.13 85);
+  --success: oklch(0.58 0.13 155);
+  --success-foreground: oklch(0.985 0.006 90);
 }
 
 .dark {
@@ -145,7 +147,30 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
   }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+}
+
+/* Thin amber tick rules flanking a label — from the editorial reference */
+@utility rule-ticks {
+  position: relative;
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 1.5rem;
+    height: 1px;
+    background: var(--color-accent);
+  }
+  &::before { left: -2.25rem; }
+  &::after { right: -2.25rem; }
 }
 
 @keyframes k5-shake {

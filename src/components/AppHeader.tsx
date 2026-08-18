@@ -18,10 +18,11 @@ const NavBtn = ({ icon: Icon, label, onClick }: { icon: typeof Bug; label: strin
   <button
     type="button"
     onClick={onClick}
-    className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm font-medium text-foreground/80 transition hover:bg-muted hover:text-foreground"
+    className="group relative inline-flex items-center gap-1.5 px-3 py-2 text-[13px] font-semibold uppercase tracking-wider text-foreground/70 transition hover:text-foreground"
   >
-    <Icon className="h-4 w-4" />
+    <Icon className="h-3.5 w-3.5 text-primary/60 transition group-hover:text-accent" />
     <span className="hidden sm:inline">{label}</span>
+    <span className="pointer-events-none absolute inset-x-2 bottom-1 h-px origin-left scale-x-0 bg-accent transition-transform duration-200 group-hover:scale-x-100" />
   </button>
 );
 
@@ -55,26 +56,29 @@ function HeaderBackdrop() {
           style={{ opacity: i === idx ? 0.35 : 0 }}
         />
       ))}
-      <div className="absolute inset-0 bg-background/70" />
+      <div className="absolute inset-0 bg-background/80" />
+      <div className="absolute inset-0 bg-gradient-to-r from-background via-background/60 to-background/85" />
     </div>
   );
 }
 
 export function AppHeader(props: Props) {
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-background/70 backdrop-blur">
+    <header className="sticky top-0 z-50 border-b border-border bg-background/75 backdrop-blur">
       <HeaderBackdrop />
-      <div className="relative mx-auto flex max-w-7xl items-center justify-between gap-2 px-4 py-3">
+      <div className="relative mx-auto flex max-w-7xl items-center justify-between gap-2 px-6 py-3">
         <button onClick={props.onHome} className="flex items-center gap-2 text-left">
-          <span className="grid h-9 w-9 place-items-center rounded-lg bg-primary text-primary-foreground">
-            <Bug className="h-5 w-5" />
+          <span className="grid h-9 w-9 place-items-center rounded-md bg-primary text-primary-foreground">
+            <Bug className="h-4.5 w-4.5" />
           </span>
           <span className="flex flex-col leading-tight">
-            <span className="text-base font-bold tracking-tight text-foreground">EntoQuest</span>
-            <span className="text-[10px] uppercase tracking-widest text-muted-foreground">108 species · K–College</span>
+            <span className="font-display text-lg font-extrabold tracking-tight text-foreground">
+              Ento<span className="text-accent">Quest</span>
+            </span>
+            <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">108 species · K–College</span>
           </span>
         </button>
-        <nav className="flex items-center gap-0.5">
+        <nav className="flex items-center gap-0">
           <NavBtn icon={BookOpen} label="Learn" onClick={props.onOpenLearning} />
           <NavBtn icon={Gamepad2} label="Practice" onClick={props.onOpenPractice} />
           <NavBtn icon={Sprout} label="Farm" onClick={props.onOpenFarm} />
