@@ -56,8 +56,8 @@ function HeaderBackdrop() {
           style={{ opacity: i === idx ? 0.35 : 0 }}
         />
       ))}
-      <div className="absolute inset-0 bg-background/80" />
-      <div className="absolute inset-0 bg-gradient-to-r from-background via-background/60 to-background/85" />
+      <div className="absolute inset-0 bg-background/45" />
+      <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-background/35 to-background/75" />
     </div>
   );
 }
