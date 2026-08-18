@@ -763,79 +763,114 @@ function predatorsFor(pest: Insect): Insect[] {
   return found.length ? found : helpers.slice(0, 3);
 }
 
+function pestStory(pest: Insect): string[] {
+  const name = pest.commonName;
+  const lines = [
+    `The ${name} has marched up to the castle gate!`,
+    `It attacks the royal garden of ${pest.hosts}.`,
+  ];
+  if (/aphid/i.test(name)) lines.push("Aphids sip sugary sap with a straw-like mouth, so leaves curl and get sticky.");
+  else if (/worm|caterpillar|moth|borer/i.test(name)) lines.push("This one is a hungry caterpillar that chews big holes in leaves and stems.");
+  else if (/beetle|weevil|rootworm/i.test(name)) lines.push("Beetles have strong chewing jaws that bite leaves and roots.");
+  else if (/hopper|bug|thrips|mite/i.test(name)) lines.push("It pokes the plant and drinks its juices, leaving spots and wilting.");
+  else lines.push("It feeds on the plants the kingdom needs for food.");
+  if (/invasive/i.test(pest.role)) lines.push("It is an invasive pest — it came from far away, so few knights here know how to stop it.");
+  return lines;
+}
+
 function PredatorVsPest({ onAward }: { onAward: (n: number) => void }) {
   const TOTAL = 5;
   const [round, setRound] = useState(0);
   const [score, setScore] = useState(0);
-  const [stage, setStage] = useState<"pick" | "quiz">("pick");
+  const [stage, setStage] = useState<"story" | "pick" | "won">("story");
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const pest = useMemo(() => rand(pests), [round]);
   const good = useMemo(() => predatorsFor(pest), [pest]);
-  const choices = useMemo(() => shuffle([good[0], ...shuffle(pests.filter((p) => p.id !== pest.id)).slice(0, 2)]), [pest, good]);
-  const quiz = useMemo(
-    () => ({
-      q: `What does the ${good[0].commonName} do in a field?`,
-      right: "It eats pest insects and protects the crop",
-      wrong: ["It chews holes in leaves", "It spreads weed seeds"],
-    }),
-    [good],
+  const knight = good[0];
+  // Only two choices: the helpful knight and another pest — easier for K-5.
+  const choices = useMemo(
+    () => shuffle([knight, rand(pests.filter((p) => p.id !== pest.id))]),
+    [pest, knight],
   );
-  const quizOpts = useMemo(() => shuffle([quiz.right, ...quiz.wrong]), [quiz]);
+  const story = useMemo(() => pestStory(pest), [pest]);
 
-  if (round >= TOTAL) return <Done score={score} total={TOTAL} onRestart={() => { setRound(0); setScore(0); setStage("pick"); }} />;
+  if (round >= TOTAL)
+    return <Done score={score} total={TOTAL} onRestart={() => { setRound(0); setScore(0); setStage("story"); }} />;
 
   return (
     <div>
       <Progress round={round} total={TOTAL} score={score} />
-      <div className="flex items-center justify-center gap-6 rounded-2xl bg-gradient-to-r from-destructive/10 to-success/10 p-6">
+
+      <div className="flex items-center justify-center gap-4 rounded-2xl bg-gradient-to-r from-destructive/10 to-primary/15 p-5 sm:gap-6">
         <div className="text-center">
-          <InsectImage id={pest.id} name={pest.commonName} className="h-32 w-32" />
-          <div className="mt-1 text-sm font-semibold text-destructive">{pest.commonName}</div>
-          <div className="text-[11px] text-muted-foreground">Pest on {pest.hosts}</div>
+          <div className="text-4xl">🏰</div>
+          <div className="mt-1 text-[11px] font-semibold text-muted-foreground">Castle garden</div>
+          <div className="text-2xl">👸</div>
         </div>
-        <div className="text-3xl font-black text-muted-foreground">VS</div>
-        <div className="grid h-32 w-32 place-items-center rounded-xl border-2 border-dashed border-border text-4xl">❓</div>
+        <div className="text-center">
+          <InsectImage id={pest.id} name={pest.commonName} className="h-28 w-28" />
+          <div className="mt-1 text-sm font-semibold text-destructive">🐛 {pest.commonName}</div>
+          <div className="text-[11px] text-muted-foreground">Invader of the {pest.hosts}</div>
+        </div>
+        <div className="text-2xl font-black text-muted-foreground">⚔️</div>
+        <div className="grid h-24 w-24 place-items-center rounded-xl border-2 border-dashed border-border text-3xl">🛡️</div>
       </div>
 
-      {stage === "pick" ? (
-        <div className="mt-4 grid gap-3 sm:grid-cols-3">
-          {choices.map((c) => (
-            <button
-              key={c.id}
-              onClick={() => {
-                const ok = c.id === good[0].id;
-                if (ok) { setScore((s) => s + 1); onAward(2); }
-                setMsg({ ok, text: ok ? `${c.commonName} hunts this pest!` : `${good[0].commonName} is the predator that eats ${pest.commonName}.` });
-                setTimeout(() => { setMsg(null); setStage("quiz"); }, 1600);
-              }}
-              className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-3 hover:bg-muted"
-            >
-              <InsectImage id={c.id} name={c.commonName} className="h-20 w-20" />
-              <span className="text-xs font-medium">{c.commonName}</span>
-            </button>
-          ))}
+      {stage === "story" && (
+        <div className="mt-4 rounded-xl border border-border bg-card p-4">
+          <p className="mb-1 text-sm font-bold text-foreground">📜 Royal report</p>
+          <ul className="ml-4 list-disc space-y-1 text-sm text-muted-foreground">
+            {story.map((s) => (
+              <li key={s}>{s}</li>
+            ))}
+          </ul>
+          <Btn onClick={() => setStage("pick")}>Call a knight! 🛡️</Btn>
         </div>
-      ) : (
+      )}
+
+      {stage === "pick" && (
         <div className="mt-4">
-          <p className="mb-2 font-semibold text-foreground">{quiz.q}</p>
-          <div className="grid gap-2">
-            {quizOpts.map((o) => (
-              <Btn
-                key={o}
+          <p className="mb-2 text-center text-sm font-semibold text-foreground">
+            Which bug is the helpful knight that will defend the princess from the {pest.commonName}?
+          </p>
+          <p className="mb-3 text-center text-xs text-muted-foreground">
+            Hint: the knight is a helper insect that <em>eats</em> pests — the other one is another hungry invader.
+          </p>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {choices.map((c) => (
+              <button
+                key={c.id}
                 onClick={() => {
-                  const ok = o === quiz.right;
-                  if (ok) { setScore((s) => s + 1); onAward(1); }
-                  setMsg({ ok, text: ok ? "Correct!" : quiz.right });
-                  setTimeout(() => { setMsg(null); setStage("pick"); setRound((r) => r + 1); }, 1400);
+                  const ok = c.id === knight.id;
+                  if (ok) { setScore((s) => s + 1); onAward(3); }
+                  setMsg({
+                    ok,
+                    text: ok
+                      ? `🛡️ The ${c.commonName} rides in and eats the ${pest.commonName}. The castle is safe!`
+                      : `That bug is another pest. The ${knight.commonName} is the knight that eats the ${pest.commonName}.`,
+                  });
+                  setStage("won");
                 }}
+                className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-3 hover:bg-muted"
               >
-                {o}
-              </Btn>
+                <InsectImage id={c.id} name={c.commonName} className="h-24 w-24" />
+                <span className="text-xs font-medium">{c.commonName}</span>
+              </button>
             ))}
           </div>
         </div>
       )}
-      {msg && <Feedback ok={msg.ok} text={msg.text} />}
+
+      {stage === "won" && msg && (
+        <div className="mt-4">
+          <Feedback ok={msg.ok} text={msg.text} />
+          <Btn onClick={() => { setMsg(null); setStage("story"); setRound((r) => r + 1); }}>
+            {round + 1 >= TOTAL ? "Finish the quest 🎉" : "Next invader →"}
+          </Btn>
+        </div>
+      )}
+      {stage !== "won" && msg && <Feedback ok={msg.ok} text={msg.text} />}
     </div>
   );
 }
