@@ -872,14 +872,16 @@ function PredatorVsPest({ onAward }: { onAward: (n: number) => void }) {
                   setMsg({
                     ok,
                     text: ok
-                      ? `🛡️ ${c.name} ${c.reason}. The castle garden is safe and the ecosystem stays balanced!`
-                      : `⚠️ ${c.name} ${c.reason}. A natural predator knight would have helped instead.`,
+                      ? `${c.name} ${c.reason}. The castle garden is safe and the ecosystem stays balanced!`
+                      : `${c.name} ${c.reason}. A natural predator knight would have helped instead.`,
                   });
                   setStage("won");
                 }}
                 className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-3 hover:bg-muted"
               >
-                <div className="grid h-24 w-24 place-items-center rounded-xl bg-muted text-5xl">{c.emoji}</div>
+                <div className="grid h-24 w-24 place-items-center rounded-xl bg-muted text-5xl">
+                  <c.icon className="h-12 w-12 text-primary" />
+                </div>
                 <span className="text-xs font-medium">{c.name}</span>
               </button>
             ))}
