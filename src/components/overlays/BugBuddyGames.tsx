@@ -1834,7 +1834,7 @@ function InsectSteward({ onAward }: { onAward: (n: number) => void }) {
 /* ================================================================== */
 /* Hub                                                                 */
 /* ================================================================== */
-interface BBGame { id: string; name: string; emoji: string; topic: string; blurb: string; render: (a: (n: number) => void) => ReactNode }
+interface BBGame { id: string; name: string; emoji: string; topic: string; blurb: string; render: (a: (n: number) => void, onClose?: () => void) => ReactNode }
 
 export const BUG_BUDDY_GAMES: BBGame[] = [
   { id: "insect-or-not", name: "Insect or Not?", emoji: "🔎", topic: "Insect definition", blurb: "10 seconds to decide: insect or imposter?", render: (a) => <InsectOrNot onAward={a} /> },
