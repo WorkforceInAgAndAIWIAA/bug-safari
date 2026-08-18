@@ -437,6 +437,22 @@ function MixAndMatch({ onAward }: { onAward: (n: number) => void }) {
       )}
 
       {msg && <Feedback ok={msg.ok} text={msg.text} />}
+
+      {phase === "cleared" && (
+        <div className="mt-4 rounded-xl border border-primary/30 bg-primary/5 p-4 text-center">
+          <p className="text-sm text-muted-foreground">
+            {round + 1 < MIX_ROUNDS
+              ? `Field ${round + 1} restored! Ready to help the ${MIX_FIELDS[round + 1].toLowerCase()}?`
+              : "You restored every field — great job, bug buddy!"}
+          </p>
+          <button
+            onClick={() => (round + 1 < MIX_ROUNDS ? startRound(round + 1) : setPhase("done"))}
+            className="mt-3 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+          >
+            {round + 1 < MIX_ROUNDS ? "Next field →" : "Finish game 🎉"}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
