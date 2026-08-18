@@ -892,7 +892,7 @@ function pestStory(pest: Insect): string[] {
   return lines;
 }
 
-function PredatorVsPest({ onAward }: { onAward: (n: number) => void }) {
+function PredatorVsPest({ onAward, onClose }: { onAward: (n: number) => void; onClose?: () => void }) {
   const TOTAL = 5;
   const [round, setRound] = useState(0);
   const [score, setScore] = useState(0);
@@ -905,8 +905,34 @@ function PredatorVsPest({ onAward }: { onAward: (n: number) => void }) {
   const choices = useMemo(() => shuffle([hero, villain]), [hero, villain]);
   const story = useMemo(() => pestStory(pest), [pest]);
 
-  if (round >= TOTAL)
-    return <Done score={score} total={TOTAL} onRestart={() => { setRound(0); setScore(0); setStage("story"); }} />;
+  const restart = () => { setRound(0); setScore(0); setStage("story"); setMsg(null); };
+
+  if (round >= TOTAL) {
+    const saved = score >= 3;
+    return (
+      <div className={`rounded-2xl border p-6 text-center ${saved ? "border-success/40 bg-success/10" : "border-destructive/40 bg-destructive/10"}`}>
+        <div className="text-5xl">{saved ? "🏰✨" : "🐛🏰"}</div>
+        <div className={`mt-3 text-2xl font-black ${saved ? "text-success" : "text-destructive"}`}>
+          {saved ? "You've saved the castle!" : "Oh no! The castle is invaded."}
+        </div>
+        <p className="mt-2 text-sm text-muted-foreground">
+          {saved
+            ? `You chose ${score} of ${TOTAL} natural predator knights. The princess, the garden, and the whole ecosystem are safe.`
+            : `You only chose ${score} of ${TOTAL} natural predator knights. The pests snuck past the gate — but you can try again!`}
+        </p>
+        <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:justify-center">
+          <button onClick={restart} className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90">
+            <RefreshCcw className="h-4 w-4" /> Play again
+          </button>
+          {onClose && (
+            <button onClick={onClose} className="inline-flex items-center justify-center gap-2 rounded-md border border-border bg-card px-5 py-2.5 text-sm font-semibold text-foreground hover:bg-muted">
+              <ArrowLeft className="h-4 w-4" /> Return to games
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -1834,7 +1860,7 @@ function InsectSteward({ onAward }: { onAward: (n: number) => void }) {
 /* ================================================================== */
 /* Hub                                                                 */
 /* ================================================================== */
-interface BBGame { id: string; name: string; emoji: string; topic: string; blurb: string; render: (a: (n: number) => void) => ReactNode }
+interface BBGame { id: string; name: string; emoji: string; topic: string; blurb: string; render: (a: (n: number) => void, onClose?: () => void) => ReactNode }
 
 export const BUG_BUDDY_GAMES: BBGame[] = [
   { id: "insect-or-not", name: "Insect or Not?", emoji: "🔎", topic: "Insect definition", blurb: "10 seconds to decide: insect or imposter?", render: (a) => <InsectOrNot onAward={a} /> },
@@ -1842,7 +1868,7 @@ export const BUG_BUDDY_GAMES: BBGame[] = [
   { id: "mix-match", name: "Insect Mix and Match", emoji: "🌈", topic: "Biodiversity", blurb: "Rate the mix, then swap in new species.", render: (a) => <MixAndMatch onAward={a} /> },
   { id: "decomposer-dash", name: "Decomposer Dash", emoji: "♻️", topic: "Decomposers", blurb: "Catch leaves and return compost to the soil.", render: (a) => <DecomposerDash onAward={a} /> },
   { id: "pollinator-power", name: "Pollinator Power", emoji: "🌻", topic: "Pollinators", blurb: "Guard your flower and welcome pollinators.", render: (a) => <PollinatorPower onAward={a} /> },
-  { id: "predator-pest", name: "Predator vs. Pest", emoji: "🏰", topic: "Predator/pest", blurb: "Knights vs. invaders: pick the helper that keeps the ecosystem balanced.", render: (a) => <PredatorVsPest onAward={a} /> },
+  { id: "predator-pest", name: "Predator vs. Pest", emoji: "🏰", topic: "Predator/pest", blurb: "Knights vs. invaders: pick the helper that keeps the ecosystem balanced.", render: (a, onClose) => <PredatorVsPest onAward={a} onClose={onClose} /> },
   { id: "beneficial-sort", name: "Beneficial Sort", emoji: "🧺", topic: "Beneficial insects", blurb: "Collect bugs in 15s, then sort them.", render: (a) => <BeneficialSort onAward={a} /> },
   { id: "invasive-impact", name: "Invasive Impact", emoji: "🚨", topic: "Native & invasive", blurb: "Match invaders to the damage they do.", render: (a) => <InvasiveImpact onAward={a} /> },
   { id: "connect-web", name: "Connect the Web", emoji: "🕸️", topic: "Food webs", blurb: "Order producer to decomposer.", render: (a) => <ConnectTheWeb onAward={a} /> },
@@ -1872,7 +1898,7 @@ export function BugBuddyGamesHub() {
         </div>
         <h3 className="mb-1 text-lg font-bold text-foreground">{active.emoji} {active.name}</h3>
         <p className="mb-3 text-xs text-muted-foreground">{active.blurb}</p>
-        {active.render(add)}
+        {active.render(add, () => setActive(null))}
       </div>
     );
 
