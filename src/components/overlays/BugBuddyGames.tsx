@@ -4,7 +4,7 @@ import { InsectImage } from "@/components/InsectImage";
 import { getInsectImage, hasInsectImage, type InsectStage } from "@/lib/insectImages";
 import {
   AlertTriangle, Armchair, ArrowLeft, Bug, Carrot, CheckCircle2, Eye, Flower2,
-  HelpCircle, Leaf, Moon, RefreshCcw, Shield, Sparkles, SpiderWeb, Sword, Target,
+  HelpCircle, Leaf, Moon, RefreshCcw, Shield, Sparkles, Sword, Target,
   Trophy, XCircle, Zap,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
