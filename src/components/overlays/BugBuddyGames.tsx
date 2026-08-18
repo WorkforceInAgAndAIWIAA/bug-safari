@@ -498,16 +498,20 @@ function DecomposerDash({ onAward }: { onAward: (n: number) => void }) {
         const moved = it.map((i) => ({ ...i, y: i.y + fallStep }));
         const kept = moved.filter((i) => i.y < 100);
         const lost = moved.length - kept.length;
-        if (lost > 0) {
-          setMissed((m) => m + lost);
-          setSoil((s) => Math.max(0, s - 4 * lost));
-          setWarn("Litter piled up on the surface — bare topsoil washes away and loses nutrients!");
-        }
+        if (lost > 0) setMissed((m) => m + lost);
         return kept;
       });
     }, 100);
     return () => { clearInterval(spawn); clearInterval(move); };
   }, [unlocked, soil, fallStep, spawnMs]);
+
+  useEffect(() => {
+    if (bank >= 10) {
+      setBank(0);
+      setSoil((s) => Math.min(100, s + 25));
+      onAward(3);
+    }
+  }, [bank, onAward]);
 
   useEffect(() => {
     if (!warn) return;
