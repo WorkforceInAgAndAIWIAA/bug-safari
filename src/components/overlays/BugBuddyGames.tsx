@@ -759,23 +759,23 @@ type KnightCard = {
 };
 
 const HELPFUL_KNIGHTS: KnightCard[] = [
-  { name: "Sir Chomps-a-Lot", emoji: "🛡️🐞", helpful: true, reason: "eats plant-munching pests so plants can grow strong" },
-  { name: "Lady Lace-a-Lot", emoji: "🕸️⚔️", helpful: true, reason: "traps soft, sap-sucking pests in her sticky lace" },
-  { name: "Count Crunch", emoji: "🪲⚔️", helpful: true, reason: "crunches caterpillars and beetle pests with mighty jaws" },
-  { name: "Dame Dash", emoji: "🏃‍♀️🗡️", helpful: true, reason: "runs fast and catches pests before they escape" },
-  { name: "Sir Sting-a-Lot", emoji: "🐝🛡️", helpful: true, reason: "stops pest eggs from hatching, protecting the garden" },
+  { name: "Sir Chomps-a-Lot", emoji: "🐞", helpful: true, reason: "eats plant-munching pests so plants can grow strong" },
+  { name: "Lady Lace-a-Lot", emoji: "🕸️", helpful: true, reason: "traps soft, sap-sucking pests in her sticky lace" },
+  { name: "Count Crunch", emoji: "🪲", helpful: true, reason: "crunches caterpillars and beetle pests with mighty jaws" },
+  { name: "Dame Dash", emoji: "⚡", helpful: true, reason: "runs fast and catches pests before they escape" },
+  { name: "Sir Sting-a-Lot", emoji: "🐝", helpful: true, reason: "stops pest eggs from hatching, protecting the garden" },
 ];
 
 const UNHELPFUL_KNIGHTS: KnightCard[] = [
-  { name: "Sir Leaf-Sampler", emoji: "🌿😋", helpful: false, reason: "eats the same plants as the pest, so the garden gets doubly damaged" },
-  { name: "Lord Wilt-Worsener", emoji: "🥀😈", helpful: false, reason: "spreads sickness that makes plants weaker" },
-  { name: "Baron Root-Nibbler", emoji: "🥕🐭", helpful: false, reason: "munches roots underground, hurting plants from below" },
-  { name: "Dame Distracted", emoji: "🌸😍", helpful: false, reason: "spends all day smelling flowers and forgets to hunt pests" },
-  { name: "Sir Snooze-a-Lot", emoji: "😴🛌", helpful: false, reason: "naps under a leaf while pests march past the castle" },
-  { name: "Count Confused", emoji: "❓🤷", helpful: false, reason: "chases the wrong bugs and leaves the real pests alone" },
-  { name: "Lady Lazy", emoji: "🛋️💤", helpful: false, reason: "too comfy to patrol the castle garden" },
-  { name: "Sir Sap-Sipper", emoji: "🥤🌱", helpful: false, reason: "drinks plant sap just like the pest, so plants stay thirsty" },
-  { name: "Baron Bystander", emoji: "👀🍿", helpful: false, reason: "watches the pests but never stops them" },
+  { name: "Sir Leaf-Sampler", emoji: "🌿", helpful: false, reason: "eats the same plants as the pest, so the garden gets doubly damaged" },
+  { name: "Lord Wilt-Worsener", emoji: "🥀", helpful: false, reason: "spreads sickness that makes plants weaker" },
+  { name: "Baron Root-Nibbler", emoji: "🥕", helpful: false, reason: "munches roots underground, hurting plants from below" },
+  { name: "Dame Distracted", emoji: "🌸", helpful: false, reason: "spends all day smelling flowers and forgets to hunt pests" },
+  { name: "Sir Snooze-a-Lot", emoji: "😴", helpful: false, reason: "naps under a leaf while pests march past the castle" },
+  { name: "Count Confused", emoji: "❓", helpful: false, reason: "chases the wrong bugs and leaves the real pests alone" },
+  { name: "Lady Lazy", emoji: "🛋️", helpful: false, reason: "too comfy to patrol the castle garden" },
+  { name: "Sir Sap-Sipper", emoji: "🥤", helpful: false, reason: "drinks plant sap just like the pest, so plants stay thirsty" },
+  { name: "Baron Bystander", emoji: "👀", helpful: false, reason: "watches the pests but never stops them" },
 ];
 
 function helpfulKnightFor(pest: Insect): KnightCard {
