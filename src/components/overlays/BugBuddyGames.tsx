@@ -570,12 +570,11 @@ function DecomposerDash({ onAward }: { onAward: (n: number) => void }) {
     <div>
       <div className="mb-2 flex items-center justify-between text-sm">
         <span className="font-semibold text-foreground">Compost bank: {bank}/10</span>
-        <span className="text-muted-foreground">Level {level} · Missed {missed} · Topsoil health: {soil}%</span>
+        <span className="text-muted-foreground">Level {level} · Topsoil health: {soil}%</span>
       </div>
       <p className="mb-2 text-xs text-muted-foreground">
-        Swipe across the falling leaves and litter to slice them up — chewed-up litter builds rich <strong>topsoil</strong> that holds water and feeds plant roots. Every piece that hits the ground uncomposted erodes 4% of your topsoil health, and the litter falls faster as you level up.
+        Swipe across the falling leaves and litter to slice them up — chewed-up litter builds rich <strong>topsoil</strong> that holds water and feeds plant roots. Collect 10 pieces and they automatically return to the soil. The litter falls a little faster as you level up.
       </p>
-      {warn && <p className="mb-2 text-xs font-semibold text-destructive">⚠️ {warn}</p>}
       <div
         ref={fieldRef}
         onPointerDown={(e) => { setSlicing(true); e.currentTarget.setPointerCapture(e.pointerId); swipeAt(e.clientX, e.clientY); }}
