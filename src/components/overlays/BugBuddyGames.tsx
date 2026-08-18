@@ -475,9 +475,7 @@ function DecomposerDash({ onAward }: { onAward: (n: number) => void }) {
   const [soil, setSoil] = useState(0);
   const [trail, setTrail] = useState<{ x: number; y: number }[]>([]);
   const [slicing, setSlicing] = useState(false);
-  const [missed, setMissed] = useState(0);
   const [caught, setCaught] = useState(0);
-  const [warn, setWarn] = useState<string | null>(null);
   const fieldRef = useRef<HTMLDivElement | null>(null);
   const idRef = useRef(0);
   const decomposer = useMemo(() => rand(POOL.filter((i) => /grub|wireworm|maggot|beetle/i.test(i.commonName))) ?? POOL[0], []);
@@ -494,26 +492,18 @@ function DecomposerDash({ onAward }: { onAward: (n: number) => void }) {
       setItems((it) => [...it, { key: idRef.current, x: Math.random() * 85, y: -8, glyph: rand(FALLING) }]);
     }, spawnMs);
     const move = setInterval(() => {
-      setItems((it) => {
-        const moved = it.map((i) => ({ ...i, y: i.y + fallStep }));
-        const kept = moved.filter((i) => i.y < 100);
-        const lost = moved.length - kept.length;
-        if (lost > 0) {
-          setMissed((m) => m + lost);
-          setSoil((s) => Math.max(0, s - 4 * lost));
-          setWarn("Litter piled up on the surface — bare topsoil washes away and loses nutrients!");
-        }
-        return kept;
-      });
+      setItems((it) => it.map((i) => ({ ...i, y: i.y + fallStep })).filter((i) => i.y < 100));
     }, 100);
     return () => { clearInterval(spawn); clearInterval(move); };
   }, [unlocked, soil, fallStep, spawnMs]);
 
   useEffect(() => {
-    if (!warn) return;
-    const t = setTimeout(() => setWarn(null), 1600);
-    return () => clearTimeout(t);
-  }, [warn]);
+    if (bank >= 10) {
+      setBank(0);
+      setSoil((s) => Math.min(100, s + 25));
+      onAward(3);
+    }
+  }, [bank, onAward]);
 
   const swipeAt = (clientX: number, clientY: number) => {
     const el = fieldRef.current;
@@ -573,12 +563,11 @@ function DecomposerDash({ onAward }: { onAward: (n: number) => void }) {
     <div>
       <div className="mb-2 flex items-center justify-between text-sm">
         <span className="font-semibold text-foreground">Compost bank: {bank}/10</span>
-        <span className="text-muted-foreground">Level {level} · Missed {missed} · Topsoil health: {soil}%</span>
+        <span className="text-muted-foreground">Level {level} · Topsoil health: {soil}%</span>
       </div>
       <p className="mb-2 text-xs text-muted-foreground">
-        Swipe across the falling leaves and litter to slice them up — chewed-up litter builds rich <strong>topsoil</strong> that holds water and feeds plant roots. Every piece that hits the ground uncomposted erodes 4% of your topsoil health, and the litter falls faster as you level up.
+        Swipe across the falling leaves and litter to slice them up — chewed-up litter builds rich <strong>topsoil</strong> that holds water and feeds plant roots. Collect 10 pieces and they automatically return to the soil. The litter falls a little faster as you level up.
       </p>
-      {warn && <p className="mb-2 text-xs font-semibold text-destructive">⚠️ {warn}</p>}
       <div
         ref={fieldRef}
         onPointerDown={(e) => { setSlicing(true); e.currentTarget.setPointerCapture(e.pointerId); swipeAt(e.clientX, e.clientY); }}
@@ -613,16 +602,9 @@ function DecomposerDash({ onAward }: { onAward: (n: number) => void }) {
         <div className="absolute inset-x-0 bottom-0 bg-[hsl(30_35%_30%)]/70 transition-all" style={{ height: `${soil * 0.6}%` }} />
         <div className="absolute bottom-1 left-2 text-xs font-semibold text-background">🌱 topsoil</div>
       </div>
-      <div className="mt-3 flex items-center gap-3">
-        <Btn
-          tone="primary"
-          disabled={bank < 10 || soil >= 100}
-          onClick={() => { setBank(0); setSoil((s) => Math.min(100, s + 25)); onAward(3); }}
-        >
-          Return compost to the topsoil
-        </Btn>
-        {soil >= 100 && <span className="text-sm font-semibold text-success">🎉 Healthy topsoil! Rich compost means strong roots and less erosion.</span>}
-      </div>
+      {soil >= 100 && (
+        <div className="mt-3 text-sm font-semibold text-success">🎉 Healthy topsoil! Rich compost means strong roots and less erosion.</div>
+      )}
     </div>
   );
 }
