@@ -749,18 +749,42 @@ function PollinatorPower({ onAward }: { onAward: (n: number) => void }) {
 }
 
 /* ================================================================== */
-/* 6. Predator vs. Pest                                                */
+/* 6. Predator vs. Pest — abstract castle-defense quest                  */
 /* ================================================================== */
-const PREDATOR_FOR: Record<string, string[]> = {
-  aphid: ["seven-spotted-lady-beetle", "green-lacewing", "syrphid-fly", "asian-lady-beetle"],
-  caterpillar: ["braconid-wasp", "ground-beetle", "spined-soldier-bug"],
-  default: ["ground-beetle", "assassin-bug", "big-eyed-bug"],
+type KnightCard = {
+  name: string;
+  emoji: string;
+  helpful: boolean;
+  reason: string;
 };
-function predatorsFor(pest: Insect): Insect[] {
-  const key = /aphid/i.test(pest.commonName) || /aphid/i.test(pest.hosts) ? "aphid" : /worm|caterpillar|moth|borer/i.test(pest.commonName) ? "caterpillar" : "default";
-  const ids = PREDATOR_FOR[key];
-  const found = POOL.filter((i) => ids.includes(i.id));
-  return found.length ? found : helpers.slice(0, 3);
+
+const HELPFUL_KNIGHTS: KnightCard[] = [
+  { name: "Sir Chomps-a-Lot", emoji: "🛡️🐞", helpful: true, reason: "eats plant-munching pests so plants can grow strong" },
+  { name: "Lady Lace-a-Lot", emoji: "🕸️⚔️", helpful: true, reason: "traps soft, sap-sucking pests in her sticky lace" },
+  { name: "Count Crunch", emoji: "🪲⚔️", helpful: true, reason: "crunches caterpillars and beetle pests with mighty jaws" },
+  { name: "Dame Dash", emoji: "🏃‍♀️🗡️", helpful: true, reason: "runs fast and catches pests before they escape" },
+  { name: "Sir Sting-a-Lot", emoji: "🐝🛡️", helpful: true, reason: "stops pest eggs from hatching, protecting the garden" },
+];
+
+const UNHELPFUL_KNIGHTS: KnightCard[] = [
+  { name: "Sir Leaf-Sampler", emoji: "🌿😋", helpful: false, reason: "eats the same plants as the pest, so the garden gets doubly damaged" },
+  { name: "Lord Wilt-Worsener", emoji: "🥀😈", helpful: false, reason: "spreads sickness that makes plants weaker" },
+  { name: "Baron Root-Nibbler", emoji: "🥕🐭", helpful: false, reason: "munches roots underground, hurting plants from below" },
+  { name: "Dame Distracted", emoji: "🌸😍", helpful: false, reason: "spends all day smelling flowers and forgets to hunt pests" },
+  { name: "Sir Snooze-a-Lot", emoji: "😴🛌", helpful: false, reason: "naps under a leaf while pests march past the castle" },
+  { name: "Count Confused", emoji: "❓🤷", helpful: false, reason: "chases the wrong bugs and leaves the real pests alone" },
+  { name: "Lady Lazy", emoji: "🛋️💤", helpful: false, reason: "too comfy to patrol the castle garden" },
+  { name: "Sir Sap-Sipper", emoji: "🥤🌱", helpful: false, reason: "drinks plant sap just like the pest, so plants stay thirsty" },
+  { name: "Baron Bystander", emoji: "👀🍿", helpful: false, reason: "watches the pests but never stops them" },
+];
+
+function helpfulKnightFor(pest: Insect): KnightCard {
+  const name = pest.commonName.toLowerCase();
+  if (/aphid/i.test(name)) return HELPFUL_KNIGHTS.find((k) => k.name === "Lady Lace-a-Lot") ?? HELPFUL_KNIGHTS[0];
+  if (/worm|caterpillar|moth|borer/i.test(name)) return HELPFUL_KNIGHTS.find((k) => k.name === "Count Crunch") ?? HELPFUL_KNIGHTS[0];
+  if (/beetle|weevil|rootworm/i.test(name)) return HELPFUL_KNIGHTS.find((k) => k.name === "Sir Chomps-a-Lot") ?? HELPFUL_KNIGHTS[0];
+  if (/hopper|bug|thrips|mite/i.test(name)) return HELPFUL_KNIGHTS.find((k) => k.name === "Dame Dash") ?? HELPFUL_KNIGHTS[0];
+  return HELPFUL_KNIGHTS[0];
 }
 
 function pestStory(pest: Insect): string[] {
@@ -786,13 +810,9 @@ function PredatorVsPest({ onAward }: { onAward: (n: number) => void }) {
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const pest = useMemo(() => rand(pests), [round]);
-  const good = useMemo(() => predatorsFor(pest), [pest]);
-  const knight = good[0];
-  // Only two choices: the helpful knight and another pest — easier for K-5.
-  const choices = useMemo(
-    () => shuffle([knight, rand(pests.filter((p) => p.id !== pest.id))]),
-    [pest, knight],
-  );
+  const hero = useMemo(() => helpfulKnightFor(pest), [pest]);
+  const villain = useMemo(() => rand(UNHELPFUL_KNIGHTS.filter((k) => k.name !== hero.name)), [hero]);
+  const choices = useMemo(() => shuffle([hero, villain]), [hero, villain]);
   const story = useMemo(() => pestStory(pest), [pest]);
 
   if (round >= TOTAL)
@@ -832,30 +852,30 @@ function PredatorVsPest({ onAward }: { onAward: (n: number) => void }) {
       {stage === "pick" && (
         <div className="mt-4">
           <p className="mb-2 text-center text-sm font-semibold text-foreground">
-            Which bug is the helpful knight that will defend the princess from the {pest.commonName}?
+            Which knight will defend the princess and help the ecosystem?
           </p>
           <p className="mb-3 text-center text-xs text-muted-foreground">
-            Hint: the knight is a helper insect that <em>eats</em> pests — the other one is another hungry invader.
+            One knight is a natural predator that controls pests. The other looks helpful but would not help the ecosystem.
           </p>
           <div className="grid gap-3 sm:grid-cols-2">
             {choices.map((c) => (
               <button
-                key={c.id}
+                key={c.name}
                 onClick={() => {
-                  const ok = c.id === knight.id;
+                  const ok = c.helpful;
                   if (ok) { setScore((s) => s + 1); onAward(3); }
                   setMsg({
                     ok,
                     text: ok
-                      ? `🛡️ The ${c.commonName} rides in and eats the ${pest.commonName}. The castle is safe!`
-                      : `That bug is another pest. The ${knight.commonName} is the knight that eats the ${pest.commonName}.`,
+                      ? `🛡️ ${c.name} ${c.reason}. The castle garden is safe and the ecosystem stays balanced!`
+                      : `⚠️ ${c.name} ${c.reason}. A natural predator knight would have helped instead.`,
                   });
                   setStage("won");
                 }}
                 className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-3 hover:bg-muted"
               >
-                <InsectImage id={c.id} name={c.commonName} className="h-24 w-24" />
-                <span className="text-xs font-medium">{c.commonName}</span>
+                <div className="grid h-24 w-24 place-items-center rounded-xl bg-muted text-5xl">{c.emoji}</div>
+                <span className="text-xs font-medium">{c.name}</span>
               </button>
             ))}
           </div>
