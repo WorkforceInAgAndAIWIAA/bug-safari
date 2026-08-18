@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { insects as ALL, type Insect } from "@/data/insects";
 import { InsectImage } from "@/components/InsectImage";
 import { InsectInvasion } from "@/components/overlays/games/InsectInvasion";
@@ -75,15 +75,125 @@ function Progress({ round, total, score }: { round: number; total: number; score
   );
 }
 
-function Done({ score, total, onRestart }: { score: number; total: number; onRestart: () => void }) {
+/** Lets any game offer a "Return to all games" button without prop drilling. */
+export const GameExitContext = createContext<(() => void) | null>(null);
+
+function Done({ score, total, onRestart, title, note }: { score: number; total: number; onRestart: () => void; title?: string; note?: string }) {
+  const exit = useContext(GameExitContext);
   return (
-    <div className="rounded-xl border border-primary/30 bg-primary/5 p-6 text-center">
-      <div className="text-4xl">🎉</div>
-      <div className="mt-2 text-xl font-bold text-foreground">Level complete!</div>
-      <p className="mt-1 text-sm text-muted-foreground">You got {score} of {total} right.</p>
-      <button onClick={onRestart} className="mt-4 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90">
-        Play again
-      </button>
+    <div className="rounded-2xl border-2 border-primary/40 bg-gradient-to-br from-secondary/40 via-accent/25 to-primary/20 p-6 text-center shadow-md">
+      <div className="text-5xl">🎉🌻🚜</div>
+      <div className="mt-2 text-2xl font-extrabold text-foreground">{title ?? "Level complete!"}</div>
+      <p className="mt-1 text-sm font-medium text-foreground/80">You got {score} of {total} right.</p>
+      {note && <p className="mt-1 text-sm text-muted-foreground">{note}</p>}
+      <div className="mt-4 flex flex-wrap justify-center gap-2">
+        <button onClick={onRestart} className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90">
+          🔁 Play again
+        </button>
+        {exit && (
+          <button onClick={exit} className="rounded-md border-2 border-primary/40 bg-card px-4 py-2 text-sm font-semibold text-foreground hover:bg-muted">
+            🎮 Return to all games
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/** Standalone "Return to all games" button for custom end screens. */
+function ReturnToGamesBtn() {
+  const exit = useContext(GameExitContext);
+  if (!exit) return null;
+  return (
+    <button onClick={exit} className="rounded-md border-2 border-primary/40 bg-card px-4 py-2 text-sm font-bold text-foreground hover:bg-primary/10">
+      🎮 Return to all games
+    </button>
+  );
+}
+
+function NextBtn({ onClick, label = "Next" }: { onClick: () => void; label?: string }) {
+  return (
+    <button
+      onClick={onClick}
+      className="mt-3 w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground shadow-sm transition hover:bg-primary/90"
+    >
+      {label} →
+    </button>
+  );
+}
+
+/**
+ * Multiple-choice block (3+ options) with one free retry: a wrong first pick
+ * shows a hint and lets the player choose again before the answer is revealed.
+ */
+function QuizChoices({
+  options,
+  answer,
+  hint,
+  cols = 1,
+  rightText = "That's right! 🎉",
+  explain,
+  onCorrect,
+  onNext,
+}: {
+  options: string[];
+  answer: string;
+  hint: string;
+  cols?: 1 | 2 | 3;
+  rightText?: string;
+  explain?: string;
+  onCorrect: (firstTry: boolean) => void;
+  onNext: () => void;
+}) {
+  const [wrongs, setWrongs] = useState<string[]>([]);
+  const [state, setState] = useState<"asking" | "hint" | "right" | "revealed">("asking");
+
+  const grid = cols === 3 ? "sm:grid-cols-3" : cols === 2 ? "sm:grid-cols-2" : "";
+  const locked = state === "right" || state === "revealed";
+
+  return (
+    <div>
+      <div className={`grid gap-2 ${grid}`}>
+        {options.map((o) => {
+          const isWrong = wrongs.includes(o);
+          const isAnswer = locked && o === answer;
+          return (
+            <button
+              key={o}
+              disabled={locked || isWrong}
+              onClick={() => {
+                if (o === answer) {
+                  setState("right");
+                  onCorrect(wrongs.length === 0);
+                } else if (wrongs.length === 0) {
+                  setWrongs([o]);
+                  setState("hint");
+                } else {
+                  setWrongs((w) => [...w, o]);
+                  setState("revealed");
+                }
+              }}
+              className={`rounded-xl border-2 px-4 py-3 text-left text-sm font-medium transition disabled:cursor-not-allowed ${
+                isAnswer
+                  ? "border-success bg-success/20 text-success"
+                  : isWrong
+                    ? "border-destructive/60 bg-destructive/10 text-destructive opacity-70"
+                    : "border-primary/30 bg-card hover:bg-primary/10"
+              }`}
+            >
+              {o}
+            </button>
+          );
+        })}
+      </div>
+      {state === "hint" && (
+        <div className="mt-3 rounded-lg border-2 border-secondary/60 bg-secondary/20 p-3 text-sm font-medium text-foreground">
+          💡 Not quite — here's a hint: {hint} Try again!
+        </div>
+      )}
+      {state === "right" && <Feedback ok text={explain ? `${rightText} ${explain}` : rightText} />}
+      {state === "revealed" && <Feedback ok={false} text={explain ? `The answer is ${answer}. ${explain}` : `The answer is ${answer}.`} />}
+      {locked && <NextBtn onClick={onNext} />}
     </div>
   );
 }
@@ -271,22 +381,21 @@ function NameTheInsect({ onAward }: { onAward: (n: number) => void }) {
         </div>
       ) : (
         <>
-          <div className="grid place-items-center rounded-2xl bg-gradient-to-br from-accent/30 to-secondary/30 p-6">
+          <div className="grid place-items-center rounded-2xl bg-gradient-to-br from-secondary/45 via-accent/30 to-primary/20 p-6">
             <InsectImage id={target.id} name="Mystery insect" className="h-64 w-64" />
             <p className="mt-3 max-w-xl text-center text-base text-foreground">{describe(target)}</p>
           </div>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            {options.map((o) => (
-              <Btn
-                key={o.id}
-                onClick={() => {
-                  setPicked(o.id);
-                  if (o.id === target.id) { setScore((s) => s + 1); onAward(2); }
-                }}
-              >
-                {o.commonName}
-              </Btn>
-            ))}
+          <div className="mt-4">
+            <QuizChoices
+              key={target.id}
+              options={options.map((o) => o.commonName)}
+              answer={target.commonName}
+              hint={memoryHook(target).replace("Memory hook: ", "")}
+              cols={2}
+              explain={describe(target)}
+              onCorrect={() => { setScore((s) => s + 1); onAward(2); }}
+              onNext={() => { setPicked(null); setRound((r) => r + 1); }}
+            />
           </div>
         </>
       )}
@@ -298,10 +407,10 @@ function NameTheInsect({ onAward }: { onAward: (n: number) => void }) {
 /* 3. Insect Mix and Match (biodiversity)                              */
 /* ================================================================== */
 const BIO_Q = [
-  { q: "What does biodiversity mean?", a: ["Many different kinds of living things", "One kind of animal", "Only plants", "No animals at all"] },
-  { q: "About how many insect species have scientists named?", a: ["About 1 million", "About 100", "About 500", "About 12"] },
-  { q: "What makes an insect an insect?", a: ["3 body parts and 6 legs", "8 legs", "A shell and claws", "Feathers"] },
-  { q: "Why is a biodiverse field healthier?", a: ["Many species keep each other in balance", "It looks nicer", "It has fewer plants", "It rains more"] },
+  { q: "What does biodiversity mean?", a: ["Many different kinds of living things", "One kind of animal", "Only plants", "No animals at all"], hint: "“Bio” means life and “diversity” means variety. 🌿" },
+  { q: "About how many insect species have scientists named?", a: ["About 1 million", "About 100", "About 500", "About 12"], hint: "Insects are the biggest animal group on Earth — think really, really big. 🐜" },
+  { q: "What makes an insect an insect?", a: ["3 body parts and 6 legs", "8 legs", "A shell and claws", "Feathers"], hint: "Count the legs on a ladybug and the parts of its body. 🐞" },
+  { q: "Why is a biodiverse field healthier?", a: ["Many species keep each other in balance", "It looks nicer", "It has fewer plants", "It rains more"], hint: "Think about who eats the pests when lots of species live together. ⚖️" },
 ];
 
 const MIX_FIELDS = ["Backyard garden", "Corn field edge", "Prairie meadow"];
@@ -316,8 +425,10 @@ function MixAndMatch({ onAward }: { onAward: (n: number) => void }) {
   const [round, setRound] = useState(0);
   const [score, setScore] = useState(0);
   const [phase, setPhase] = useState<"quiz" | "rate" | "fix" | "cleared" | "done">("quiz");
-  const [quiz, setQuiz] = useState(() => rand(BIO_Q));
-  const [quizOpts, setQuizOpts] = useState(() => shuffle(rand(BIO_Q).a));
+  // Questions are dealt from a shuffled deck so no question repeats between rounds.
+  const [deck, setDeck] = useState(() => shuffle(BIO_Q));
+  const quiz = deck[0];
+  const quizOpts = useMemo(() => shuffle(quiz.a), [quiz]);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [mix, setMix] = useState<Insect[]>(makeMix);
   const [bench, setBench] = useState<Insect[]>(() => shuffle(POOL).slice(0, 6));
@@ -327,9 +438,8 @@ function MixAndMatch({ onAward }: { onAward: (n: number) => void }) {
   const rating = unique <= 2 ? "Low" : unique <= 4 ? "Medium" : "High";
 
   const startRound = (next: number) => {
-    const q = rand(BIO_Q);
-    setQuiz(q);
-    setQuizOpts(shuffle(q.a));
+    const rest = deck.slice(1);
+    setDeck(rest.length ? rest : shuffle(BIO_Q));
     setMix(makeMix());
     setBench(shuffle(POOL).slice(0, 6));
     setSlot(null);
@@ -340,7 +450,13 @@ function MixAndMatch({ onAward }: { onAward: (n: number) => void }) {
 
   const restart = () => {
     setScore(0);
-    startRound(0);
+    setDeck(shuffle(BIO_Q));
+    setMix(makeMix());
+    setBench(shuffle(POOL).slice(0, 6));
+    setSlot(null);
+    setMsg(null);
+    setRound(0);
+    setPhase("quiz");
   };
 
   if (phase === "done") return <Done score={score} total={MIX_ROUNDS * 3} onRestart={restart} />;
@@ -352,21 +468,16 @@ function MixAndMatch({ onAward }: { onAward: (n: number) => void }) {
       {phase === "quiz" && (
         <div>
           <p className="mb-3 text-base font-semibold text-foreground">{quiz.q}</p>
-          <div className="grid gap-2 sm:grid-cols-2">
-            {quizOpts.map((o) => (
-              <Btn
-                key={o}
-                onClick={() => {
-                  const ok = o === quiz.a[0];
-                  setMsg({ ok, text: ok ? "Right! Now look at this mix of bugs." : `The answer is: ${quiz.a[0]}` });
-                  if (ok) { onAward(2); setScore((s) => s + 1); }
-                  setTimeout(() => { setMsg(null); setPhase("rate"); }, 1500);
-                }}
-              >
-                {o}
-              </Btn>
-            ))}
-          </div>
+          <QuizChoices
+            key={quiz.q}
+            options={quizOpts}
+            answer={quiz.a[0]}
+            hint={quiz.hint}
+            cols={2}
+            explain="Now look at this mix of bugs."
+            onCorrect={() => { onAward(2); setScore((s) => s + 1); }}
+            onNext={() => setPhase("rate")}
+          />
         </div>
       )}
 
@@ -1328,39 +1439,34 @@ function FindTheDisease({ onAward }: { onAward: (n: number) => void }) {
   if (phase === "quiz") {
     if (qi >= foundVectors.length)
       return (
-        <div className="rounded-xl border border-primary/30 bg-primary/5 p-6 text-center">
-          <div className="text-4xl">🔬</div>
-          <p className="mt-2 font-semibold text-foreground">You found {foundVectors.length} of {vectors.length} disease carriers.</p>
-          <p className="text-sm text-muted-foreground">You matched {right} impacts correctly.</p>
-          <button onClick={() => { setPhase("search"); setLeft(15); setFound([]); setQi(0); setRight(0); }} className="mt-4 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground">Play again</button>
-        </div>
+        <Done
+          score={right}
+          total={vectors.length}
+          title="🔬 Lab work complete!"
+          note={`You found ${foundVectors.length} of ${vectors.length} disease carriers.`}
+          onRestart={() => { setPhase("search"); setLeft(15); setFound([]); setQi(0); setRight(0); }}
+        />
       );
     const v = foundVectors[qi];
     const info = VECTORS[v.id];
     const opts = shuffle([info.disease, ...info.wrong]);
     return (
       <div>
-        <div className="grid place-items-center rounded-2xl bg-muted p-6">
+        <div className="grid place-items-center rounded-2xl bg-gradient-to-br from-secondary/40 via-accent/25 to-primary/20 p-6">
           <InsectImage id={v.id} name={v.commonName} className="h-32 w-32" />
           <div className="mt-2 font-bold text-foreground">{v.commonName}</div>
           <p className="text-sm text-muted-foreground">What does this insect spread?</p>
         </div>
-        <div className="mt-3 grid gap-2">
-          {opts.map((o) => (
-            <Btn
-              key={o}
-              onClick={() => {
-                const ok = o === info.disease;
-                if (ok) { setRight((r) => r + 1); onAward(2); }
-                setMsg({ ok, text: ok ? "Correct!" : info.disease });
-                setTimeout(() => { setMsg(null); setQi((q) => q + 1); }, 1600);
-              }}
-            >
-              {o}
-            </Btn>
-          ))}
+        <div className="mt-3">
+          <QuizChoices
+            key={v.id}
+            options={opts}
+            answer={info.disease}
+            hint={`This insect feeds on ${v.hosts.toLowerCase()} — the sickness travels along with its bite. 🌾`}
+            onCorrect={() => { setRight((r) => r + 1); onAward(2); }}
+            onNext={() => setQi((q) => q + 1)}
+          />
         </div>
-        {msg && <Feedback ok={msg.ok} text={msg.text} />}
       </div>
     );
   }
@@ -1368,60 +1474,162 @@ function FindTheDisease({ onAward }: { onAward: (n: number) => void }) {
 }
 
 /* ================================================================== */
-/* 11. Insect Travel                                                   */
+/* 11. Insect Travel — "My Big Bug Trip" (story, first-person)         */
 /* ================================================================== */
-const TRAVEL: Record<string, { how: string; part: string }> = {
-  default: { how: "Flying", part: "Wings" },
-};
-function travelFor(i: Insect): { how: string; part: string } {
-  if (/grub|wireworm|maggot|worm|caterpillar/i.test(i.commonName)) return { how: "Crawling", part: "Legs and body muscles" };
-  if (/aphid|thrips|mite/i.test(i.commonName)) return { how: "Wind", part: "Light body and tiny wings" };
-  if (/lantern|longhorn|spongy/i.test(i.commonName)) return { how: "Human traffic", part: "Sticky egg masses that ride on cars and wood" };
-  return TRAVEL.default;
-}
-const TRAVEL_WAYS = ["Wind", "Water", "Human traffic", "Crawling", "Flying", "Animal carrier"];
+const TRAVEL_WAYS: { id: string; emoji: string; label: string; note: string }[] = [
+  { id: "wind", emoji: "🌬️", label: "Ride the wind", note: "Tiny, light insects float away on a breeze." },
+  { id: "fly", emoji: "✈️", label: "Fly with my wings", note: "Strong wings carry me field to field." },
+  { id: "human", emoji: "🚗", label: "Hitch a ride with people", note: "Cars, trucks and firewood move insects far away." },
+  { id: "water", emoji: "💧", label: "Float on the water", note: "Rain and streams wash insects downhill." },
+  { id: "animal", emoji: "🐕", label: "Hitchhike on an animal", note: "I grab onto fur or feathers and hold on." },
+  { id: "crawl", emoji: "🐛", label: "Crawl with my legs", note: "Slow and steady — good for short trips." },
+];
+
+const TRAVEL_STORIES: { scene: string; me: string; goal: string; answer: string; hint: string; win: string; bg: string }[] = [
+  {
+    scene: "🌾 A crowded corn leaf",
+    me: "I am a tiny aphid. My leaf is packed with hundreds of cousins and the sap is running out!",
+    goal: "I am lighter than a crumb and my wings are tiny. How should I travel to the next field?",
+    answer: "wind",
+    hint: "You weigh almost nothing — what invisible thing pushes leaves and seeds across a field? 🌬️",
+    win: "Whoosh! The breeze lifts you high over the fence row and drops you in a fresh green field. Tiny insects travel a LONG way on wind.",
+    bg: "from-secondary/45 via-accent/25 to-primary/20",
+  },
+  {
+    scene: "🌻 A sunny flower patch",
+    me: "I am a honey bee. This clover is empty, but I can see a sunflower field a mile away.",
+    goal: "I have strong wings and a good sense of direction. How should I travel?",
+    answer: "fly",
+    hint: "You buzz! What body part on your thorax beats 200 times a second? ✈️",
+    win: "Zoom! You fly straight to the sunflowers and bring pollen along for the ride. 🌻",
+    bg: "from-primary/30 via-secondary/40 to-accent/20",
+  },
+  {
+    scene: "🪵 A stack of firewood",
+    me: "I am a beetle larva tucked deep inside a log. I cannot fly and I am hidden in the wood.",
+    goal: "A family is loading this firewood into their truck for a camping trip. How will I travel?",
+    answer: "human",
+    hint: "You cannot move on your own — but the log you live in is about to go for a ride. 🚗",
+    win: "You travel 200 miles in one afternoon! This is how invasive insects sneak into new forests — that's why we 'buy it where you burn it'.",
+    bg: "from-accent/35 via-secondary/35 to-primary/20",
+  },
+  {
+    scene: "🌧️ A rainstorm in the garden",
+    me: "I am a soil insect washed out of my burrow. Water is rushing down the row.",
+    goal: "The stream is heading toward the creek and the field on the other side. How will I travel?",
+    answer: "water",
+    hint: "Look at what is carrying the soil down the row right now. 💧",
+    win: "Splash! You float downstream and crawl out on a new bank. Floods move insects and eggs to brand-new places.",
+    bg: "from-accent/40 via-primary/20 to-secondary/35",
+  },
+  {
+    scene: "🐄 The edge of a pasture",
+    me: "I am a sticky little hitchhiker with hooks on my body. A cow is grazing right next to me.",
+    goal: "The herd walks to a new pasture every evening. How will I travel?",
+    answer: "animal",
+    hint: "Something warm and furry is walking past you — grab on! 🐕",
+    win: "You hook onto the cow's hair and ride to the next pasture. Animals carry insects, eggs and seeds all over the farm. 🐄",
+    bg: "from-secondary/40 via-primary/25 to-accent/25",
+  },
+  {
+    scene: "🥬 One cabbage plant",
+    me: "I am a hungry caterpillar with no wings at all. The leaf above me is still juicy.",
+    goal: "My trip is only a few inches. How should I travel?",
+    answer: "crawl",
+    hint: "No wings, no wind needed — just use the six legs you already have. 🐛",
+    win: "Munch, munch! You inch up to the fresh leaf. Not every insect journey has to be a long one.",
+    bg: "from-primary/25 via-secondary/45 to-accent/20",
+  },
+];
 
 function InsectTravel({ onAward }: { onAward: (n: number) => void }) {
   const ROUNDS = 5;
+  const [deck, setDeck] = useState(() => shuffle(TRAVEL_STORIES).slice(0, ROUNDS));
   const [round, setRound] = useState(0);
   const [score, setScore] = useState(0);
-  const [stage, setStage] = useState<"how" | "part">("how");
-  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
-  const bug = useMemo(() => rand(POOL), [round]);
-  const t = travelFor(bug);
-  const partOpts = useMemo(() => shuffle([t.part, "Mouthparts", "Antennae", "Compound eyes"]), [bug]);
+  const [wrongs, setWrongs] = useState<string[]>([]);
+  const [state, setState] = useState<"asking" | "hint" | "right" | "revealed">("asking");
 
-  if (round >= ROUNDS) return <Done score={score} total={ROUNDS * 2} onRestart={() => { setRound(0); setScore(0); setStage("how"); }} />;
+  const story = deck[round];
+
+  const restart = () => {
+    setDeck(shuffle(TRAVEL_STORIES).slice(0, ROUNDS));
+    setRound(0);
+    setScore(0);
+    setWrongs([]);
+    setState("asking");
+  };
+
+  if (round >= deck.length || !story)
+    return <Done score={score} total={ROUNDS} title="🧳 Trip complete!" note="Insects travel by wind, wings, water, animals and even our cars." onRestart={restart} />;
+
+  const answerWay = TRAVEL_WAYS.find((w) => w.id === story.answer)!;
+  const locked = state === "right" || state === "revealed";
 
   return (
     <div>
       <Progress round={round} total={ROUNDS} score={score} />
-      <div className="grid place-items-center rounded-2xl bg-gradient-to-br from-secondary/30 to-accent/25 p-6">
-        <InsectImage id={bug.id} name={bug.commonName} stage="adult" className="h-40 w-40" />
-        <div className="mt-2 text-lg font-bold text-foreground">{bug.commonName}</div>
-        <p className="text-sm text-muted-foreground">{stage === "how" ? "How does this insect travel?" : "Which body part helps it travel that way?"}</p>
+      <div className={`rounded-2xl bg-gradient-to-br ${story.bg} p-5 shadow-sm`}>
+        <div className="text-sm font-bold uppercase tracking-wide text-foreground/70">{story.scene}</div>
+        <p className="mt-2 text-base font-semibold text-foreground">“{story.me}”</p>
+        <p className="mt-2 text-sm font-medium text-foreground/80">{story.goal}</p>
+        <div className="mt-3 flex flex-wrap gap-2 text-2xl">🌾 🌳 ☀️ 🚜 🐝 🌻</div>
       </div>
+
       <div className="mt-4 grid gap-2 sm:grid-cols-3">
-        {(stage === "how" ? TRAVEL_WAYS : partOpts).map((o) => (
-          <Btn
-            key={o}
-            onClick={() => {
-              const target = stage === "how" ? t.how : t.part;
-              const ok = o === target;
-              if (ok) { setScore((s) => s + 1); onAward(1); }
-              setMsg({ ok, text: ok ? "That's right!" : `Answer: ${target}` });
-              setTimeout(() => {
-                setMsg(null);
-                if (stage === "how" && ok) setStage("part");
-                else if (stage === "part") { setStage("how"); setRound((r) => r + 1); }
-              }, 1500);
-            }}
-          >
-            {o}
-          </Btn>
-        ))}
+        {TRAVEL_WAYS.map((w) => {
+          const isWrong = wrongs.includes(w.id);
+          const isAnswer = locked && w.id === story.answer;
+          return (
+            <button
+              key={w.id}
+              disabled={locked || isWrong}
+              onClick={() => {
+                if (w.id === story.answer) {
+                  setState("right");
+                  setScore((s) => s + 1);
+                  onAward(wrongs.length === 0 ? 2 : 1);
+                } else if (wrongs.length === 0) {
+                  setWrongs([w.id]);
+                  setState("hint");
+                } else {
+                  setWrongs((x) => [...x, w.id]);
+                  setState("revealed");
+                }
+              }}
+              className={`rounded-2xl border-2 p-3 text-center transition disabled:cursor-not-allowed ${
+                isAnswer
+                  ? "border-success bg-success/20"
+                  : isWrong
+                    ? "border-destructive/60 bg-destructive/10 opacity-70"
+                    : "border-primary/30 bg-card hover:-translate-y-0.5 hover:bg-primary/10"
+              }`}
+            >
+              <div className="text-4xl">{w.emoji}</div>
+              <div className="mt-1 text-sm font-bold text-foreground">{w.label}</div>
+              <div className="text-[11px] text-muted-foreground">{w.note}</div>
+            </button>
+          );
+        })}
       </div>
-      {msg && <Feedback ok={msg.ok} text={msg.text} />}
+
+      {state === "hint" && (
+        <div className="mt-3 rounded-lg border-2 border-secondary/60 bg-secondary/20 p-3 text-sm font-medium text-foreground">
+          💡 Not quite — here's a hint: {story.hint} Try again!
+        </div>
+      )}
+      {state === "right" && <Feedback ok text={story.win} />}
+      {state === "revealed" && <Feedback ok={false} text={`The best way was ${answerWay.emoji} ${answerWay.label}. ${story.win}`} />}
+      {locked && (
+        <NextBtn
+          onClick={() => {
+            setWrongs([]);
+            setState("asking");
+            setRound((r) => r + 1);
+          }}
+          label={round + 1 >= deck.length ? "Finish trip" : "Next stop"}
+        />
+      )}
     </div>
   );
 }
@@ -1429,68 +1637,105 @@ function InsectTravel({ onAward }: { onAward: (n: number) => void }) {
 /* ================================================================== */
 /* 12. Life Stages Sequence                                            */
 /* ================================================================== */
+const STAGE_EMOJI: Record<string, string> = { egg: "🥚", larva: "🐛", pupa: "🍯", nymph: "🦗", adult: "🦋" };
+
 function LifeStagesSequence({ onAward }: { onAward: (n: number) => void }) {
   const ROUNDS = 4;
   const [round, setRound] = useState(0);
   const [score, setScore] = useState(0);
-  const [order, setOrder] = useState<InsectStage[]>([]);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [held, setHeld] = useState<number | null>(null);
 
   const bug = useMemo(() => rand(POOL), [round]);
   const stages: InsectStage[] = bug.metamorphosis === "Complete" ? ["egg", "larva", "pupa", "adult"] : ["egg", "nymph", "adult"];
-  const jumbled = useMemo(() => shuffle(stages), [bug]);
+  const [order, setOrder] = useState<InsectStage[]>(() => shuffle(stages));
 
-  if (round >= ROUNDS) return <Done score={score} total={ROUNDS} onRestart={() => { setRound(0); setScore(0); setOrder([]); }} />;
+  // Re-deal the cards whenever a new bug appears.
+  useEffect(() => {
+    setOrder(shuffle(bug.metamorphosis === "Complete" ? ["egg", "larva", "pupa", "adult"] : ["egg", "nymph", "adult"]));
+    setHeld(null);
+  }, [bug]);
+
+  const swap = (a: number, b: number) =>
+    setOrder((o) => {
+      const c = [...o];
+      [c[a], c[b]] = [c[b], c[a]];
+      return c;
+    });
+
+  if (round >= ROUNDS)
+    return <Done score={score} total={ROUNDS} title="🦋 Life cycles mastered!" onRestart={() => { setRound(0); setScore(0); setMsg(null); }} />;
 
   return (
     <div>
       <Progress round={round} total={ROUNDS} score={score} />
-      <div className="mb-3 flex items-center gap-3 rounded-xl bg-muted p-3">
+      <div className="mb-3 flex items-center gap-3 rounded-xl bg-gradient-to-r from-secondary/40 to-accent/25 p-3">
         <InsectImage id={bug.id} name={bug.commonName} className="h-16 w-16" />
         <div>
           <div className="font-semibold text-foreground">{bug.commonName}</div>
           <div className="text-xs text-muted-foreground">{bug.metamorphosis} metamorphosis · {stages.length} stages</div>
         </div>
       </div>
-      <p className="mb-2 text-sm text-muted-foreground">Tap the stages in the right order, from egg to adult.</p>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {jumbled.map((s) => {
-          const pos = order.indexOf(s);
-          const src = getInsectImage(bug.id, s);
-          return (
+      <p className="mb-3 text-sm font-medium text-foreground">
+        🚜 Move the cards into the right order, from egg to adult. Drag a card onto another one — or tap one card, then tap where it should go.
+      </p>
+
+      <div className="flex items-stretch gap-1 overflow-x-auto rounded-2xl bg-gradient-to-br from-primary/15 via-secondary/35 to-accent/20 p-3">
+        {order.map((s, idx) => (
+          <div key={s} className="flex items-center gap-1">
             <button
-              key={s}
-              disabled={pos >= 0 || !!msg}
-              onClick={() => setOrder((o) => [...o, s])}
-              className={`rounded-xl border p-2 ${pos >= 0 ? "border-primary bg-primary/10" : "border-border bg-card hover:bg-muted"}`}
+              draggable={!msg}
+              onDragStart={() => setHeld(idx)}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={() => { if (held !== null && held !== idx) swap(held, idx); setHeld(null); }}
+              disabled={!!msg}
+              onClick={() => {
+                if (held === null) setHeld(idx);
+                else if (held === idx) setHeld(null);
+                else { swap(held, idx); setHeld(null); }
+              }}
+              className={`w-24 shrink-0 cursor-grab rounded-xl border-2 bg-card p-2 text-center transition active:cursor-grabbing ${
+                held === idx ? "-translate-y-1 border-primary ring-2 ring-primary" : "border-primary/30 hover:bg-primary/10"
+              }`}
             >
-              {src ? (
-                <img src={src} alt={s} className="h-24 w-full rounded-lg object-cover" />
+              {getInsectImage(bug.id, s) ? (
+                <img src={getInsectImage(bug.id, s)!} alt={s} className="h-20 w-full rounded-lg object-cover" />
               ) : (
-                <div className="grid h-24 place-items-center text-4xl">🥚</div>
+                <div className="grid h-20 place-items-center text-4xl">{STAGE_EMOJI[s]}</div>
               )}
-              <div className="mt-1 text-xs font-semibold capitalize">{s}</div>
-              {pos >= 0 && <div className="text-[10px] text-primary">#{pos + 1}</div>}
+              <div className="mt-1 text-xs font-bold capitalize text-foreground">
+                {STAGE_EMOJI[s]} {s}
+              </div>
             </button>
-          );
-        })}
+            {idx < order.length - 1 && <div className="shrink-0 text-2xl font-bold text-primary">➡️</div>}
+          </div>
+        ))}
       </div>
-      <div className="mt-3 flex gap-2">
-        <Btn onClick={() => setOrder([])}>Clear</Btn>
-        <Btn
-          tone="primary"
-          disabled={order.length < stages.length || !!msg}
-          onClick={() => {
-            const ok = order.every((s, idx) => s === stages[idx]);
-            if (ok) { setScore((s) => s + 1); onAward(2); }
-            setMsg({ ok, text: ok ? "Perfect life cycle!" : `Correct order: ${stages.join(" → ")}` });
-            setTimeout(() => { setMsg(null); setOrder([]); setRound((r) => r + 1); }, 2000);
-          }}
-        >
-          Check order
-        </Btn>
-      </div>
+
       {msg && <Feedback ok={msg.ok} text={msg.text} />}
+
+      {msg ? (
+        <NextBtn onClick={() => { setMsg(null); setRound((r) => r + 1); }} />
+      ) : (
+        <div className="mt-3 flex gap-2">
+          <Btn onClick={() => setOrder(shuffle(stages))}>🔀 Shuffle</Btn>
+          <Btn
+            tone="primary"
+            onClick={() => {
+              const ok = order.every((s, idx) => s === stages[idx]);
+              if (ok) { setScore((s) => s + 1); onAward(2); }
+              setMsg({
+                ok,
+                text: ok
+                  ? `Perfect life cycle: ${stages.map((s) => `${STAGE_EMOJI[s]} ${s}`).join(" → ")}!`
+                  : `Not yet — the correct order is ${stages.map((s) => `${STAGE_EMOJI[s]} ${s}`).join(" → ")}.`,
+              });
+            }}
+          >
+            ✅ Check order
+          </Btn>
+        </div>
+      )}
     </div>
   );
 }
@@ -1499,10 +1744,50 @@ function LifeStagesSequence({ onAward }: { onAward: (n: number) => void }) {
 /* 13. Build an Insect (3-part body plan)                              */
 /* ================================================================== */
 const BODY_PARTS = [
-  { id: "head", label: "Head", glyph: "🟠", note: "Eyes, antennae and mouthparts" },
-  { id: "thorax", label: "Thorax", glyph: "🟡", note: "Where the 6 legs and wings attach" },
-  { id: "abdomen", label: "Abdomen", glyph: "🟢", note: "Holds the stomach and breathing holes" },
+  { id: "head", label: "Head", note: "Eyes, antennae and mouthparts" },
+  { id: "thorax", label: "Thorax", note: "Where the 6 legs and wings attach" },
+  { id: "abdomen", label: "Abdomen", note: "Holds the stomach and breathing holes" },
 ];
+
+/** Friendly cartoon bug head (antennae, big eyes, smile). */
+function BugHead({ size = 96 }: { size?: number }) {
+  return (
+    <svg viewBox="0 0 100 100" width={size} height={size} role="img" aria-label="Cartoon insect head">
+      <path d="M28 26 L14 8" stroke="currentColor" strokeWidth="5" strokeLinecap="round" className="text-foreground/70" />
+      <path d="M72 26 L86 8" stroke="currentColor" strokeWidth="5" strokeLinecap="round" className="text-foreground/70" />
+      <circle cx="12" cy="6" r="6" className="fill-primary" />
+      <circle cx="88" cy="6" r="6" className="fill-primary" />
+      <circle cx="50" cy="56" r="38" className="fill-primary" />
+      <circle cx="36" cy="48" r="11" className="fill-card" />
+      <circle cx="64" cy="48" r="11" className="fill-card" />
+      <circle cx="37" cy="50" r="5" className="fill-foreground" />
+      <circle cx="65" cy="50" r="5" className="fill-foreground" />
+      <path d="M38 74 Q50 84 62 74" stroke="currentColor" strokeWidth="4" fill="none" strokeLinecap="round" className="text-foreground" />
+    </svg>
+  );
+}
+
+/** Chunky body block used for thorax and abdomen. */
+function BodyBlock({ label, tone, size = 96 }: { label: string; tone: "thorax" | "abdomen"; size?: number }) {
+  return (
+    <div
+      style={{ width: size, height: size }}
+      className={`grid place-items-center rounded-2xl border-4 text-center shadow-sm ${
+        tone === "thorax" ? "border-accent/60 bg-accent/40" : "border-success/60 bg-success/30"
+      }`}
+    >
+      <div>
+        <div className="text-xs font-extrabold uppercase tracking-wide text-foreground">{label}</div>
+        <div className="mt-1 text-lg">{tone === "thorax" ? "🦵🦵🦵" : "〰️"}</div>
+      </div>
+    </div>
+  );
+}
+
+function PartArt({ id, size = 96 }: { id: string; size?: number }) {
+  if (id === "head") return <BugHead size={size} />;
+  return <BodyBlock label={id === "thorax" ? "Thorax" : "Abdomen"} tone={id === "thorax" ? "thorax" : "abdomen"} size={size} />;
+}
 
 function BuildAnInsect({ onAward }: { onAward: (n: number) => void }) {
   const [slots, setSlots] = useState<(string | null)[]>([null, null, null]);
@@ -1526,21 +1811,13 @@ function BuildAnInsect({ onAward }: { onAward: (n: number) => void }) {
 
   return (
     <div>
-      <p className="mb-3 text-sm text-muted-foreground">Every insect has 3 body parts. Tap them in order from front to back.</p>
-      <div className="flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-br from-secondary/25 to-accent/25 p-8">
+      <p className="mb-3 text-sm font-medium text-foreground">🐞 Every insect has 3 body parts. Tap them in order from front to back.</p>
+      <div className="flex flex-wrap items-center justify-center gap-2 rounded-2xl bg-gradient-to-br from-secondary/45 via-accent/25 to-primary/20 p-6">
         {slots.map((s, idx) => (
-          <div key={idx} className={`grid h-28 w-28 place-items-center rounded-full border-4 border-dashed text-center ${s ? "border-success bg-success/10" : "border-border"}`}>
-            {s ? (
-              <div>
-                <div className="text-4xl">{BODY_PARTS.find((p) => p.id === s)!.glyph}</div>
-                <div className="text-xs font-semibold capitalize">{s}</div>
-              </div>
-            ) : (
-              <span className="text-xs text-muted-foreground">part {idx + 1}</span>
-            )}
+          <div key={idx} className={`grid h-28 w-28 place-items-center rounded-2xl border-4 border-dashed text-center ${s ? "border-success bg-card/70" : "border-primary/40"}`}>
+            {s ? <PartArt id={s} size={88} /> : <span className="text-xs text-muted-foreground">part {idx + 1}</span>}
           </div>
         ))}
-        <div className="ml-1 text-3xl">🦵🦵🦵</div>
       </div>
       <div className="mt-4 grid gap-2 sm:grid-cols-3">
         {BODY_PARTS.map((p) => (
@@ -1548,18 +1825,21 @@ function BuildAnInsect({ onAward }: { onAward: (n: number) => void }) {
             key={p.id}
             disabled={slots.includes(p.id)}
             onClick={() => place(p.id)}
-            className={`rounded-xl border border-border bg-card p-3 text-left transition disabled:opacity-40 hover:bg-muted ${wrong === p.id ? "k5-shake border-destructive" : ""}`}
+            className={`rounded-xl border-2 border-primary/30 bg-card p-3 text-left transition disabled:opacity-40 hover:bg-primary/10 ${wrong === p.id ? "k5-shake border-destructive" : ""}`}
           >
-            <div className="text-2xl">{p.glyph}</div>
-            <div className="text-sm font-semibold">{p.label}</div>
+            <PartArt id={p.id} size={44} />
+            <div className="mt-1 text-sm font-semibold">{p.label}</div>
             <div className="text-[11px] text-muted-foreground">{p.note}</div>
           </button>
         ))}
       </div>
       {complete && (
         <div className="mt-3">
-          <Feedback ok text="You built an insect: head → thorax → abdomen, with 6 legs on the thorax!" />
-          <Btn onClick={() => setSlots([null, null, null])}>Build another</Btn>
+          <Feedback ok text="You built an insect: head → thorax → abdomen, with 6 legs on the thorax! 🐜" />
+          <div className="mt-2 flex flex-wrap gap-2">
+            <Btn tone="primary" onClick={() => setSlots([null, null, null])}>🔁 Build another</Btn>
+            <ReturnToGamesBtn />
+          </div>
         </div>
       )}
     </div>
@@ -1579,11 +1859,26 @@ function headPos(i: Insect): string {
   if (i.role === "Beneficial" && i.order === "Coleoptera") return "forward";
   return "downward";
 }
-const HEAD_Q = {
-  q: "Why do some insects have a forward-facing head?",
-  right: "It helps predators chase and grab prey",
-  wrong: ["It helps them sleep", "It keeps rain off their wings"],
-};
+const HEAD_QS = [
+  {
+    q: "Why do some insects have a forward-facing head?",
+    right: "It helps predators chase and grab prey",
+    wrong: ["It helps them sleep", "It keeps rain off their wings"],
+    hint: "Think about a ground beetle running after its dinner. 🏃",
+  },
+  {
+    q: "Why does a grasshopper's head point downward?",
+    right: "So it can chew the leaves right below its mouth",
+    wrong: ["So it can see the clouds", "So it can dig tunnels"],
+    hint: "Where is a grasshopper's food when it stands on a leaf? 🌿",
+  },
+  {
+    q: "Why do aphids and stink bugs tuck their beak backward under the body?",
+    right: "It keeps the straw-like beak safe until they sip plant sap",
+    wrong: ["It helps them fly faster", "It makes them look bigger"],
+    hint: "Their mouth is a long straw — where would you keep a straw you're not using? 🥤",
+  },
+];
 
 function HeadPositionMatch({ onAward }: { onAward: (n: number) => void }) {
   const ROUNDS = 3;
@@ -1592,7 +1887,9 @@ function HeadPositionMatch({ onAward }: { onAward: (n: number) => void }) {
   const [phase, setPhase] = useState<"match" | "quiz">("match");
   const [matched, setMatched] = useState<string[]>([]);
   const [selBug, setSelBug] = useState<string | null>(null);
+  const [showHint, setShowHint] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [qDeck] = useState(() => shuffle(HEAD_QS));
 
   const bugs = useMemo(() => {
     const pick = (pos: string) => rand(POOL.filter((i) => headPos(i) === pos));
@@ -1600,79 +1897,95 @@ function HeadPositionMatch({ onAward }: { onAward: (n: number) => void }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [round]);
   const positions = useMemo(() => shuffle(HEAD_POSITIONS), [round]);
-  const quizOpts = useMemo(() => shuffle([HEAD_Q.right, ...HEAD_Q.wrong]), [round]);
+  const quiz = qDeck[round % qDeck.length];
+  const quizOpts = useMemo(() => shuffle([quiz.right, ...quiz.wrong]), [quiz]);
 
-  if (round >= ROUNDS) return <Done score={score} total={ROUNDS} onRestart={() => { setRound(0); setScore(0); setMatched([]); setPhase("match"); }} />;
+  if (round >= ROUNDS)
+    return <Done score={score} total={ROUNDS} title="🔍 Head detective!" onRestart={() => { setRound(0); setScore(0); setMatched([]); setPhase("match"); }} />;
+
+  const selected = bugs.find((b) => b.id === selBug);
 
   return (
     <div>
       <Progress round={round} total={ROUNDS} score={score} />
       {phase === "match" ? (
         <>
-          <p className="mb-3 text-sm text-muted-foreground">Tap an insect, then tap the head position that matches it.</p>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="grid grid-cols-3 gap-2">
-              {bugs.map((b) => (
+          <p className="mb-3 text-sm font-medium text-foreground">🔎 Tap an insect to zoom in, then choose the head position that matches it.</p>
+          <div className="grid grid-cols-3 gap-3 rounded-2xl bg-gradient-to-br from-secondary/40 via-accent/20 to-primary/20 p-3">
+            {bugs.map((b) => (
+              <button
+                key={b.id}
+                disabled={matched.includes(b.id)}
+                onClick={() => { setSelBug(b.id); setShowHint(false); }}
+                className={`rounded-2xl border-4 bg-card p-1 text-center transition ${
+                  matched.includes(b.id)
+                    ? "border-success opacity-70"
+                    : selBug === b.id
+                      ? "-translate-y-1 border-primary ring-2 ring-primary"
+                      : "border-primary/25 hover:bg-primary/10"
+                }`}
+              >
+                <InsectImage id={b.id} name={b.commonName} className="mx-auto h-36 w-full sm:h-48" />
+                <div className="mt-1 text-xs font-bold text-foreground">{matched.includes(b.id) ? "✅ " : ""}{b.commonName}</div>
+              </button>
+            ))}
+          </div>
+
+          {selected && (
+            <div className="mt-3 flex items-center justify-between gap-2 rounded-lg bg-muted/60 p-2 text-sm">
+              <span className="font-semibold text-foreground">Selected: {selected.commonName}</span>
+              <button onClick={() => setShowHint((h) => !h)} className="rounded-md border-2 border-secondary/60 bg-secondary/20 px-3 py-1 text-xs font-bold text-foreground">
+                💡 {showHint ? "Hide hint" : "Need a hint?"}
+              </button>
+            </div>
+          )}
+          {selected && showHint && (
+            <div className="mt-2 rounded-lg border-2 border-secondary/60 bg-secondary/20 p-3 text-sm font-medium text-foreground">
+              This insect is a {selected.order === "Hemiptera" ? "sap sucker with a long straw-like beak 🥤" : isHelper(selected) && selected.order === "Coleoptera" ? "fast hunter that chases other bugs 🏃" : "leaf chewer that eats what is right below it 🌿"}.
+            </div>
+          )}
+
+          <div className="mt-3 space-y-2">
+            {positions.map((p) => {
+              const owner = bugs.find((b) => headPos(b) === p.id);
+              const isDone = owner && matched.includes(owner.id);
+              return (
                 <button
-                  key={b.id}
-                  disabled={matched.includes(b.id)}
-                  onClick={() => setSelBug(b.id)}
-                  className={`rounded-xl border p-2 text-center ${matched.includes(b.id) ? "border-success bg-success/10" : selBug === b.id ? "border-primary bg-primary/10" : "border-border bg-card"}`}
+                  key={p.id}
+                  onClick={() => {
+                    if (!selBug) return;
+                    const bug = bugs.find((b) => b.id === selBug)!;
+                    const ok = headPos(bug) === p.id;
+                    if (ok) {
+                      const nm = [...matched, bug.id];
+                      setMatched(nm);
+                      onAward(1);
+                      if (nm.length === bugs.length) setTimeout(() => { setMsg(null); setPhase("quiz"); }, 900);
+                    }
+                    setMsg({ ok, text: ok ? `${bug.commonName}: ${p.hint}` : "Not that one — tap 💡 for a hint and try again." });
+                    setSelBug(ok ? null : selBug);
+                    setTimeout(() => setMsg(null), 1800);
+                  }}
+                  className={`w-full rounded-lg border-2 p-3 text-left text-sm ${isDone ? "border-success bg-success/15" : "border-primary/30 bg-card hover:bg-primary/10"}`}
                 >
-                  <InsectImage id={b.id} name={b.commonName} className="mx-auto h-16 w-16" />
-                  <div className="mt-1 text-[11px] font-medium">{b.commonName}</div>
+                  <div className="font-bold text-foreground">{p.label}</div>
+                  <div className="text-[11px] text-muted-foreground">{p.hint}</div>
                 </button>
-              ))}
-            </div>
-            <div className="space-y-2">
-              {positions.map((p) => {
-                const owner = bugs.find((b) => headPos(b) === p.id);
-                const isDone = owner && matched.includes(owner.id);
-                return (
-                  <button
-                    key={p.id}
-                    onClick={() => {
-                      if (!selBug) return;
-                      const bug = bugs.find((b) => b.id === selBug)!;
-                      const ok = headPos(bug) === p.id;
-                      if (ok) {
-                        const nm = [...matched, bug.id];
-                        setMatched(nm);
-                        onAward(1);
-                        if (nm.length === bugs.length) setTimeout(() => setPhase("quiz"), 700);
-                      }
-                      setMsg({ ok, text: ok ? `${bug.commonName}: ${p.hint}` : "Try a different head position." });
-                      setSelBug(null);
-                      setTimeout(() => setMsg(null), 1600);
-                    }}
-                    className={`w-full rounded-lg border p-3 text-left text-sm ${isDone ? "border-success bg-success/10" : "border-border bg-card hover:bg-muted"}`}
-                  >
-                    <div className="font-semibold">{p.label}</div>
-                    <div className="text-[11px] text-muted-foreground">{p.hint}</div>
-                  </button>
-                );
-              })}
-            </div>
+              );
+            })}
           </div>
         </>
       ) : (
         <div>
-          <p className="mb-2 font-semibold text-foreground">{HEAD_Q.q}</p>
-          <div className="grid gap-2">
-            {quizOpts.map((o) => (
-              <Btn
-                key={o}
-                onClick={() => {
-                  const ok = o === HEAD_Q.right;
-                  if (ok) { setScore((s) => s + 1); onAward(2); }
-                  setMsg({ ok, text: ok ? "Correct!" : HEAD_Q.right });
-                  setTimeout(() => { setMsg(null); setMatched([]); setPhase("match"); setRound((r) => r + 1); }, 1600);
-                }}
-              >
-                {o}
-              </Btn>
-            ))}
-          </div>
+          <p className="mb-2 text-base font-bold text-foreground">{quiz.q}</p>
+          <QuizChoices
+            key={quiz.q}
+            options={quizOpts}
+            answer={quiz.right}
+            hint={quiz.hint}
+            onCorrect={() => { setScore((s) => s + 1); onAward(2); }}
+            onNext={() => { setMatched([]); setPhase("match"); setRound((r) => r + 1); }}
+          />
         </div>
       )}
       {msg && <Feedback ok={msg.ok} text={msg.text} />}
@@ -1717,8 +2030,26 @@ function IPMBeginner({ onAward }: { onAward: (n: number) => void }) {
             </button>
           ),
         )}
-        {doneAll && <div className="grid h-full place-items-center text-2xl font-bold text-foreground">🌾 Field cleared!</div>}
+        {doneAll && (
+          <div className="grid h-full place-items-center p-4 text-center">
+            <div>
+              <div className="text-4xl">🚜🌽🌻</div>
+              <div className="mt-2 text-2xl font-extrabold text-foreground">Field cleared!</div>
+              <p className="mx-auto mt-2 max-w-md text-sm font-medium text-foreground/80">
+                You managed the pests and protected every helper. The farmer's corn keeps its leaves, the bees keep pollinating, and this field
+                will yield about <span className="font-extrabold">15% more grain</span> than a field that was sprayed all over. 🌾
+              </p>
+              <div className="mt-3 inline-block rounded-full bg-success/25 px-4 py-1.5 text-sm font-bold text-success">🏅 Badge earned: Junior IPM Scout</div>
+            </div>
+          </div>
+        )}
       </div>
+      {doneAll && (
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Btn tone="primary" onClick={() => { setSeed((s) => s + 1); setCleared([]); }}>🔁 Scout a new field</Btn>
+          <ReturnToGamesBtn />
+        </div>
+      )}
 
       {open && (
         <div className="fixed inset-0 z-50 grid place-items-center bg-foreground/60 p-4">
@@ -1746,6 +2077,11 @@ function IPMBeginner({ onAward }: { onAward: (n: number) => void }) {
             ) : (
               <>
                 <p className="mt-3 text-center font-semibold text-foreground">Should you manage the {open.commonName}?</p>
+                <p className="mt-2 rounded-lg border-2 border-secondary/60 bg-secondary/20 p-2 text-center text-xs font-medium text-foreground">
+                  💡 Field clue: {isHelper(open)
+                    ? "you keep spotting this one hunting other bugs or visiting flowers — the leaves around it look untouched. 🌻"
+                    : `the leaves near this one are chewed, spotted or curled, and it keeps feeding on ${open.hosts.toLowerCase()}. 🍃`}
+                </p>
                 <div className="mt-2 grid grid-cols-2 gap-2">
                   {[true, false].map((v) => (
                     <Btn
@@ -1790,7 +2126,6 @@ function InsectSteward({ onAward }: { onAward: (n: number) => void }) {
   const TOTAL = 8;
   const [round, setRound] = useState(0);
   const [score, setScore] = useState(0);
-  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const list = useMemo(() => shuffle(helpers).slice(0, TOTAL), []);
   const bug = list[round];
   const opts = useMemo(() => (bug ? shuffle([rand(STEWARD_GOOD), ...shuffle(STEWARD_BAD).slice(0, 2)]) : []), [bug]);
@@ -1808,22 +2143,17 @@ function InsectSteward({ onAward }: { onAward: (n: number) => void }) {
           <p className="mt-1 text-sm font-medium text-primary">How should a good steward take care of it?</p>
         </div>
       </div>
-      <div className="mt-4 grid gap-2">
-        {opts.map((o) => (
-          <Btn
-            key={o}
-            onClick={() => {
-              const ok = STEWARD_GOOD.includes(o);
-              if (ok) { setScore((s) => s + 1); onAward(2); }
-              setMsg({ ok, text: ok ? "Great stewardship — the helper stays alive and keeps working!" : "That would harm a helpful insect. Choose a care option instead." });
-              setTimeout(() => { setMsg(null); setRound((r) => r + 1); }, 1700);
-            }}
-          >
-            {o}
-          </Btn>
-        ))}
+      <div className="mt-4">
+        <QuizChoices
+          key={bug.id}
+          options={opts}
+          answer={opts.find((o) => STEWARD_GOOD.includes(o))!}
+          hint="A good steward keeps helpers alive — look for the choice that gives food, water or shelter instead of killing bugs. 🌻"
+          rightText="Great stewardship — the helper stays alive and keeps working! 🐝"
+          onCorrect={() => { setScore((s) => s + 1); onAward(2); }}
+          onNext={() => setRound((r) => r + 1)}
+        />
       </div>
-      {msg && <Feedback ok={msg.ok} text={msg.text} />}
     </div>
   );
 }
@@ -1845,7 +2175,7 @@ export const BUG_BUDDY_GAMES: BBGame[] = [
   { id: "web-of-life", name: "Web of Life: Story of the Meadow", emoji: "🕸️", topic: "Food webs", blurb: "Explore a meadow, build food chains into a web, then predict what happens when things change.", render: (a, onClose) => <WebOfLife onAward={a} onClose={onClose} /> },
   { id: "pull-the-string", name: "Pull the String", emoji: "🪢", topic: "Ecosystem balance", blurb: "Tug one strand of the web, watch the ripple, then build and rescue a balanced ecosystem.", render: (a, onClose) => <PullTheString onAward={a} onClose={onClose} /> },
   { id: "find-disease", name: "Find the Disease", emoji: "🦠", topic: "Disease carriers", blurb: "Spot vectors, then name what they spread.", render: (a) => <FindTheDisease onAward={a} /> },
-  { id: "insect-travel", name: "Insect Travel", emoji: "🧳", topic: "Dispersal", blurb: "How — and with what body part — do they move?", render: (a) => <InsectTravel onAward={a} /> },
+  { id: "insect-travel", name: "Insect Travel", emoji: "🧳", topic: "Dispersal", blurb: "Be the insect: pick how to travel — wind, wings, water, animals or a ride with people.", render: (a) => <InsectTravel onAward={a} /> },
   { id: "life-stages", name: "Life Stages Sequence", emoji: "🥚", topic: "Life stages", blurb: "Put the life stages in order.", render: (a) => <LifeStagesSequence onAward={a} /> },
   { id: "build-insect", name: "Build an Insect", emoji: "🧱", topic: "3-part body plan", blurb: "Head, thorax, abdomen — in order.", render: (a) => <BuildAnInsect onAward={a} /> },
   { id: "head-position", name: "Head Position Match", emoji: "🙂", topic: "Head position", blurb: "Match insects to their head positions.", render: (a) => <HeadPositionMatch onAward={a} /> },
