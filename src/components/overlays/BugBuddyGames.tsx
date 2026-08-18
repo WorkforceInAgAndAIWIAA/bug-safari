@@ -485,9 +485,11 @@ function DecomposerDash({ onAward }: { onAward: (n: number) => void }) {
   const [phase, setPhase] = useState<"playing" | "cleared" | "done">("playing");
   const fieldRef = useRef<HTMLDivElement | null>(null);
   const idRef = useRef(0);
+  const collectedRef = useRef<Set<number>>(new Set());
   const decomposer = useMemo(() => rand(POOL.filter((i) => /grub|wireworm|maggot|beetle/i.test(i.commonName))) ?? POOL[0], []);
   const options = useMemo(() => shuffle([DECOMP_Q.right, ...DECOMP_Q.wrong]), []);
 
+  const BANK_TARGET = 8;
   const level = Math.min(5, 1 + Math.floor(caught / 6));
   const fallStep = 1.8 + (level - 1) * 0.7;
   const spawnMs = Math.max(600, 1200 - (level - 1) * 140);
@@ -505,7 +507,7 @@ function DecomposerDash({ onAward }: { onAward: (n: number) => void }) {
   }, [unlocked, phase, fallStep, spawnMs, round]);
 
   useEffect(() => {
-    if (bank >= 10) {
+    if (bank >= BANK_TARGET) {
       setBank(0);
       setSoil((s) => Math.min(100, s + 25));
       onAward(3);
@@ -517,6 +519,7 @@ function DecomposerDash({ onAward }: { onAward: (n: number) => void }) {
       setPhase("cleared");
       setItems([]);
       setTrail([]);
+      collectedRef.current.clear();
       onAward(5);
     }
   }, [soil, phase, onAward]);
@@ -529,10 +532,18 @@ function DecomposerDash({ onAward }: { onAward: (n: number) => void }) {
     const y = ((clientY - r.top) / r.height) * 100;
     setTrail((t) => [...t.slice(-14), { x, y }]);
     setItems((it) => {
-      const kept = it.filter((i) => Math.abs(i.x + 3 - x) > 9 || Math.abs(i.y + 4 - y) > 11);
-      const sliced = it.length - kept.length;
+      const kept: typeof it = [];
+      let sliced = 0;
+      for (const i of it) {
+        if (Math.abs(i.x + 3 - x) <= 9 && Math.abs(i.y + 4 - y) <= 11 && !collectedRef.current.has(i.key)) {
+          collectedRef.current.add(i.key);
+          sliced += 1;
+        } else {
+          kept.push(i);
+        }
+      }
       if (sliced > 0) {
-        setBank((b) => Math.min(10, b + sliced));
+        setBank((b) => Math.min(BANK_TARGET, b + sliced));
         setCaught((c) => c + sliced);
       }
       return kept;
