@@ -1898,7 +1898,7 @@ export function BugBuddyGamesHub() {
         </div>
         <h3 className="mb-1 text-lg font-bold text-foreground">{active.emoji} {active.name}</h3>
         <p className="mb-3 text-xs text-muted-foreground">{active.blurb}</p>
-        {active.render(add)}
+        {active.render(add, () => setActive(null))}
       </div>
     );
 
