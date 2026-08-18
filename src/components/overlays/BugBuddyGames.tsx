@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { insects as ALL, type Insect } from "@/data/insects";
 import { InsectImage } from "@/components/InsectImage";
 import { InsectInvasion } from "@/components/overlays/games/InsectInvasion";
+import { WebOfLife } from "@/components/overlays/games/WebOfLife";
+import { PullTheString } from "@/components/overlays/games/PullTheString";
 import { getInsectImage, hasInsectImage, type InsectStage } from "@/lib/insectImages";
 import {
   AlertTriangle, Armchair, ArrowLeft, Bug, Carrot, CheckCircle2, Eye, Flower2,
@@ -1263,8 +1265,6 @@ function BeneficialSort({ onAward }: { onAward: (n: number) => void }) {
 }
 
 /* ================================================================== */
-/* 9. Connect the Web                                                  */
-/* ================================================================== */
 function ConnectTheWeb({ onAward }: { onAward: (n: number) => void }) {
   const ROUNDS = 5;
   const [round, setRound] = useState(0);
@@ -1911,7 +1911,8 @@ export const BUG_BUDDY_GAMES: BBGame[] = [
   { id: "predator-pest", name: "Predator vs. Pest", emoji: "🏰", topic: "Predator/pest", blurb: "Knights vs. invaders: pick the helper that keeps the ecosystem balanced.", render: (a, onClose) => <PredatorVsPest onAward={a} onClose={onClose} /> },
   { id: "beneficial-sort", name: "Beneficial Sort", emoji: "🧺", topic: "Beneficial insects", blurb: "Collect bugs in 15s, then sort them.", render: (a) => <BeneficialSort onAward={a} /> },
   { id: "insect-invasion", name: "Insect Invasion: Save the Farm!", emoji: "🚨", topic: "Invasive species", blurb: "Scout, identify and stop an invader before it unbalances the farm.", render: (a, onClose) => <InsectInvasion onAward={a} onClose={onClose} /> },
-  { id: "connect-web", name: "Connect the Web", emoji: "🕸️", topic: "Food webs", blurb: "Order producer to decomposer.", render: (a) => <ConnectTheWeb onAward={a} /> },
+  { id: "web-of-life", name: "Web of Life: Story of the Meadow", emoji: "🕸️", topic: "Food webs", blurb: "Explore a meadow, build food chains into a web, then predict what happens when things change.", render: (a, onClose) => <WebOfLife onAward={a} onClose={onClose} /> },
+  { id: "pull-the-string", name: "Pull the String", emoji: "🪢", topic: "Ecosystem balance", blurb: "Tug one strand of the web, watch the ripple, then build and rescue a balanced ecosystem.", render: (a, onClose) => <PullTheString onAward={a} onClose={onClose} /> },
   { id: "find-disease", name: "Find the Disease", emoji: "🦠", topic: "Disease carriers", blurb: "Spot vectors, then name what they spread.", render: (a) => <FindTheDisease onAward={a} /> },
   { id: "insect-travel", name: "Insect Travel", emoji: "🧳", topic: "Dispersal", blurb: "How — and with what body part — do they move?", render: (a) => <InsectTravel onAward={a} /> },
   { id: "life-stages", name: "Life Stages Sequence", emoji: "🥚", topic: "Life stages", blurb: "Put the life stages in order.", render: (a) => <LifeStagesSequence onAward={a} /> },
