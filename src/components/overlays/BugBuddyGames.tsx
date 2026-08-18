@@ -1743,7 +1743,7 @@ export const BUG_BUDDY_GAMES: BBGame[] = [
   { id: "mix-match", name: "Insect Mix and Match", emoji: "🌈", topic: "Biodiversity", blurb: "Rate the mix, then swap in new species.", render: (a) => <MixAndMatch onAward={a} /> },
   { id: "decomposer-dash", name: "Decomposer Dash", emoji: "♻️", topic: "Decomposers", blurb: "Catch leaves and return compost to the soil.", render: (a) => <DecomposerDash onAward={a} /> },
   { id: "pollinator-power", name: "Pollinator Power", emoji: "🌻", topic: "Pollinators", blurb: "Guard your flower and welcome pollinators.", render: (a) => <PollinatorPower onAward={a} /> },
-  { id: "predator-pest", name: "Predator vs. Pest", emoji: "🏰", topic: "Predator/pest", blurb: "Knights vs. invaders: pick the bug that guards the castle.", render: (a) => <PredatorVsPest onAward={a} /> },
+  { id: "predator-pest", name: "Predator vs. Pest", emoji: "🏰", topic: "Predator/pest", blurb: "Knights vs. invaders: pick the helper that keeps the ecosystem balanced.", render: (a) => <PredatorVsPest onAward={a} /> },
   { id: "beneficial-sort", name: "Beneficial Sort", emoji: "🧺", topic: "Beneficial insects", blurb: "Collect bugs in 15s, then sort them.", render: (a) => <BeneficialSort onAward={a} /> },
   { id: "invasive-impact", name: "Invasive Impact", emoji: "🚨", topic: "Native & invasive", blurb: "Match invaders to the damage they do.", render: (a) => <InvasiveImpact onAward={a} /> },
   { id: "connect-web", name: "Connect the Web", emoji: "🕸️", topic: "Food webs", blurb: "Order producer to decomposer.", render: (a) => <ConnectTheWeb onAward={a} /> },
