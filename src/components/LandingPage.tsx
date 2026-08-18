@@ -75,24 +75,24 @@ export function LandingPage(p: Props) {
               style={{ opacity: i === heroIdx ? 1 : 0 }}
             />
           ))}
-          <div className="absolute inset-0 bg-primary/70" />
-          <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary/80 to-primary/25" />
+          <div className="absolute inset-0 bg-primary/80" />
+          <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary/85 to-primary/30" />
         </div>
         <div className="relative mx-auto max-w-7xl px-6 py-24 sm:py-32">
           <div className="max-w-2xl">
-            <span className="text-[11px] font-bold uppercase tracking-[0.35em] text-accent">EntoQuest</span>
+            <span className="text-[11px] font-bold uppercase tracking-[0.35em] text-primary-foreground/90">EntoQuest</span>
             <h1 className="mt-4 font-display text-5xl font-extrabold leading-[1.05] tracking-tight text-primary-foreground sm:text-6xl">
               Entomology
               <br />
               <span className="text-accent">for Every Age</span>
             </h1>
-            <p className="mt-5 max-w-lg text-base leading-relaxed text-primary-foreground/80">
+            <p className="mt-5 max-w-lg text-base leading-relaxed text-primary-foreground/90">
               Identify, scout, and manage 108 insect species. Learn, practice, and play through an
               interactive field school built for K–College classrooms.
             </p>
             <button
               onClick={() => setDest("learn")}
-              className="mt-8 inline-flex items-center gap-2 border border-accent bg-accent px-6 py-3 text-sm font-bold uppercase tracking-wider text-accent-foreground transition hover:bg-transparent hover:text-accent"
+              className="mt-8 inline-flex items-center gap-2 border border-primary-foreground bg-primary-foreground px-6 py-3 text-sm font-bold uppercase tracking-wider text-primary transition hover:bg-transparent hover:text-primary-foreground"
             >
               Start your journey →
             </button>
