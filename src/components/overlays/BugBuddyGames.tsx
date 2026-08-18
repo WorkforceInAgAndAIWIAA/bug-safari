@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { insects as ALL, type Insect } from "@/data/insects";
 import { InsectImage } from "@/components/InsectImage";
+import { InsectInvasion } from "@/components/overlays/games/InsectInvasion";
 import { getInsectImage, hasInsectImage, type InsectStage } from "@/lib/insectImages";
 import {
   AlertTriangle, Armchair, ArrowLeft, Bug, Carrot, CheckCircle2, Eye, Flower2,
@@ -26,7 +27,6 @@ const POOL = ALL.filter((i) => hasInsectImage(i.id));
 const helpers = POOL.filter((i) => i.role === "Beneficial" || i.role === "Pollinator" || i.role === "Pollinator/Pest");
 const pollinators = POOL.filter((i) => i.role === "Pollinator" || i.role === "Pollinator/Pest");
 const pests = POOL.filter((i) => i.role === "Pest" || i.role === "Invasive Pest");
-const invasives = POOL.filter((i) => i.role === "Invasive Pest");
 const isHelper = (i: Insect) => helpers.some((h) => h.id === i.id);
 
 const POINTS_KEY = "entoquest.k5.points";
@@ -1263,99 +1263,6 @@ function BeneficialSort({ onAward }: { onAward: (n: number) => void }) {
 }
 
 /* ================================================================== */
-/* 8. Invasive Impact                                                  */
-/* ================================================================== */
-const IMPACTS: Record<string, string> = {
-  "spotted-lantern-fly": "Sucks sap from trees and grapevines and coats them in sticky honeydew",
-  "spongy-moth": "Caterpillars strip the leaves off whole forests of trees",
-  "emerald-ash-borer": "Larvae tunnel under bark and kill ash trees",
-  "japanese-beetle": "Adults skeletonize leaves while grubs chew grass roots",
-  "asian-longhorn-beetle": "Bores big holes in hardwood trees until they fall",
-  "brown-marmorated-stink-bug": "Pierces fruit and vegetables, leaving dimples and rot",
-  "soybean-aphid": "Multiplies fast and drains sap from soybean plants",
-};
-function impactFor(i: Insect) {
-  return IMPACTS[i.id] ?? `Spreads quickly and damages ${i.hosts.toLowerCase()} where it has no natural enemies`;
-}
-
-function InvasiveImpact({ onAward }: { onAward: (n: number) => void }) {
-  const ROUNDS = 3;
-  const [round, setRound] = useState(0);
-  const [score, setScore] = useState(0);
-  const [submitted, setSubmitted] = useState(false);
-  const [pick, setPick] = useState<Record<string, string>>({});
-  const [sel, setSel] = useState<string | null>(null);
-
-  const set = useMemo(() => shuffle(invasives.length >= 4 ? invasives : pests).slice(0, 4), [round]);
-  const impacts = useMemo(() => shuffle(set.map((i) => impactFor(i))), [set]);
-
-  if (round >= ROUNDS) return <Done score={score} total={ROUNDS * 4} onRestart={() => { setRound(0); setScore(0); setPick({}); setSubmitted(false); }} />;
-
-  return (
-    <div>
-      <Progress round={round} total={ROUNDS} score={score} />
-      <p className="mb-3 text-sm text-muted-foreground">Tap an insect, then tap the impact it causes.</p>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-2">
-          {set.map((i) => (
-            <button
-              key={i.id}
-              onClick={() => !submitted && setSel(i.id)}
-              className={`flex w-full items-center gap-2 rounded-lg border p-2 text-left ${sel === i.id ? "border-primary bg-primary/10" : "border-border bg-card"}`}
-            >
-              <InsectImage id={i.id} name={i.commonName} className="h-14 w-14" />
-              <div className="flex-1">
-                <div className="text-sm font-semibold">{i.commonName}</div>
-                <div className="text-[11px] text-muted-foreground">{pick[i.id] ? `→ ${pick[i.id].slice(0, 40)}…` : "not matched yet"}</div>
-              </div>
-              {submitted && (pick[i.id] === impactFor(i) ? <CheckCircle2 className="h-4 w-4 text-success" /> : <XCircle className="h-4 w-4 text-destructive" />)}
-            </button>
-          ))}
-        </div>
-        <div className="space-y-2">
-          {impacts.map((im) => (
-            <button
-              key={im}
-              onClick={() => { if (!submitted && sel) { setPick((p) => ({ ...p, [sel]: im })); setSel(null); } }}
-              className="w-full rounded-lg border border-border bg-card p-2 text-left text-xs hover:bg-muted"
-            >
-              {im}
-            </button>
-          ))}
-        </div>
-      </div>
-      {submitted && (
-        <div className="mt-3 space-y-1 text-xs">
-          {set.map((i) => (
-            <div key={i.id} className={pick[i.id] === impactFor(i) ? "text-success" : "text-destructive"}>
-              <strong>{i.commonName}:</strong> {impactFor(i)}
-            </div>
-          ))}
-        </div>
-      )}
-      <div className="mt-4 text-right">
-        {submitted ? (
-          <Btn tone="primary" onClick={() => { setRound((r) => r + 1); setPick({}); setSubmitted(false); }}>Next round →</Btn>
-        ) : (
-          <Btn
-            tone="primary"
-            disabled={Object.keys(pick).length < 4}
-            onClick={() => {
-              const right = set.filter((i) => pick[i.id] === impactFor(i)).length;
-              setScore((s) => s + right);
-              onAward(right);
-              setSubmitted(true);
-            }}
-          >
-            Submit matches
-          </Btn>
-        )}
-      </div>
-    </div>
-  );
-}
-
-/* ================================================================== */
 /* 9. Connect the Web                                                  */
 /* ================================================================== */
 function ConnectTheWeb({ onAward }: { onAward: (n: number) => void }) {
@@ -2003,7 +1910,7 @@ export const BUG_BUDDY_GAMES: BBGame[] = [
   { id: "pollinator-power", name: "Pollinator Power", emoji: "🌻", topic: "Pollinators", blurb: "Guard your flower and welcome pollinators.", render: (a) => <PollinatorPower onAward={a} /> },
   { id: "predator-pest", name: "Predator vs. Pest", emoji: "🏰", topic: "Predator/pest", blurb: "Knights vs. invaders: pick the helper that keeps the ecosystem balanced.", render: (a, onClose) => <PredatorVsPest onAward={a} onClose={onClose} /> },
   { id: "beneficial-sort", name: "Beneficial Sort", emoji: "🧺", topic: "Beneficial insects", blurb: "Collect bugs in 15s, then sort them.", render: (a) => <BeneficialSort onAward={a} /> },
-  { id: "invasive-impact", name: "Invasive Impact", emoji: "🚨", topic: "Native & invasive", blurb: "Match invaders to the damage they do.", render: (a) => <InvasiveImpact onAward={a} /> },
+  { id: "insect-invasion", name: "Insect Invasion: Save the Farm!", emoji: "🚨", topic: "Invasive species", blurb: "Scout, identify and stop an invader before it unbalances the farm.", render: (a, onClose) => <InsectInvasion onAward={a} onClose={onClose} /> },
   { id: "connect-web", name: "Connect the Web", emoji: "🕸️", topic: "Food webs", blurb: "Order producer to decomposer.", render: (a) => <ConnectTheWeb onAward={a} /> },
   { id: "find-disease", name: "Find the Disease", emoji: "🦠", topic: "Disease carriers", blurb: "Spot vectors, then name what they spread.", render: (a) => <FindTheDisease onAward={a} /> },
   { id: "insect-travel", name: "Insect Travel", emoji: "🧳", topic: "Dispersal", blurb: "How — and with what body part — do they move?", render: (a) => <InsectTravel onAward={a} /> },
