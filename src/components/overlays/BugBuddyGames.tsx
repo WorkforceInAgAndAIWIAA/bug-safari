@@ -1023,17 +1023,50 @@ function PredatorVsPest({ onAward, onClose }: { onAward: (n: number) => void; on
 /* ================================================================== */
 /* 7. Beneficial Sort                                                  */
 /* ================================================================== */
+function sortBullets(i: Insect): string[] {
+  const host = i.hosts.split(",")[0].trim().toLowerCase();
+  const meta = i.metamorphosis.toLowerCase();
+  if (isHelper(i)) {
+    if (i.role === "Pollinator" || i.role === "Pollinator/Pest") {
+      return [
+        `Visits flowers to help plants make seeds and fruit`,
+        `Moves pollen from bloom to bloom`,
+        `Grows up with ${meta} metamorphosis`,
+      ];
+    }
+    return [
+      `Eats or traps plant-damaging bugs`,
+      `Protects gardens and farm crops`,
+      `Grows up with ${meta} metamorphosis`,
+    ];
+  }
+  if (i.role === "Invasive Pest") {
+    return [
+      `Came from far away with few natural enemies`,
+      `Damages ${host}`,
+      `Grows up with ${meta} metamorphosis`,
+    ];
+  }
+  return [
+    `Feeds on ${host}`,
+    `Can hurt leaves, roots, or fruit`,
+    `Grows up with ${meta} metamorphosis`,
+  ];
+}
+
 function BeneficialSort({ onAward }: { onAward: (n: number) => void }) {
   const FIELDS = 3;
+  const BUGS_PER_FIELD = 10;
   const [field, setField] = useState(0);
-  const [phase, setPhase] = useState<"collect" | "sort" | "review">("collect");
+  const [phase, setPhase] = useState<"collect" | "sort" | "review" | "done">("collect");
   const [left, setLeft] = useState(15);
   const [caught, setCaught] = useState<Insect[]>([]);
   const [answers, setAnswers] = useState<Record<string, boolean>>({});
   const [totalRight, setTotalRight] = useState(0);
+  const [fieldScore, setFieldScore] = useState(0);
 
   const spread = useMemo(
-    () => shuffle(POOL).slice(0, 10).map((i) => ({ i, x: 5 + Math.random() * 82, y: 8 + Math.random() * 74 })),
+    () => shuffle(POOL).slice(0, BUGS_PER_FIELD).map((i) => ({ i, x: 5 + Math.random() * 82, y: 8 + Math.random() * 74 })),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [field],
   );
@@ -1048,24 +1081,67 @@ function BeneficialSort({ onAward }: { onAward: (n: number) => void }) {
     return () => clearInterval(t);
   }, [phase, field]);
 
-  if (field >= FIELDS)
-    return <Done score={totalRight} total={0} onRestart={() => { setField(0); setTotalRight(0); setCaught([]); setAnswers({}); setPhase("collect"); }} />;
+  const submitSort = () => {
+    const right = caught.filter((i) => answers[i.id] === isHelper(i)).length;
+    setFieldScore(right);
+    setTotalRight((t) => t + right);
+    onAward(right);
+    setPhase("review");
+  };
+
+  const nextField = () => {
+    if (field + 1 >= FIELDS) {
+      setPhase("done");
+    } else {
+      setField((f) => f + 1);
+      setCaught([]);
+      setAnswers({});
+      setPhase("collect");
+    }
+  };
+
+  const restart = () => {
+    setField(0);
+    setTotalRight(0);
+    setFieldScore(0);
+    setCaught([]);
+    setAnswers({});
+    setPhase("collect");
+  };
+
+  if (phase === "done") {
+    return <Done score={totalRight} total={FIELDS * BUGS_PER_FIELD} onRestart={restart} />;
+  }
 
   return (
     <div>
-      <div className="mb-2 flex items-center justify-between text-sm">
-        <span className="font-semibold text-foreground">Field {field + 1} of {FIELDS}</span>
-        {phase === "collect" && <span className="text-muted-foreground">⏱ {left}s · collected {caught.length}</span>}
+      <div className="mb-3 flex items-center justify-between rounded-xl border border-border bg-card px-3 py-2 text-sm shadow-sm">
+        <span className="font-bold text-foreground">🌻 Field {field + 1} of {FIELDS}</span>
+        {phase === "collect" ? (
+          <span className="text-muted-foreground">⏱ {left}s · caught {caught.length}/{BUGS_PER_FIELD}</span>
+        ) : (
+          <span className="inline-flex items-center gap-1 font-semibold text-primary">
+            <Trophy className="h-3.5 w-3.5" /> {totalRight} sorted right
+          </span>
+        )}
       </div>
 
       {phase === "collect" && (
-        <div className="relative h-96 overflow-hidden rounded-2xl bg-gradient-to-b from-sky-200/50 via-success/25 to-[hsl(90_40%_35%)]/40">
+        <div className="relative h-96 overflow-hidden rounded-3xl border border-border bg-gradient-to-b from-secondary/40 via-success/15 to-primary/20 shadow-inner">
+          <div className="pointer-events-none absolute inset-0 opacity-30">
+            <div className="absolute left-[10%] top-[12%] h-16 w-16 rounded-full bg-primary/20 blur-xl" />
+            <div className="absolute right-[15%] top-[60%] h-20 w-20 rounded-full bg-success/20 blur-xl" />
+            <div className="absolute left-[60%] top-[30%] h-12 w-12 rounded-full bg-accent/30 blur-lg" />
+          </div>
+          <div className="absolute left-4 top-4 rounded-full bg-card/80 px-3 py-1 text-xs font-semibold text-foreground backdrop-blur-sm">
+            Tap every bug you see!
+          </div>
           {spread.map(({ i, x, y }) =>
             caught.some((c) => c.id === i.id) ? null : (
               <button
                 key={i.id}
                 onClick={() => setCaught((c) => [...c, i])}
-                className="absolute h-16 w-16 overflow-hidden rounded-full border-2 border-card shadow-md transition hover:scale-110"
+                className="absolute h-16 w-16 overflow-hidden rounded-full border-2 border-card shadow-md transition hover:scale-110 hover:ring-2 hover:ring-primary"
                 style={{ left: `${x}%`, top: `${y}%` }}
               >
                 <InsectImage id={i.id} name={i.commonName} className="h-full w-full" rounded={false} />
@@ -1077,28 +1153,57 @@ function BeneficialSort({ onAward }: { onAward: (n: number) => void }) {
 
       {phase === "sort" && (
         <div>
-          <p className="mb-3 text-sm text-muted-foreground">Sort each bug you collected: helper (beneficial) or pest?</p>
-          <div className="space-y-2">
+          <div className="mb-3 rounded-xl bg-accent/20 p-3 text-sm text-foreground">
+            <strong>Sort your bugs!</strong> Read the clues, then tap{" "}
+            <span className="font-bold text-success">🐞 Helper</span> if it helps plants or eats pests, or{" "}
+            <span className="font-bold text-destructive">🐛 Pest</span> if it damages plants.
+          </div>
+          <div className="space-y-3">
             {caught.map((i) => (
-              <div key={i.id} className="flex items-center gap-3 rounded-lg border border-border bg-card p-2">
-                <InsectImage id={i.id} name={i.commonName} className="h-14 w-14" />
-                <span className="flex-1 text-sm font-medium">{i.commonName}</span>
-                <button onClick={() => setAnswers((a) => ({ ...a, [i.id]: true }))} className={`rounded-md px-3 py-1.5 text-xs font-semibold ${answers[i.id] === true ? "bg-success text-background" : "border border-border"}`}>Helper</button>
-                <button onClick={() => setAnswers((a) => ({ ...a, [i.id]: false }))} className={`rounded-md px-3 py-1.5 text-xs font-semibold ${answers[i.id] === false ? "bg-destructive text-background" : "border border-border"}`}>Pest</button>
+              <div key={i.id} className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+                <div className="flex items-start gap-3">
+                  <InsectImage id={i.id} name={i.commonName} className="h-20 w-20 shrink-0 rounded-xl" />
+                  <div className="flex-1">
+                    <div className="text-base font-bold text-foreground">{i.commonName}</div>
+                    <ul className="mt-1 ml-4 list-disc text-xs text-muted-foreground">
+                      {sortBullets(i).map((b) => (
+                        <li key={b}>{b}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+                <div className="mt-3 grid grid-cols-2 gap-3">
+                  <button
+                    onClick={() => setAnswers((a) => ({ ...a, [i.id]: true }))}
+                    className={`rounded-xl border-2 px-2 py-3 text-sm font-bold transition ${
+                      answers[i.id] === true
+                        ? "border-success bg-success text-success-foreground"
+                        : "border-success/40 bg-success/10 text-success hover:bg-success/20"
+                    }`}
+                  >
+                    🐞🌻 Helper
+                  </button>
+                  <button
+                    onClick={() => setAnswers((a) => ({ ...a, [i.id]: false }))}
+                    className={`rounded-xl border-2 px-2 py-3 text-sm font-bold transition ${
+                      answers[i.id] === false
+                        ? "border-destructive bg-destructive text-destructive-foreground"
+                        : "border-destructive/40 bg-destructive/10 text-destructive hover:bg-destructive/20"
+                    }`}
+                  >
+                    🐛⚠️ Pest
+                  </button>
+                </div>
               </div>
             ))}
-            {caught.length === 0 && <p className="text-sm text-muted-foreground">You didn't collect any bugs this time!</p>}
+            {caught.length === 0 && (
+              <div className="rounded-xl bg-muted p-6 text-center text-sm text-muted-foreground">
+                You didn&apos;t catch any bugs this time! Try tapping faster in the meadow.
+              </div>
+            )}
           </div>
-          <div className="mt-3 text-right">
-            <Btn
-              tone="primary"
-              onClick={() => {
-                const right = caught.filter((i) => answers[i.id] === isHelper(i)).length;
-                setTotalRight((t) => t + right);
-                onAward(right);
-                setPhase("review");
-              }}
-            >
+          <div className="mt-4 text-right">
+            <Btn tone="primary" onClick={submitSort} disabled={caught.length === 0}>
               Submit sort
             </Btn>
           </div>
@@ -1107,21 +1212,30 @@ function BeneficialSort({ onAward }: { onAward: (n: number) => void }) {
 
       {phase === "review" && (
         <div>
-          <div className="space-y-2">
+          <div className="mb-3 rounded-xl bg-primary/10 p-3 text-center text-sm font-semibold text-foreground">
+            You sorted {fieldScore} of {caught.length} bugs correctly on this field!
+          </div>
+          <div className="space-y-3">
             {caught.map((i) => {
               const ok = answers[i.id] === isHelper(i);
               return (
-                <div key={i.id} className={`flex items-center gap-3 rounded-lg border p-2 text-sm ${ok ? "border-success/40 bg-success/10" : "border-destructive/40 bg-destructive/10"}`}>
-                  <InsectImage id={i.id} name={i.commonName} className="h-12 w-12" />
-                  <span className="flex-1 font-medium">{i.commonName}</span>
-                  <span>{isHelper(i) ? "Beneficial helper" : "Pest"}</span>
-                  {ok ? <CheckCircle2 className="h-4 w-4 text-success" /> : <XCircle className="h-4 w-4 text-destructive" />}
+                <div key={i.id} className={`flex items-center gap-3 rounded-2xl border p-3 text-sm ${ok ? "border-success/40 bg-success/10" : "border-destructive/40 bg-destructive/10"}`}>
+                  <InsectImage id={i.id} name={i.commonName} className="h-16 w-16 shrink-0 rounded-xl" />
+                  <div className="flex-1">
+                    <div className="font-bold text-foreground">{i.commonName}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {isHelper(i) ? "🐞 Beneficial helper" : "🐛 Pest"}
+                    </div>
+                  </div>
+                  {ok ? <CheckCircle2 className="h-5 w-5 text-success" /> : <XCircle className="h-5 w-5 text-destructive" />}
                 </div>
               );
             })}
           </div>
-          <div className="mt-3 text-right">
-            <Btn tone="primary" onClick={() => { setField((f) => f + 1); setCaught([]); setAnswers({}); setPhase("collect"); }}>Next field →</Btn>
+          <div className="mt-4 text-right">
+            <Btn tone="primary" onClick={nextField}>
+              {field + 1 >= FIELDS ? "Finish →" : "Next field →"}
+            </Btn>
           </div>
         </div>
       )}
