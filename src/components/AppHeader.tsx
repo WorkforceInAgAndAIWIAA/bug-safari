@@ -20,9 +20,9 @@ const NavBtn = ({ icon: Icon, label, onClick }: { icon: typeof Bug; label: strin
     onClick={onClick}
     className="group relative inline-flex items-center gap-1.5 px-3 py-2 text-[13px] font-semibold uppercase tracking-wider text-foreground/70 transition hover:text-foreground"
   >
-    <Icon className="h-3.5 w-3.5 text-primary/60 transition group-hover:text-accent" />
+    <Icon className="h-3.5 w-3.5 text-primary/70 transition group-hover:text-primary" />
     <span className="hidden sm:inline">{label}</span>
-    <span className="pointer-events-none absolute inset-x-2 bottom-1 h-px origin-left scale-x-0 bg-accent transition-transform duration-200 group-hover:scale-x-100" />
+    <span className="pointer-events-none absolute inset-x-2 bottom-1 h-px origin-left scale-x-0 bg-primary transition-transform duration-200 group-hover:scale-x-100" />
   </button>
 );
 

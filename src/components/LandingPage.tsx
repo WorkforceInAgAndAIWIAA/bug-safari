@@ -75,24 +75,24 @@ export function LandingPage(p: Props) {
               style={{ opacity: i === heroIdx ? 1 : 0 }}
             />
           ))}
-          <div className="absolute inset-0 bg-primary/70" />
-          <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary/80 to-primary/25" />
+          <div className="absolute inset-0 bg-primary/80" />
+          <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary/85 to-primary/30" />
         </div>
         <div className="relative mx-auto max-w-7xl px-6 py-24 sm:py-32">
           <div className="max-w-2xl">
-            <span className="text-[11px] font-bold uppercase tracking-[0.35em] text-accent">EntoQuest</span>
+            <span className="text-[11px] font-bold uppercase tracking-[0.35em] text-primary-foreground/90">EntoQuest</span>
             <h1 className="mt-4 font-display text-5xl font-extrabold leading-[1.05] tracking-tight text-primary-foreground sm:text-6xl">
               Entomology
               <br />
               <span className="text-accent">for Every Age</span>
             </h1>
-            <p className="mt-5 max-w-lg text-base leading-relaxed text-primary-foreground/80">
+            <p className="mt-5 max-w-lg text-base leading-relaxed text-primary-foreground/90">
               Identify, scout, and manage 108 insect species. Learn, practice, and play through an
               interactive field school built for K–College classrooms.
             </p>
             <button
               onClick={() => setDest("learn")}
-              className="mt-8 inline-flex items-center gap-2 border border-accent bg-accent px-6 py-3 text-sm font-bold uppercase tracking-wider text-accent-foreground transition hover:bg-transparent hover:text-accent"
+              className="mt-8 inline-flex items-center gap-2 border border-primary-foreground bg-primary-foreground px-6 py-3 text-sm font-bold uppercase tracking-wider text-primary transition hover:bg-transparent hover:text-primary-foreground"
             >
               Start your journey →
             </button>
@@ -113,9 +113,9 @@ export function LandingPage(p: Props) {
           <section>
             <SectionLabel>Choose your path</SectionLabel>
             <div className="mt-8 grid gap-6 sm:grid-cols-3">
-              <BigTile icon={BookOpen} title="Learn" desc="Topic guides by grade level" tone="from-accent/40 to-secondary/25" onClick={() => setDest("learn")} />
-              <BigTile icon={Gamepad2} title="Practice" desc="Mini-games and drills" tone="from-secondary/40 to-primary/20" onClick={() => setDest("practice")} />
-              <BigTile icon={Sprout} title="Play" desc="Official scored runs" tone="from-primary/25 to-accent/25" onClick={() => setDest("play")} />
+              <BigTile icon={BookOpen} title="Learn" desc="Topic guides by grade level" tone="from-primary/50 to-secondary/30" onClick={() => setDest("learn")} />
+              <BigTile icon={Gamepad2} title="Practice" desc="Mini-games and drills" tone="from-secondary/50 to-primary/30" onClick={() => setDest("practice")} />
+              <BigTile icon={Sprout} title="Play" desc="Official scored runs" tone="from-primary/40 to-accent/30" onClick={() => setDest("play")} />
             </div>
           </section>
 
@@ -144,9 +144,9 @@ export function LandingPage(p: Props) {
               <button
                 key={l.id}
                 onClick={() => choose(l.id)}
-                className="group relative overflow-hidden rounded-md border border-border bg-card p-6 text-left transition hover:-translate-y-0.5 hover:border-accent hover:shadow-lg"
+                className="group relative overflow-hidden rounded-md border border-border bg-card p-6 text-left transition hover:-translate-y-0.5 hover:border-primary hover:shadow-lg"
               >
-                <span className="absolute inset-x-0 top-0 h-1 origin-left scale-x-0 bg-accent transition-transform group-hover:scale-x-100" />
+                <span className="absolute inset-x-0 top-0 h-1 origin-left scale-x-0 bg-primary transition-transform group-hover:scale-x-100" />
                 <div className="font-display text-4xl font-black tracking-tighter text-primary">{l.title}</div>
                 <div className="mt-1 text-xs font-bold uppercase tracking-[0.2em] text-accent">{l.sub}</div>
                 <p className="mt-3 text-xs leading-relaxed text-muted-foreground">{l.blurb}</p>
@@ -166,7 +166,7 @@ export function LandingPage(p: Props) {
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex items-center gap-3">
-      <span className="h-px w-8 bg-accent" />
+      <span className="h-px w-8 bg-primary" />
       <span className="text-[11px] font-bold uppercase tracking-[0.3em] text-muted-foreground">{children}</span>
     </div>
   );
@@ -193,7 +193,7 @@ function SmallTile({ icon: Icon, title, desc, onClick }: { icon: typeof Bug; tit
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-3 rounded-md border border-border bg-card p-3.5 text-left transition hover:border-accent hover:bg-muted/40"
+      className="flex items-center gap-3 rounded-md border border-border bg-card p-3.5 text-left transition hover:border-primary hover:bg-muted/40"
     >
       <Icon className="h-5 w-5 shrink-0 text-primary" />
       <div>
@@ -206,10 +206,10 @@ function SmallTile({ icon: Icon, title, desc, onClick }: { icon: typeof Bug; tit
 
 function Stat({ icon: Icon, label, value }: { icon: typeof Bug; label: string; value: number }) {
   return (
-    <div className="inline-flex items-center gap-2 border-l-2 border-accent pl-3 text-sm">
-      <Icon className="h-4 w-4 text-accent" />
+    <div className="inline-flex items-center gap-2 border-l-2 border-primary-foreground pl-3 text-sm">
+      <Icon className="h-4 w-4 text-primary-foreground" />
       <span className="font-display text-lg font-extrabold text-primary-foreground">{value}</span>
-      <span className="text-xs uppercase tracking-wider text-primary-foreground/70">{label}</span>
+      <span className="text-xs uppercase tracking-wider text-primary-foreground/80">{label}</span>
     </div>
   );
 }
