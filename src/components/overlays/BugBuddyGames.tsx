@@ -492,13 +492,7 @@ function DecomposerDash({ onAward }: { onAward: (n: number) => void }) {
       setItems((it) => [...it, { key: idRef.current, x: Math.random() * 85, y: -8, glyph: rand(FALLING) }]);
     }, spawnMs);
     const move = setInterval(() => {
-      setItems((it) => {
-        const moved = it.map((i) => ({ ...i, y: i.y + fallStep }));
-        const kept = moved.filter((i) => i.y < 100);
-        const lost = moved.length - kept.length;
-        if (lost > 0) setMissed((m) => m + lost);
-        return kept;
-      });
+      setItems((it) => it.map((i) => ({ ...i, y: i.y + fallStep })).filter((i) => i.y < 100));
     }, 100);
     return () => { clearInterval(spawn); clearInterval(move); };
   }, [unlocked, soil, fallStep, spawnMs]);
