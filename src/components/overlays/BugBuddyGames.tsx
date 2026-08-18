@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { insects as ALL, type Insect } from "@/data/insects";
 import { InsectImage } from "@/components/InsectImage";
 import { InsectInvasion } from "@/components/overlays/games/InsectInvasion";
+import { WebOfLife } from "@/components/overlays/games/WebOfLife";
+import { PullTheString } from "@/components/overlays/games/PullTheString";
 import { getInsectImage, hasInsectImage, type InsectStage } from "@/lib/insectImages";
 import {
   AlertTriangle, Armchair, ArrowLeft, Bug, Carrot, CheckCircle2, Eye, Flower2,
@@ -1263,77 +1265,6 @@ function BeneficialSort({ onAward }: { onAward: (n: number) => void }) {
 }
 
 /* ================================================================== */
-/* 9. Connect the Web                                                  */
-/* ================================================================== */
-function ConnectTheWeb({ onAward }: { onAward: (n: number) => void }) {
-  const ROUNDS = 5;
-  const [round, setRound] = useState(0);
-  const [score, setScore] = useState(0);
-  const [order, setOrder] = useState<string[]>([]);
-  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
-
-  const chain = useMemo(() => {
-    const pest = rand(pests);
-    const pred = rand(helpers.filter((h) => h.role === "Beneficial")) ?? helpers[0];
-    const dec = rand(POOL.filter((i) => /grub|maggot|wireworm/i.test(i.commonName))) ?? POOL[0];
-    return [
-      { key: "plant", label: `Plant: ${pest.hosts.split(",")[0]}`, glyph: "🌱", level: "Primary producer" },
-      { key: pest.id, label: pest.commonName, insect: pest, level: "Primary consumer" },
-      { key: pred.id, label: pred.commonName, insect: pred, level: "Secondary consumer" },
-      { key: dec.id, label: dec.commonName, insect: dec, level: "Decomposer" },
-    ];
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [round]);
-  const jumbled = useMemo(() => shuffle(chain), [chain]);
-
-  if (round >= ROUNDS) return <Done score={score} total={ROUNDS} onRestart={() => { setRound(0); setScore(0); setOrder([]); }} />;
-
-  return (
-    <div>
-      <Progress round={round} total={ROUNDS} score={score} />
-      <p className="mb-3 text-sm text-muted-foreground">Tap in order: primary producer → primary consumer → secondary consumer → decomposer.</p>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {jumbled.map((c) => {
-          const pos = order.indexOf(c.key);
-          return (
-            <button
-              key={c.key}
-              disabled={pos >= 0 || !!msg}
-              onClick={() => setOrder((o) => [...o, c.key])}
-              className={`rounded-xl border p-3 text-center ${pos >= 0 ? "border-primary bg-primary/10" : "border-border bg-card hover:bg-muted"}`}
-            >
-              {"insect" in c && c.insect ? (
-                <InsectImage id={c.insect.id} name={c.label} className="mx-auto h-20 w-20" />
-              ) : (
-                <div className="mx-auto grid h-20 w-20 place-items-center text-5xl">{c.glyph}</div>
-              )}
-              <div className="mt-1 text-xs font-medium">{c.label}</div>
-              {pos >= 0 && <div className="text-[10px] text-primary">#{pos + 1}</div>}
-            </button>
-          );
-        })}
-      </div>
-      <div className="mt-3 flex items-center gap-2">
-        <Btn onClick={() => setOrder([])}>Clear</Btn>
-        <Btn
-          tone="primary"
-          disabled={order.length < 4 || !!msg}
-          onClick={() => {
-            const ok = order.every((k, idx) => k === chain[idx].key);
-            if (ok) { setScore((s) => s + 1); onAward(2); }
-            setMsg({ ok, text: ok ? "Perfect web!" : `Correct order: ${chain.map((c) => c.label).join(" → ")}` });
-            setTimeout(() => { setMsg(null); setOrder([]); setRound((r) => r + 1); }, 2200);
-          }}
-        >
-          Check web
-        </Btn>
-      </div>
-      {msg && <Feedback ok={msg.ok} text={msg.text} />}
-    </div>
-  );
-}
-
-/* ================================================================== */
 /* 10. Find the Disease                                                */
 /* ================================================================== */
 const VECTORS: Record<string, { disease: string; wrong: string[] }> = {
@@ -1911,7 +1842,8 @@ export const BUG_BUDDY_GAMES: BBGame[] = [
   { id: "predator-pest", name: "Predator vs. Pest", emoji: "🏰", topic: "Predator/pest", blurb: "Knights vs. invaders: pick the helper that keeps the ecosystem balanced.", render: (a, onClose) => <PredatorVsPest onAward={a} onClose={onClose} /> },
   { id: "beneficial-sort", name: "Beneficial Sort", emoji: "🧺", topic: "Beneficial insects", blurb: "Collect bugs in 15s, then sort them.", render: (a) => <BeneficialSort onAward={a} /> },
   { id: "insect-invasion", name: "Insect Invasion: Save the Farm!", emoji: "🚨", topic: "Invasive species", blurb: "Scout, identify and stop an invader before it unbalances the farm.", render: (a, onClose) => <InsectInvasion onAward={a} onClose={onClose} /> },
-  { id: "connect-web", name: "Connect the Web", emoji: "🕸️", topic: "Food webs", blurb: "Order producer to decomposer.", render: (a) => <ConnectTheWeb onAward={a} /> },
+  { id: "web-of-life", name: "Web of Life: Story of the Meadow", emoji: "🕸️", topic: "Food webs", blurb: "Explore a meadow, build food chains into a web, then predict what happens when things change.", render: (a, onClose) => <WebOfLife onAward={a} onClose={onClose} /> },
+  { id: "pull-the-string", name: "Pull the String", emoji: "🪢", topic: "Ecosystem balance", blurb: "Tug one strand of the web, watch the ripple, then build and rescue a balanced ecosystem.", render: (a, onClose) => <PullTheString onAward={a} onClose={onClose} /> },
   { id: "find-disease", name: "Find the Disease", emoji: "🦠", topic: "Disease carriers", blurb: "Spot vectors, then name what they spread.", render: (a) => <FindTheDisease onAward={a} /> },
   { id: "insect-travel", name: "Insect Travel", emoji: "🧳", topic: "Dispersal", blurb: "How — and with what body part — do they move?", render: (a) => <InsectTravel onAward={a} /> },
   { id: "life-stages", name: "Life Stages Sequence", emoji: "🥚", topic: "Life stages", blurb: "Put the life stages in order.", render: (a) => <LifeStagesSequence onAward={a} /> },
