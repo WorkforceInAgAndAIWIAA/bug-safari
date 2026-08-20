@@ -1,7 +1,7 @@
 import { linkForGame } from "@/data/topicLinks";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { insects as ALL_INSECTS, type Insect } from "@/data/insects";
-import { Sparkles, Trophy, ArrowLeft, CheckCircle2, XCircle, Clock, RefreshCcw, Undo2 } from "lucide-react";
+import { BookOpen, Sparkles, Trophy, ArrowLeft, CheckCircle2, XCircle, Clock, RefreshCcw, Undo2 } from "lucide-react";
 import insectDiagram from "@/assets/insect_diagram.png.asset.json";
 import worldMap from "@/assets/world_map.png.asset.json";
 import { InsectImage } from "@/components/InsectImage";
@@ -1205,6 +1205,14 @@ export function K5PracticeHub({ initialGameId, onOpenLesson }: { initialGameId?:
             <Trophy className="h-4 w-4" /> {pts} pts
           </div>
         </div>
+        {lessonLink && onOpenLesson && (
+          <button
+            onClick={() => onOpenLesson(lessonLink.lessonId)}
+            className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-accent/40 bg-accent/10 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-accent hover:bg-accent/20"
+          >
+            <BookOpen className="h-3.5 w-3.5" /> Read the lesson: {lessonLink.topic}
+          </button>
+        )}
         <h3 className="mb-1 text-lg font-bold text-foreground">{active.emoji} {active.name}</h3>
         <p className="mb-3 text-xs text-muted-foreground">{active.blurb}</p>
         {active.render(add)}

@@ -10,6 +10,7 @@ import {
   AlertTriangle, Armchair, ArrowLeft, Bug, Carrot, CheckCircle2, Eye, Flower2,
   HelpCircle, Leaf, Moon, RefreshCcw, Shield, Sparkles, Sword, Target,
   Trophy, XCircle, Zap,
+  BookOpen,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
