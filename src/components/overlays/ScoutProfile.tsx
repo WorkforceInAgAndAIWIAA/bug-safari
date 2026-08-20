@@ -76,7 +76,7 @@ function useScout() {
 function k5Points() {
   if (typeof localStorage === "undefined") return 0;
   let sum = 0;
-  for (const key of ["entoquest-k5-points", "entoquest-bugbuddy-points"]) {
+  for (const key of ["entoquest.k5.points"]) {
     const v = Number(localStorage.getItem(key) ?? 0);
     if (!Number.isNaN(v)) sum += v;
   }
