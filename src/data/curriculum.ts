@@ -15,6 +15,16 @@ export interface Unit {
   lessons: Lesson[];
 }
 
+/** Placeholder lesson: title + outline while the full content is written. */
+function ph(id: string, title: string, outline: string): Lesson {
+  return {
+    id,
+    title,
+    placeholder: true,
+    sections: [{ heading: "What this module will cover", body: outline }],
+  };
+}
+
 export const CURRICULUM: Record<LearningGradeLevel, Unit[]> = {
   elementary: [
     {
