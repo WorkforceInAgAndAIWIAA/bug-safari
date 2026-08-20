@@ -188,16 +188,17 @@ function QuickDrill({ game, grade, onClose }: { game: MiniGame; grade: GradeLeve
   const isFamily = game.id === "family-diag";
   const isThreshold = game.id === "threshold";
   const isIrac = game.id === "irac";
+  const gradePool = useMemo(() => insectsForGrade(grade), [grade]);
 
-  const nameOptions = useMemo(() => shuffle([insect, ...shuffle(insects.filter((i) => i.id !== insect.id)).slice(0, 3)]), [insect]);
+  const nameOptions = useMemo(() => shuffle([insect, ...shuffle(gradePool.filter((i) => i.id !== insect.id)).slice(0, 3)]), [gradePool, insect]);
   const orderOptions = useMemo(() => {
-    const orders = Array.from(new Set(insects.map((i) => i.order)));
+    const orders = Array.from(new Set(gradePool.map((i) => i.order)));
     return shuffle([insect.order, ...shuffle(orders.filter((o) => o !== insect.order)).slice(0, 3)]);
-  }, [insect]);
+  }, [gradePool, insect]);
   const familyOptions = useMemo(() => {
-    const fams = Array.from(new Set(insects.map((i) => i.family)));
+    const fams = Array.from(new Set(gradePool.map((i) => i.family)));
     return shuffle([insect.family, ...shuffle(fams.filter((f) => f !== insect.family)).slice(0, 3)]);
-  }, [insect]);
+  }, [gradePool, insect]);
 
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-foreground/60 p-4">
