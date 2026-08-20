@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { GradeLevel, LearningGradeLevel } from "@/lib/types";
 import { insects } from "@/data/insects";
 import { getInsectImage } from "@/lib/insectImages";
-import { Bug, BookOpen, Gamepad2, Sprout, Library, Trophy, Flame, Sparkles, ArrowLeft } from "lucide-react";
+import { Bug, BookOpen, Gamepad2, Sprout, Library, Trophy, UserRound, Flame, Sparkles, ArrowLeft } from "lucide-react";
 
 type Destination = "learn" | "practice" | "play";
 
@@ -17,7 +17,7 @@ interface Props {
   onOpenPractice: (tier: LearningGradeLevel) => void;
   onOpenFarm: () => void;
   onOpenGlossary: () => void;
-  onOpenStats: () => void;
+  onOpenScout: () => void;
 }
 
 const LEVELS: { id: LearningGradeLevel; title: string; sub: string; blurb: string; tone: string }[] = [
@@ -123,7 +123,7 @@ export function LandingPage(p: Props) {
           <section className="mt-8">
             <div className="grid gap-3 sm:grid-cols-2 lg:max-w-xl">
               <SmallTile icon={Library} title="Glossary" desc="All 108 species" onClick={p.onOpenGlossary} />
-              <SmallTile icon={Trophy} title="Stats" desc="Your XP & badges" onClick={p.onOpenStats} />
+              <SmallTile icon={UserRound} title="My Bug Scout" desc="Gear up your detective" onClick={p.onOpenScout} />
             </div>
           </section>
         </>

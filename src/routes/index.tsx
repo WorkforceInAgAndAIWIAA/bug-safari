@@ -11,9 +11,8 @@ import { FarmMode } from "@/components/overlays/FarmMode";
 import { Glossary } from "@/components/overlays/Glossary";
 import { ReferencesPage } from "@/components/overlays/ReferencesPage";
 import { FeedbackDialog } from "@/components/overlays/FeedbackDialog";
-import { StatsPanel } from "@/components/overlays/StatsPanel";
+import { ScoutProfile } from "@/components/overlays/ScoutProfile";
 import { useGameEngine } from "@/hooks/useGameEngine";
-import { insects } from "@/data/insects";
 import type { GradeLevel, LearningGradeLevel } from "@/lib/types";
 
 export const Route = createFileRoute("/")({
@@ -36,23 +35,44 @@ function Index() {
   const [showGlossary, setShowGlossary] = useState(false);
   const [showReferences, setShowReferences] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
-  const [showStats, setShowStats] = useState(false);
+  const [showScout, setShowScout] = useState(false);
   const [learnTier, setLearnTier] = useState<LearningGradeLevel>("elementary");
   const [practiceTier, setPracticeTier] = useState<LearningGradeLevel>("elementary");
+  const [learnLessonId, setLearnLessonId] = useState<string | undefined>(undefined);
+  const [practiceGameId, setPracticeGameId] = useState<string | undefined>(undefined);
 
   const mastered = Object.values(engine.insectStats).filter((s) => s.mastered).length;
+
+  const jumpToGame = (tier: LearningGradeLevel, gameId: string) => {
+    setShowLearning(false);
+    setPracticeTier(tier);
+    setPracticeGameId(gameId);
+    setShowPractice(true);
+  };
+  const jumpToLesson = (tier: LearningGradeLevel, lessonId: string) => {
+    setShowPractice(false);
+    setLearnTier(tier);
+    setLearnLessonId(lessonId);
+    setShowLearning(true);
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground">
       <AppHeader
         onHome={engine.resetToLanding}
-        onOpenLearning={() => setShowLearning(true)}
-        onOpenPractice={() => setShowPractice(true)}
+        onOpenLearning={() => {
+          setLearnLessonId(undefined);
+          setShowLearning(true);
+        }}
+        onOpenPractice={() => {
+          setPracticeGameId(undefined);
+          setShowPractice(true);
+        }}
         onOpenFarm={() => setShowFarm(true)}
         onOpenGlossary={() => setShowGlossary(true)}
         onOpenReferences={() => setShowReferences(true)}
         onOpenFeedback={() => setShowFeedback(true)}
-        onOpenStats={() => setShowStats(true)}
+        onOpenScout={() => setShowScout(true)}
       />
 
       {engine.screen === "landing" && (
@@ -65,35 +85,50 @@ function Index() {
           startGame={engine.startGame}
           onOpenLearning={(t) => {
             setLearnTier(t);
+            setLearnLessonId(undefined);
             setShowLearning(true);
           }}
           onOpenPractice={(t) => {
             setPracticeTier(t);
+            setPracticeGameId(undefined);
             setShowPractice(true);
           }}
           onOpenFarm={() => setShowFarm(true)}
           onOpenGlossary={() => setShowGlossary(true)}
-          onOpenStats={() => setShowStats(true)}
+          onOpenScout={() => setShowScout(true)}
         />
       )}
       {engine.screen === "playing" && <GameScreen engine={engine} onExit={engine.resetToLanding} />}
       {engine.screen === "results" && <ResultsScreen engine={engine} onHome={engine.resetToLanding} />}
 
-      {showLearning && <LearningModule initialTier={learnTier} onClose={() => setShowLearning(false)} />}
-      {showPractice && <PracticeHub initialTier={practiceTier} onClose={() => setShowPractice(false)} />}
+      {showLearning && (
+        <LearningModule
+          key={`learn-${learnTier}-${learnLessonId ?? "start"}`}
+          initialTier={learnTier}
+          initialLessonId={learnLessonId}
+          onPlayGame={jumpToGame}
+          onClose={() => setShowLearning(false)}
+        />
+      )}
+      {showPractice && (
+        <PracticeHub
+          key={`practice-${practiceTier}-${practiceGameId ?? "start"}`}
+          initialTier={practiceTier}
+          initialGameId={practiceGameId}
+          onOpenLesson={jumpToLesson}
+          onClose={() => setShowPractice(false)}
+        />
+      )}
       {showFarm && <FarmMode onClose={() => setShowFarm(false)} />}
       {showGlossary && <Glossary onClose={() => setShowGlossary(false)} />}
       {showReferences && <ReferencesPage onClose={() => setShowReferences(false)} />}
       {showFeedback && <FeedbackDialog onClose={() => setShowFeedback(false)} />}
-      {showStats && (
-        <StatsPanel
-          onClose={() => setShowStats(false)}
+      {showScout && (
+        <ScoutProfile
+          onClose={() => setShowScout(false)}
           xp={engine.xp}
-          streak={engine.streak}
           totalCorrect={engine.totalCorrect}
-          totalWrong={engine.totalWrong}
           mastered={mastered}
-          speciesCount={insects.length}
         />
       )}
 
