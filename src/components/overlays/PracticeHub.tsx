@@ -4,8 +4,9 @@ import type { GradeLevel, LearningGradeLevel } from "@/lib/types";
 import { GRADE_LABEL } from "@/lib/types";
 import { BugBuddyGamesHub } from "./BugBuddyGames";
 import { insects, type Insect } from "@/data/insects";
-import { Gamepad2, Sparkles, CheckCircle2 } from "lucide-react";
+import { Gamepad2, Sparkles, CheckCircle2, BookOpen, Clock } from "lucide-react";
 import { K5PracticeHub } from "./K5PracticeHub";
+import { linkForGame } from "@/data/topicLinks";
 
 interface MiniGame {
   id: string;
@@ -51,9 +52,13 @@ function shuffle<T>(arr: T[]): T[] {
 export function PracticeHub({
   onClose,
   initialTier = "elementary",
+  initialGameId,
+  onOpenLesson,
 }: {
   onClose: () => void;
   initialTier?: LearningGradeLevel;
+  initialGameId?: string;
+  onOpenLesson?: (tier: LearningGradeLevel, lessonId: string) => void;
 }) {
   const [tab, setTab] = useState<LearningGradeLevel>(initialTier);
   const [active, setActive] = useState<MiniGame | null>(null);
@@ -75,12 +80,24 @@ export function PracticeHub({
       </div>
 
       {tab === "elementary" ? (
-        <BugBuddyGamesHub />
+        <BugBuddyGamesHub initialGameId={initialGameId} onOpenLesson={(id) => onOpenLesson?.("elementary", id)} />
       ) : tab === "middle" ? (
-        <K5PracticeHub />
+        <K5PracticeHub initialGameId={initialGameId} onOpenLesson={(id) => onOpenLesson?.("middle", id)} />
+      ) : tab === "collegiate" ? (
+        <div className="flex items-start gap-3 rounded-xl border border-dashed border-accent/50 bg-accent/10 p-5">
+          <Clock className="mt-0.5 h-5 w-5 shrink-0 text-accent" />
+          <div>
+            <div className="font-display text-lg font-extrabold text-foreground">Coming soon</div>
+            <p className="mt-1 text-sm text-muted-foreground">
+              College-level games are in development. In the meantime, try the 9–12 IPM Specialist drills.
+            </p>
+          </div>
+        </div>
       ) : (
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {GAMES[tab].map((game) => (
+        {GAMES[tab].map((game) => {
+          const link = linkForGame(tab, game.id);
+          return (
           <button
             key={game.id}
             onClick={() => game.playable && setActive(game)}
@@ -97,8 +114,22 @@ export function PracticeHub({
             <div className="font-semibold text-foreground">{game.name}</div>
             <div className="text-xs text-muted-foreground">{game.blurb}</div>
             <div className="mt-1 text-[11px] font-medium text-primary">{game.playable ? "Play →" : "Coming soon"}</div>
+            {link && onOpenLesson && (
+              <span
+                role="link"
+                tabIndex={0}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onOpenLesson(tab, link.lessonId);
+                }}
+                className="mt-2 inline-flex items-center gap-1 rounded-full border border-accent/40 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-accent hover:bg-accent/10"
+              >
+                <BookOpen className="h-3 w-3" /> Lesson
+              </span>
+            )}
           </button>
-        ))}
+          );
+        })}
       </div>
       )}
 
