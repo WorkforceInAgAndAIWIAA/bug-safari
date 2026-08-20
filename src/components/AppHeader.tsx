@@ -67,7 +67,7 @@ export function AppHeader(props: Props) {
     <header className="sticky top-0 z-50 border-b border-border bg-background/75 backdrop-blur">
       <HeaderBackdrop />
       <div className="relative mx-auto flex max-w-7xl items-center justify-between gap-2 px-6 py-3">
-        <button onClick={props.onHome} className="flex items-center gap-2 text-left">
+        <button type="button" onClick={props.onHome} className="flex items-center gap-2 text-left">
           <span className="grid h-9 w-9 place-items-center rounded-md bg-primary text-primary-foreground">
             <Bug className="h-4.5 w-4.5" />
           </span>

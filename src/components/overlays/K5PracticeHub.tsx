@@ -1,18 +1,14 @@
 import { linkForGame } from "@/data/topicLinks";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { insects as ALL_INSECTS, type Insect } from "@/data/insects";
+import type { Insect } from "@/data/insects";
+import { insectsForGrade } from "@/data/gradeInsects";
 import { BookOpen, Sparkles, Trophy, ArrowLeft, CheckCircle2, XCircle, Clock, RefreshCcw, Undo2 } from "lucide-react";
 import insectDiagram from "@/assets/insect_diagram.png.asset.json";
 import worldMap from "@/assets/world_map.png.asset.json";
 import { InsectImage } from "@/components/InsectImage";
 import { getInsectImage, type InsectStage } from "@/lib/insectImages";
 
-const K5_IDS = [
-  "alfalfa-weevil","bumble-bee","corn-leaf-aphid","honey-bee","japanese-beetle",
-  "monarch-butterfly","potato-leafhopper","seven-spotted-lady-beetle","corn-flea-beetle",
-  "differential-grasshopper","green-cloverworm","green-stink-bug","spongy-moth",
-  "spotted-lantern-fly","striped-cucumber-beetle","black-swallowtail",
-] as const;
+const K5_IDS = insectsForGrade("middle").map((insect) => insect.id);
 
 const EMOJI: Record<string, string> = {
   "alfalfa-weevil": "🪲",
@@ -33,7 +29,7 @@ const EMOJI: Record<string, string> = {
   "black-swallowtail": "🦋",
 };
 
-const K5 = ALL_INSECTS.filter((i) => (K5_IDS as readonly string[]).includes(i.id));
+const K5 = insectsForGrade("middle").filter((i) => K5_IDS.includes(i.id));
 const byId = (id: string): Insect => K5.find((i) => i.id === id)!;
 
 const isHelper = (i: Insect) => i.role === "Beneficial" || i.role === "Pollinator" || i.role === "Pollinator/Pest";

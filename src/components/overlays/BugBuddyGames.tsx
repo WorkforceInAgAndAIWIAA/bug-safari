@@ -1,6 +1,7 @@
 import { linkForGame } from "@/data/topicLinks";
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { insects as ALL, type Insect } from "@/data/insects";
+import type { Insect } from "@/data/insects";
+import { insectsForGrade } from "@/data/gradeInsects";
 import { InsectImage } from "@/components/InsectImage";
 import { InsectInvasion } from "@/components/overlays/games/InsectInvasion";
 import { WebOfLife } from "@/components/overlays/games/WebOfLife";
@@ -27,7 +28,7 @@ export function shuffle<T>(a: T[]): T[] {
 }
 const rand = <T,>(a: T[]) => a[Math.floor(Math.random() * a.length)];
 
-const POOL = ALL.filter((i) => hasInsectImage(i.id));
+const POOL = insectsForGrade("elementary").filter((i) => hasInsectImage(i.id));
 const helpers = POOL.filter((i) => i.role === "Beneficial" || i.role === "Pollinator" || i.role === "Pollinator/Pest");
 const pollinators = POOL.filter((i) => i.role === "Pollinator" || i.role === "Pollinator/Pest");
 const pests = POOL.filter((i) => i.role === "Pest" || i.role === "Invasive Pest");
