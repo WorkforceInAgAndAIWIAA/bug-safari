@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
 import { OverlayShell } from "@/components/OverlayShell";
 import type { LearningGradeLevel } from "@/lib/types";
-import { GraduationCap, Sparkles } from "lucide-react";
+import { GraduationCap, Sparkles, Gamepad2, Clock, Hammer } from "lucide-react";
 import { CURRICULUM, type Lesson } from "@/data/curriculum";
+import { linkForLesson } from "@/data/topicLinks";
 
 const TIERS: { id: LearningGradeLevel; title: string; sub: string; blurb: string }[] = [
   { id: "elementary", title: "Bug Buddy", sub: "K–5", blurb: "Meet our insect friends and foes through stories and pictures." },
@@ -14,14 +15,18 @@ const TIERS: { id: LearningGradeLevel; title: string; sub: string; blurb: string
 export function LearningModule({
   onClose,
   initialTier = "elementary",
+  initialLessonId,
+  onPlayGame,
 }: {
   onClose: () => void;
   initialTier?: LearningGradeLevel;
+  initialLessonId?: string;
+  onPlayGame?: (tier: LearningGradeLevel, gameId: string) => void;
 }) {
   const [tier, setTier] = useState<LearningGradeLevel>(initialTier);
   const units = CURRICULUM[tier];
   const firstLessonId = useMemo(() => units[0]?.lessons[0]?.id ?? "", [units]);
-  const [lessonId, setLessonId] = useState<string>(firstLessonId);
+  const [lessonId, setLessonId] = useState<string>(initialLessonId ?? firstLessonId);
 
   // Reset selection when tier changes
   const activeLesson: Lesson | undefined = useMemo(() => {
@@ -31,6 +36,9 @@ export function LearningModule({
     }
     return units[0]?.lessons[0];
   }, [units, lessonId]);
+
+  const link = activeLesson ? linkForLesson(tier, activeLesson.id) : undefined;
+  const locked = tier === "collegiate";
 
   return (
     <OverlayShell title="Learn" subtitle="Topic guides by tier" onClose={onClose}>
@@ -53,6 +61,18 @@ export function LearningModule({
           </button>
         ))}
       </div>
+
+      {locked && (
+        <div className="mt-6 flex items-start gap-3 rounded-xl border border-dashed border-accent/50 bg-accent/10 p-4">
+          <Clock className="mt-0.5 h-5 w-5 shrink-0 text-accent" />
+          <div>
+            <div className="font-display text-lg font-extrabold text-foreground">Coming soon</div>
+            <p className="mt-1 text-sm text-muted-foreground">
+              College-level learning modules and games are still being written. Outlines are shown below as a preview.
+            </p>
+          </div>
+        </div>
+      )}
 
       <div className="mt-6 grid gap-6 md:grid-cols-[280px_1fr]">
         <aside className="space-y-5">
