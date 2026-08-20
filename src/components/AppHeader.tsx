@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { insects } from "@/data/insects";
 import { getInsectImage } from "@/lib/insectImages";
-import { Bug, BookOpen, Gamepad2, Sprout, Library, MessageSquare, Trophy } from "lucide-react";
+import { Bug, BookOpen, Gamepad2, Sprout, Library, MessageSquare, UserRound, BookMarked } from "lucide-react";
 
 interface Props {
   onOpenLearning: () => void;
@@ -10,7 +10,7 @@ interface Props {
   onOpenGlossary: () => void;
   onOpenReferences: () => void;
   onOpenFeedback: () => void;
-  onOpenStats: () => void;
+  onOpenScout: () => void;
   onHome: () => void;
 }
 
@@ -18,11 +18,11 @@ const NavBtn = ({ icon: Icon, label, onClick }: { icon: typeof Bug; label: strin
   <button
     type="button"
     onClick={onClick}
-    className="group relative inline-flex items-center gap-1.5 px-3 py-2 text-[13px] font-semibold uppercase tracking-wider text-foreground/70 transition hover:text-foreground"
+    aria-label={label}
+    className="group inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-card/85 px-3 py-1.5 text-[12px] font-bold uppercase tracking-wider text-foreground shadow-sm transition hover:border-accent hover:bg-accent hover:text-accent-foreground"
   >
-    <Icon className="h-3.5 w-3.5 text-primary/70 transition group-hover:text-primary" />
-    <span className="hidden sm:inline">{label}</span>
-    <span className="pointer-events-none absolute inset-x-2 bottom-1 h-px origin-left scale-x-0 bg-primary transition-transform duration-200 group-hover:scale-x-100" />
+    <Icon className="h-4 w-4 text-accent transition group-hover:text-accent-foreground" />
+    <span className="hidden md:inline">{label}</span>
   </button>
 );
 
@@ -78,13 +78,13 @@ export function AppHeader(props: Props) {
             <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">108 species · K–College</span>
           </span>
         </button>
-        <nav className="flex items-center gap-0">
+        <nav className="flex flex-wrap items-center justify-end gap-1.5">
           <NavBtn icon={BookOpen} label="Learn" onClick={props.onOpenLearning} />
           <NavBtn icon={Gamepad2} label="Practice" onClick={props.onOpenPractice} />
           <NavBtn icon={Sprout} label="Farm" onClick={props.onOpenFarm} />
           <NavBtn icon={Library} label="Glossary" onClick={props.onOpenGlossary} />
-          <NavBtn icon={Trophy} label="Stats" onClick={props.onOpenStats} />
-          <NavBtn icon={Library} label="Refs" onClick={props.onOpenReferences} />
+          <NavBtn icon={UserRound} label="My Scout" onClick={props.onOpenScout} />
+          <NavBtn icon={BookMarked} label="References" onClick={props.onOpenReferences} />
           <NavBtn icon={MessageSquare} label="Feedback" onClick={props.onOpenFeedback} />
         </nav>
       </div>
