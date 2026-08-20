@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useGameEngine } from "@/hooks/useGameEngine";
-import { Flame, Sparkles, ChevronRight, ArrowLeft, CheckCircle2, XCircle } from "lucide-react";
+import { Flame, Sparkles, ChevronRight, ArrowLeft, CheckCircle2, XCircle, Flag } from "lucide-react";
 import { InsectImage } from "@/components/InsectImage";
 
 type Engine = ReturnType<typeof useGameEngine>;
@@ -131,7 +131,7 @@ export function GameScreen({ engine, onExit }: { engine: Engine; onExit: () => v
             </div>
             <button
               onClick={nextQuestion}
-              className="rounded-md bg-foreground/90 px-3 py-1.5 text-xs font-medium text-background hover:bg-foreground"
+              className="rounded-full bg-accent px-4 py-2 text-xs font-bold uppercase tracking-wider text-accent-foreground transition hover:opacity-90"
             >
               Next →
             </button>
