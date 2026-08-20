@@ -610,15 +610,57 @@ export const CURRICULUM: Record<LearningGradeLevel, Unit[]> = {
         },
       ],
     },
+    {
+      id: "hs-taxonomy",
+      title: "Naming, families & variation",
+      lessons: [
+        ph("scientific-names", "Scientific names", "Binomial nomenclature, why Latin names travel, and how to read authorities and revisions."),
+        ph("scientific-families", "Scientific families", "Family-level diagnostics for the families that matter on working farms."),
+        ph("variation", "Inter- and intraspecific variation", "Why two individuals of one species can look different, and how variation between species is used in keys."),
+        ph("reproduction", "Reproduction", "Sexual and asexual strategies — including aphid parthenogenesis and how it drives explosive population growth."),
+      ],
+    },
+    {
+      id: "hs-structure",
+      title: "Structure & senses",
+      lessons: [
+        ph("metamorphosis", "Metamorphosis", "Complete vs. incomplete development, instars, and how stage timing drives scouting decisions."),
+        ph("hearing", "How insects hear", "Tympanal organs, Johnston's organ, and hair sensilla — sound as predator warning and mating signal."),
+        ph("antennae", "Antennae", "Antennal forms (filiform, clavate, plumose, geniculate) and what each says about the insect's lifestyle."),
+        ph("mouthparts", "Mouth parts", "Chewing, piercing-sucking, siphoning, and sponging mouthparts — and the damage signature each leaves behind."),
+      ],
+    },
+    {
+      id: "hs-ecology",
+      title: "Ecology & interactions",
+      lessons: [
+        ph("predator-pest", "Predator/pest interactions", "Predation, parasitism, and how natural-enemy pressure shapes pest populations."),
+        ph("herbivores-carnivores", "Herbivores vs. carnivores", "Feeding guilds, trophic roles, and why the same field holds both."),
+        ph("habitats-seasons", "Habitats and time of year", "Overwintering, degree-day accumulation, and the seasonal calendar of field insects."),
+        ph("disease-carriers", "Disease carriers", "Disease cycles and the disease triangle: host, pathogen, environment — with the insect as vector."),
+        ph("native-invasive", "Native vs. invasive vs. introduced", "How the three categories differ, and why only some introductions become invasive."),
+        ph("biodiversity", "Biodiversity and crop management", "Why diverse fields are more stable, and how habitat plantings support crop management."),
+      ],
+    },
+    {
+      id: "hs-impact",
+      title: "Impact & management",
+      lessons: [
+        ph("economic-impact", "Economic impact of insects", "Yield loss, control costs, pollination value, and quarantine trade impacts."),
+        ph("insect-damage", "Insect damage", "Reading defoliation, stippling, tunneling, wilting, and honeydew back to the responsible pest."),
+        ph("chemical-groups", "Specific chemical groups of insecticides", "Pyrethroids, neonicotinoids, diamides, organophosphates and more, organized by IRAC mode-of-action group."),
+      ],
+    },
   ],
   collegiate: [
     {
       id: "diagnostics",
-      title: "Diagnostics & resistance",
+      title: "Diagnostics & resistance (coming soon)",
       lessons: [
         {
           id: "taxonomy",
           title: "Taxonomy deep dive",
+          placeholder: true,
           sections: [
             { heading: "Beyond the family", body: "Tribe- and genus-level diagnostics, genitalia keys, and molecular confirmation." },
           ],
@@ -626,6 +668,7 @@ export const CURRICULUM: Record<LearningGradeLevel, Unit[]> = {
         {
           id: "resistance",
           title: "Resistance management",
+          placeholder: true,
           sections: [
             { heading: "IRAC rotation strategy", body: "Mode-of-action rotation, refuge design, and monitoring resistance allele frequency." },
           ],
