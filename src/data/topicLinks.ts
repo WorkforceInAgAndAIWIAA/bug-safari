@@ -30,9 +30,9 @@ export const TOPIC_LINKS: TopicLink[] = [
   { tier: "elementary", topic: "Basic management", lessonId: "ipm", gameId: "ipm-beginner", gameName: "IPM Beginner" },
 
   { tier: "middle", topic: "Taxonomy", lessonId: "taxonomy", gameId: "match", gameName: "Bug Name Match-Up" },
-  { tier: "middle", topic: "Morphology", lessonId: "morphology", gameId: "parts", gameName: "Insect Body Parts" },
+  { tier: "middle", topic: "Morphology", lessonId: "morphology", gameId: "build", gameName: "Build-a-Bug" },
   { tier: "middle", topic: "Identification", lessonId: "observation", gameId: "detective", gameName: "Bug Detective" },
-  { tier: "middle", topic: "Life cycles", lessonId: "metamorphosis", gameId: "lifecycle", gameName: "Life Cycle Order" },
+  { tier: "middle", topic: "Life cycles", lessonId: "metamorphosis", gameId: "life-cycle", gameName: "Life Cycle Builder" },
 
   { tier: "high", topic: "Identification", lessonId: "ipm", gameId: "field-scout", gameName: "Field Scout" },
   { tier: "high", topic: "Metamorphosis", lessonId: "metamorphosis", gameId: "life-cycle", gameName: "Life Cycle Sort" },
