@@ -104,6 +104,11 @@ export function LearningModule({
           {activeLesson ? (
             <>
               <h2 className="text-2xl font-bold text-foreground">{activeLesson.title}</h2>
+              {activeLesson.placeholder && (
+                <div className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-accent/40 bg-accent/10 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-accent">
+                  <Hammer className="h-3.5 w-3.5" /> Module in development
+                </div>
+              )}
               <div className="mt-4 space-y-5">
                 {activeLesson.sections.map((s, i) => (
                   <section key={i}>
@@ -126,6 +131,15 @@ export function LearningModule({
                     </p>
                   </div>
                 </div>
+              )}
+
+              {link && onPlayGame && (
+                <button
+                  onClick={() => onPlayGame(tier, link.gameId)}
+                  className="mt-6 inline-flex items-center gap-2 rounded-full bg-accent px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-accent-foreground transition hover:opacity-90"
+                >
+                  <Gamepad2 className="h-4 w-4" /> Practice this topic: {link.gameName}
+                </button>
               )}
             </>
           ) : (
