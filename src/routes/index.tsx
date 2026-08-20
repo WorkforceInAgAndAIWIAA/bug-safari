@@ -43,6 +43,27 @@ function Index() {
 
   const mastered = Object.values(engine.insectStats).filter((s) => s.mastered).length;
 
+  const closeAllPanels = () => {
+    setShowLearning(false);
+    setShowPractice(false);
+    setShowFarm(false);
+    setShowGlossary(false);
+    setShowReferences(false);
+    setShowFeedback(false);
+    setShowScout(false);
+  };
+
+  const goHome = () => {
+    closeAllPanels();
+    engine.resetToLanding();
+  };
+
+  const openOnly = (open: () => void) => {
+    closeAllPanels();
+    engine.resetToLanding();
+    open();
+  };
+
   const jumpToGame = (tier: LearningGradeLevel, gameId: string) => {
     setShowLearning(false);
     setPracticeTier(tier);
@@ -59,20 +80,24 @@ function Index() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <AppHeader
-        onHome={engine.resetToLanding}
+        onHome={goHome}
         onOpenLearning={() => {
-          setLearnLessonId(undefined);
-          setShowLearning(true);
+          openOnly(() => {
+            setLearnLessonId(undefined);
+            setShowLearning(true);
+          });
         }}
         onOpenPractice={() => {
-          setPracticeGameId(undefined);
-          setShowPractice(true);
+          openOnly(() => {
+            setPracticeGameId(undefined);
+            setShowPractice(true);
+          });
         }}
-        onOpenFarm={() => setShowFarm(true)}
-        onOpenGlossary={() => setShowGlossary(true)}
-        onOpenReferences={() => setShowReferences(true)}
-        onOpenFeedback={() => setShowFeedback(true)}
-        onOpenScout={() => setShowScout(true)}
+        onOpenFarm={() => openOnly(() => setShowFarm(true))}
+        onOpenGlossary={() => openOnly(() => setShowGlossary(true))}
+        onOpenReferences={() => openOnly(() => setShowReferences(true))}
+        onOpenFeedback={() => openOnly(() => setShowFeedback(true))}
+        onOpenScout={() => openOnly(() => setShowScout(true))}
       />
 
       {engine.screen === "landing" && (

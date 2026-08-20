@@ -3,7 +3,8 @@ import { OverlayShell } from "@/components/OverlayShell";
 import type { GradeLevel, LearningGradeLevel } from "@/lib/types";
 import { GRADE_LABEL } from "@/lib/types";
 import { BugBuddyGamesHub } from "./BugBuddyGames";
-import { insects, type Insect } from "@/data/insects";
+import type { Insect } from "@/data/insects";
+import { insectsForGrade } from "@/data/gradeInsects";
 import { Gamepad2, Sparkles, CheckCircle2, BookOpen, Clock } from "lucide-react";
 import { K5PracticeHub } from "./K5PracticeHub";
 import { linkForGame } from "@/data/topicLinks";
@@ -147,7 +148,10 @@ function QuickDrill({ game, grade, onClose }: { game: MiniGame; grade: GradeLeve
   const [round, setRound] = useState(0);
 
   const insect: Insect = useMemo(
-    () => insects[Math.floor(Math.random() * insects.length)],
+    () => {
+      const pool = insectsForGrade(grade);
+      return pool[Math.floor(Math.random() * pool.length)];
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [round],
   );

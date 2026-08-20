@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { insects, type Insect } from "@/data/insects";
+import type { Insect } from "@/data/insects";
+import { insectsForGrade } from "@/data/gradeInsects";
 import { PHASES, type Phase } from "@/data/phases";
 import type { GradeLevel } from "@/lib/types";
 
@@ -124,7 +125,7 @@ function generateQuestion(phase: Phase, insect: Insect, pool: Insect[]): Questio
 
 function buildPool(grade: GradeLevel, xp: number): Question[] {
   const phases = unlockedPhases(grade, xp);
-  const eligible = insects;
+  const eligible = insectsForGrade(grade);
   const out: Question[] = [];
   for (const phase of phases) {
     for (const insect of sample(eligible, 2)) {
