@@ -5,6 +5,8 @@ export interface Lesson {
   title: string;
   sections: { heading: string; body: string }[];
   funFact?: string;
+  /** Outline only — content still being written. */
+  placeholder?: boolean;
 }
 
 export interface Unit {
