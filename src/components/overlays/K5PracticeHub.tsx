@@ -1,3 +1,4 @@
+import { linkForGame } from "@/data/topicLinks";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { insects as ALL_INSECTS, type Insect } from "@/data/insects";
 import { Sparkles, Trophy, ArrowLeft, CheckCircle2, XCircle, Clock, RefreshCcw, Undo2 } from "lucide-react";
@@ -1186,9 +1187,12 @@ export const K5_GAMES: K5Game[] = [
   { id: "ipm",         name: "IPM Strategy Board",     emoji: "📊", blurb: "Pick the right pest-control tool.",  render: (a) => <IPMBoard onAward={a} /> },
 ];
 
-export function K5PracticeHub() {
+export function K5PracticeHub({ initialGameId, onOpenLesson }: { initialGameId?: string; onOpenLesson?: (lessonId: string) => void } = {}) {
   const { pts, add, reset } = usePoints();
-  const [active, setActive] = useState<K5Game | null>(null);
+  const [active, setActive] = useState<K5Game | null>(
+    () => K5_GAMES.find((g) => g.id === initialGameId) ?? null,
+  );
+  const lessonLink = active ? linkForGame("middle", active.id) : undefined;
 
   if (active) {
     return (

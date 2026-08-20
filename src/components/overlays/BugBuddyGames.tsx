@@ -1,3 +1,4 @@
+import { linkForGame } from "@/data/topicLinks";
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { insects as ALL, type Insect } from "@/data/insects";
 import { InsectImage } from "@/components/InsectImage";
@@ -2183,9 +2184,12 @@ export const BUG_BUDDY_GAMES: BBGame[] = [
   { id: "insect-steward", name: "Insect Steward", emoji: "🌱", topic: "Stewardship", blurb: "Care for beneficial insects.", render: (a) => <InsectSteward onAward={a} /> },
 ];
 
-export function BugBuddyGamesHub() {
+export function BugBuddyGamesHub({ initialGameId, onOpenLesson }: { initialGameId?: string; onOpenLesson?: (lessonId: string) => void } = {}) {
   const { pts, add, reset } = useK5Points();
-  const [active, setActive] = useState<BBGame | null>(null);
+  const [active, setActive] = useState<BBGame | null>(
+    () => BUG_BUDDY_GAMES.find((g) => g.id === initialGameId) ?? null,
+  );
+  const lessonLink = active ? linkForGame("elementary", active.id) : undefined;
 
   if (active)
     return (
@@ -2199,7 +2203,15 @@ export function BugBuddyGamesHub() {
           </div>
         </div>
         <h3 className="mb-1 text-lg font-bold text-foreground">{active.emoji} {active.name}</h3>
-        <p className="mb-3 text-xs text-muted-foreground">{active.blurb}</p>
+        <p className="mb-2 text-xs text-muted-foreground">{active.blurb}</p>
+        {lessonLink && onOpenLesson && (
+          <button
+            onClick={() => onOpenLesson(lessonLink.lessonId)}
+            className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-accent/40 bg-accent/10 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-accent hover:bg-accent/20"
+          >
+            <BookOpen className="h-3.5 w-3.5" /> Read the lesson: {lessonLink.topic}
+          </button>
+        )}
         {active.render(add, () => setActive(null))}
       </div>
     );
@@ -2225,7 +2237,14 @@ export function BugBuddyGamesHub() {
             <div className="text-[10px] uppercase tracking-wide text-muted-foreground">{g.topic}</div>
             <div className="font-semibold text-foreground">{g.name}</div>
             <div className="text-xs text-muted-foreground">{g.blurb}</div>
-            <div className="mt-1 text-[11px] font-medium text-primary">Play →</div>
+            <div className="mt-1 flex items-center gap-2">
+              <span className="text-[11px] font-medium text-primary">Play →</span>
+              {onOpenLesson && linkForGame("elementary", g.id) && (
+                <span className="inline-flex items-center gap-1 rounded-full border border-accent/40 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-accent">
+                  <BookOpen className="h-3 w-3" /> Lesson linked
+                </span>
+              )}
+            </div>
           </button>
         ))}
       </div>
