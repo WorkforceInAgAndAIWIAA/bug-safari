@@ -136,7 +136,7 @@ export const CURRICULUM: Record<LearningGradeLevel, Unit[]> = {
         },
         {
           id: "side-by-side",
-          title: "Comparing farm species side by side",
+          title: "Comparing insects side by side",
           sections: [
             {
               heading: "Tricky look-alikes",
@@ -144,6 +144,7 @@ export const CURRICULUM: Record<LearningGradeLevel, Unit[]> = {
             },
           ],
           funFact: "Scientists use a tool called a \"dichotomous key\" — it's like a game of twenty questions that leads you to the right insect name!",
+          image: { src: lookAlikesImg.url, alt: "Side-by-side comparison of the pest Mexican bean beetle and the helpful ladybug" },
         },
       ],
     },
