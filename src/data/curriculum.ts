@@ -1,13 +1,21 @@
 import type { LearningGradeLevel } from "@/lib/types";
+import bodyPartsImg from "@/assets/insect_body_parts_cartoon.jpg.asset.json";
+import fireflyNamesImg from "@/assets/firefly_names.jpg.asset.json";
+import lifeStagesImg from "@/assets/insect_life_stages_cartoon.jpg.asset.json";
+import detectivesImg from "@/assets/insect_detectives_cartoon.jpg.asset.json";
+import lookAlikesImg from "@/assets/insect_look-alikes.jpg.asset.json";
 
 export interface Lesson {
   id: string;
   title: string;
   sections: { heading: string; body: string }[];
   funFact?: string;
+  /** Illustration shown at the end of the lesson. */
+  image?: { src: string; alt: string };
   /** Outline only — content still being written. */
   placeholder?: boolean;
 }
+
 
 export interface Unit {
   id: string;
