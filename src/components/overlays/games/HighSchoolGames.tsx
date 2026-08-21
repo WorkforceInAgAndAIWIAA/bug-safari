@@ -50,7 +50,7 @@ interface Ship {
   epithet: string;
 }
 
-function BinomialBattleship({ add }: { add: (n: number) => void }) {
+function BinomialBattleship({ add, onFinish }: GameProps) {
   const [seed, setSeed] = useState(0);
 
   const { ships, genera, epithets } = useMemo(() => {
@@ -124,15 +124,6 @@ function BinomialBattleship({ add }: { add: (n: number) => void }) {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground">
-        <p className="font-semibold text-foreground">How to play</p>
-        <ul className="mt-1 list-disc space-y-0.5 pl-5">
-          <li>Rows are <em>genus</em> names, columns are <em>species epithets</em>. Five real species hide at the correct intersections.</li>
-          <li>Pick a coordinate, then construct the binomial correctly to fire: <em>Genus epithet</em> — genus capitalized, epithet lowercase.</li>
-          <li>A misfire costs you nothing but a chance to re-read the rule. Sink all five to win.</li>
-        </ul>
-      </div>
-
       <div className="flex flex-wrap items-center gap-3 text-sm">
         <span className="rounded-full bg-primary/10 px-3 py-1 font-semibold text-primary">Fleet sunk: {hits}/{ships.length}</span>
         <span className="rounded-full bg-muted px-3 py-1 text-muted-foreground">Shots fired: {shots}</span>
@@ -225,9 +216,23 @@ function BinomialBattleship({ add }: { add: (n: number) => void }) {
         <div className="rounded-xl border border-success/40 bg-success/10 p-4 text-sm">
           <div className="font-display text-lg font-extrabold text-foreground">Fleet sunk! 🎯</div>
           <p className="mt-1 text-muted-foreground">
-            You fired {shots} shots to find 5 valid binomials. Every genus pairs with only its own epithet — that pairing
-            <em> is </em> the species.
+            You fired {shots} shots to find 5 valid binomials.
           </p>
+          <button
+            type="button"
+            onClick={() =>
+              onFinish({
+                score: hits * 15,
+                correct: hits,
+                total: Math.max(shots, hits),
+                message:
+                  "Every genus pairs with only its own epithet — that pairing is the species. Genus is capitalized, the epithet never is.",
+              })
+            }
+            className="mt-3 rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-foreground hover:opacity-90"
+          >
+            See results →
+          </button>
         </div>
       )}
 
@@ -298,7 +303,7 @@ function traitsFor(insect: Insect): string[] {
   );
 }
 
-function FamilySpeedSort({ add }: { add: (n: number) => void }) {
+function FamilySpeedSort({ add, onFinish }: GameProps) {
   const CARDS = 10;
   const SECONDS = 15;
 
@@ -311,6 +316,7 @@ function FamilySpeedSort({ add }: { add: (n: number) => void }) {
   const [idx, setIdx] = useState(0);
   const [score, setScore] = useState(0);
   const [combo, setCombo] = useState(0);
+  const [right, setRight] = useState(0);
   const [left, setLeft] = useState(SECONDS);
   const [picked, setPicked] = useState<string | null>(null);
 
@@ -347,6 +353,7 @@ function FamilySpeedSort({ add }: { add: (n: number) => void }) {
       const gain = 10 + combo * 2 + Math.max(0, left - 5);
       setScore((s) => s + gain);
       setCombo((c) => c + 1);
+      setRight((r) => r + 1);
       add(gain);
     } else {
       setCombo(0);
@@ -357,20 +364,23 @@ function FamilySpeedSort({ add }: { add: (n: number) => void }) {
     return (
       <div className="rounded-xl border border-primary/40 bg-primary/5 p-6 text-center">
         <div className="font-display text-2xl font-extrabold text-foreground">Pile sorted!</div>
-        <p className="mt-2 text-sm text-muted-foreground">Round score: <span className="font-bold text-primary">{score}</span></p>
-        <p className="mt-1 text-xs text-muted-foreground">
-          Families are diagnosed by structure — mouthpart type, wing count and texture, antennal shape — not by color or size.
+        <p className="mt-2 text-sm text-muted-foreground">
+          Round score: <span className="font-bold text-primary">{score}</span>
         </p>
         <button
-          onClick={() => {
-            setIdx(0);
-            setScore(0);
-            setCombo(0);
-            setPicked(null);
-          }}
+          type="button"
+          onClick={() =>
+            onFinish({
+              score,
+              correct: right,
+              total: deck.length,
+              message:
+                "Families are diagnosed by structure — mouthpart type, wing count and texture, antennal shape — not by color or size.",
+            })
+          }
           className="mt-4 rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-foreground hover:opacity-90"
         >
-          Deal a new hand
+          See results →
         </button>
       </div>
     );
@@ -379,14 +389,6 @@ function FamilySpeedSort({ add }: { add: (n: number) => void }) {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground">
-        <p className="font-semibold text-foreground">How to play</p>
-        <ul className="mt-1 list-disc space-y-0.5 pl-5">
-          <li>Each card shows a specimen plus its key traits — the same characters a dichotomous key uses.</li>
-          <li>Sort it into the right family pile before the timer runs out. Faster answers and streaks score higher.</li>
-        </ul>
-      </div>
-
       <div className="flex items-center gap-3 text-sm">
         <span className="rounded-full bg-muted px-3 py-1 text-muted-foreground">Card {idx + 1}/{deck.length}</span>
         <span className="rounded-full bg-primary/10 px-3 py-1 font-semibold text-primary">Score {score}</span>
@@ -467,7 +469,7 @@ interface PestCard {
   damage: number;
 }
 
-function BalanceTheField({ add }: { add: (n: number) => void }) {
+function BalanceTheField({ add, onFinish }: GameProps) {
   const pests = useMemo(() => POOL().filter((i) => i.role === "Pest" || i.role === "Invasive Pest"), []);
   const predators = useMemo(() => POOL().filter((i) => i.role === "Beneficial"), []);
 
@@ -538,23 +540,18 @@ function BalanceTheField({ add }: { add: (n: number) => void }) {
         <p className="mt-2 text-sm text-muted-foreground">
           Final harvest score: <span className="font-bold text-primary">{banked}</span>
         </p>
-        <p className="mt-2 text-xs text-muted-foreground">
-          Pest pressure below the economic threshold does not justify treatment, and natural enemies carry a real cost —
-          scouting decides which risk you take.
-        </p>
         <button
-          onClick={() => {
-            setRound(1);
-            setBanked(0);
-            setTable([]);
-            setRoundScore(0);
-            setReleases(3);
-            setState("playing");
-            setNote("Draw a pest card to start scouting.");
-          }}
+          type="button"
+          onClick={() =>
+            onFinish({
+              score: banked,
+              message:
+                "Pest pressure below the economic threshold does not justify treatment, and natural enemies carry a real cost — scouting decides which risk you take.",
+            })
+          }
           className="mt-4 rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-foreground hover:opacity-90"
         >
-          Play another season
+          See results →
         </button>
       </div>
     );
@@ -563,16 +560,6 @@ function BalanceTheField({ add }: { add: (n: number) => void }) {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground">
-        <p className="font-semibold text-foreground">How to play</p>
-        <ul className="mt-1 list-disc space-y-0.5 pl-5">
-          <li>Draw pest cards to keep earning — each one adds damage and points.</li>
-          <li>Go over {THRESHOLD} damage and the round scores zero.</li>
-          <li>Predator releases remove the last pest card but cost 6 pts of upkeep, and you only get 3 per round.</li>
-          <li>Bank any time to lock the round in. {ROUNDS} rounds per season.</li>
-        </ul>
-      </div>
-
       <div className="flex flex-wrap items-center gap-3 text-sm">
         <span className="rounded-full bg-muted px-3 py-1 text-muted-foreground">Round {round}/{ROUNDS}</span>
         <span className="rounded-full bg-primary/10 px-3 py-1 font-semibold text-primary">Banked {banked}</span>
@@ -642,25 +629,20 @@ function BalanceTheField({ add }: { add: (n: number) => void }) {
 
 /* ------------------------------------------------------------------- hub */
 
-interface HsGame {
-  id: string;
-  name: string;
-  emoji: string;
-  topic: string;
-  blurb: string;
-  icon: typeof Crosshair;
-  render: (add: (n: number) => void) => ReactElement;
-}
-
-export const HS_GAMES: HsGame[] = [
+export const HS_GAMES: GameMeta[] = [
   {
     id: "binomial-battleship",
     name: "Binomial Battleship",
     emoji: "🎯",
     topic: "Scientific names",
     blurb: "Call coordinates on a genus × epithet grid — construct the binomial to fire.",
-    icon: Crosshair,
-    render: (add) => <BinomialBattleship add={add} />,
+    howTo: [
+      "Rows are genus names, columns are species epithets. Five real species hide at the correct intersections.",
+      "Pick a coordinate, then construct the binomial to fire: Genus epithet — genus capitalized, epithet lowercase.",
+      "A misfire costs nothing but a chance to re-read the rule.",
+      "Sink all five species to win.",
+    ],
+    render: (p) => <BinomialBattleship {...p} />,
   },
   {
     id: "family-feud-taxonomy",
@@ -668,8 +650,13 @@ export const HS_GAMES: HsGame[] = [
     emoji: "🃏",
     topic: "Scientific families",
     blurb: "Speed-sort trait cards into family piles using key characters.",
-    icon: Layers,
-    render: (add) => <FamilySpeedSort add={add} />,
+    howTo: [
+      "Each card shows a specimen plus its key traits — the same characters a dichotomous key uses.",
+      "Sort it into the right family pile before the 15-second timer runs out.",
+      "Faster answers and streaks score higher.",
+      "Ten cards per hand.",
+    ],
+    render: (p) => <FamilySpeedSort {...p} />,
   },
   {
     id: "balance-the-field",
@@ -677,9 +664,15 @@ export const HS_GAMES: HsGame[] = [
     emoji: "🎲",
     topic: "Predator/pest interactions",
     blurb: "Push your luck against the economic threshold — predators cost upkeep.",
-    icon: ShieldAlert,
-    render: (add) => <BalanceTheField add={add} />,
+    howTo: [
+      "Draw pest cards to keep earning — each one adds damage and points.",
+      `Go over ${THRESHOLD} damage and the round scores zero.`,
+      "Predator releases remove the last pest card but cost 6 pts of upkeep, and you only get 3 per round.",
+      `Bank any time to lock the round in. ${ROUNDS} rounds per season.`,
+    ],
+    render: (p) => <BalanceTheField {...p} />,
   },
+  ...HS_GAMES_2,
 ];
 
 export function HighSchoolGamesHub({
@@ -690,15 +683,55 @@ export function HighSchoolGamesHub({
   onOpenLesson?: (lessonId: string) => void;
 } = {}) {
   const { pts, add, reset } = useHsPoints();
-  const [active, setActive] = useState<HsGame | null>(() => HS_GAMES.find((g) => g.id === initialGameId) ?? null);
+  const [active, setActive] = useState<GameMeta | null>(() => HS_GAMES.find((g) => g.id === initialGameId) ?? null);
+  const [phase, setPhase] = useState<"intro" | "play" | "done">("intro");
+  const [result, setResult] = useState<GameResult | null>(null);
+  const [runKey, setRunKey] = useState(0);
+
   const lessonLink = active ? linkForGame("high", active.id) : undefined;
+
+  function openGame(g: GameMeta) {
+    setActive(g);
+    setPhase("intro");
+    setResult(null);
+  }
+
+  function backToHub() {
+    setActive(null);
+    setPhase("intro");
+    setResult(null);
+  }
+
+  function playAgain() {
+    setResult(null);
+    setRunKey((k) => k + 1);
+    setPhase("play");
+  }
+
+  if (active && phase === "intro")
+    return (
+      <GameIntro
+        game={active}
+        onPlay={() => {
+          setRunKey((k) => k + 1);
+          setPhase("play");
+        }}
+        onBack={backToHub}
+        onOpenLesson={lessonLink && onOpenLesson ? () => onOpenLesson(lessonLink.lessonId) : undefined}
+        lessonLabel={lessonLink?.topic}
+      />
+    );
+
+  if (active && phase === "done" && result)
+    return <GameResults game={active} result={result} onAgain={playAgain} onBack={backToHub} />;
 
   if (active)
     return (
       <div>
         <div className="mb-4 flex items-center justify-between">
           <button
-            onClick={() => setActive(null)}
+            type="button"
+            onClick={backToHub}
             className="inline-flex items-center gap-1 rounded-md border border-border bg-card px-3 py-1.5 text-sm hover:bg-muted"
           >
             <ArrowLeft className="h-4 w-4" /> All games
@@ -710,16 +743,18 @@ export function HighSchoolGamesHub({
         <h3 className="mb-1 font-display text-xl font-extrabold text-foreground">
           {active.emoji} {active.name}
         </h3>
-        <p className="mb-3 text-xs text-muted-foreground">{active.topic} · {active.blurb}</p>
-        {lessonLink && onOpenLesson && (
-          <button
-            onClick={() => onOpenLesson(lessonLink.lessonId)}
-            className="mb-4 inline-flex items-center gap-1.5 rounded-full border border-accent/40 bg-accent/10 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-accent hover:bg-accent/20"
-          >
-            <BookOpen className="h-3.5 w-3.5" /> Read the lesson: {lessonLink.topic}
-          </button>
-        )}
-        {active.render(add)}
+        <p className="mb-4 text-xs text-muted-foreground">
+          {active.topic} · {active.blurb}
+        </p>
+        <div key={runKey}>
+          {active.render({
+            add,
+            onFinish: (r) => {
+              setResult(r);
+              setPhase("done");
+            },
+          })}
+        </div>
       </div>
     );
 
@@ -733,7 +768,11 @@ export function HighSchoolGamesHub({
             <div className="text-2xl font-bold text-primary">{pts}</div>
           </div>
         </div>
-        <button onClick={reset} className="rounded-md border border-border bg-card px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted">
+        <button
+          type="button"
+          onClick={reset}
+          className="rounded-md border border-border bg-card px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted"
+        >
           <RefreshCcw className="mr-1 inline h-3 w-3" /> Reset
         </button>
       </div>
@@ -742,7 +781,8 @@ export function HighSchoolGamesHub({
         {HS_GAMES.map((g) => (
           <button
             key={g.id}
-            onClick={() => setActive(g)}
+            type="button"
+            onClick={() => openGame(g)}
             className="flex flex-col items-start gap-1 rounded-xl border border-border bg-card p-4 text-left transition hover:bg-muted/50 hover:shadow-md"
           >
             <span className="text-3xl">{g.emoji}</span>
