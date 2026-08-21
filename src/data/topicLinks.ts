@@ -34,6 +34,9 @@ export const TOPIC_LINKS: TopicLink[] = [
   { tier: "middle", topic: "Identification", lessonId: "observation", gameId: "detective", gameName: "Bug Detective" },
   { tier: "middle", topic: "Life cycles", lessonId: "metamorphosis", gameId: "life-cycle", gameName: "Life Cycle Builder" },
 
+  { tier: "high", topic: "Scientific names", lessonId: "scientific-names", gameId: "binomial-battleship", gameName: "Binomial Battleship" },
+  { tier: "high", topic: "Scientific families", lessonId: "scientific-families", gameId: "family-feud-taxonomy", gameName: "Family Sort Showdown" },
+  { tier: "high", topic: "Predator/pest interactions", lessonId: "predator-pest", gameId: "balance-the-field", gameName: "Balance the Field" },
   { tier: "high", topic: "Identification", lessonId: "ipm", gameId: "field-scout", gameName: "Field Scout" },
   { tier: "high", topic: "Metamorphosis", lessonId: "metamorphosis", gameId: "life-cycle", gameName: "Life Cycle Sort" },
   { tier: "high", topic: "Scientific families", lessonId: "scientific-families", gameId: "order-up", gameName: "Order Up" },

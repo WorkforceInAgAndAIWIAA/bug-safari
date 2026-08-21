@@ -7,6 +7,7 @@ import type { Insect } from "@/data/insects";
 import { insectsForGrade } from "@/data/gradeInsects";
 import { Gamepad2, Sparkles, CheckCircle2, BookOpen, Clock } from "lucide-react";
 import { K5PracticeHub } from "./K5PracticeHub";
+import { HighSchoolGamesHub } from "./games/HighSchoolGames";
 import { linkForGame } from "@/data/topicLinks";
 
 interface MiniGame {
@@ -84,6 +85,8 @@ export function PracticeHub({
         <BugBuddyGamesHub initialGameId={initialGameId} onOpenLesson={(id) => onOpenLesson?.("elementary", id)} />
       ) : tab === "middle" ? (
         <K5PracticeHub initialGameId={initialGameId} onOpenLesson={(id) => onOpenLesson?.("middle", id)} />
+      ) : tab === "high" ? (
+        <HighSchoolGamesHub initialGameId={initialGameId} onOpenLesson={(id) => onOpenLesson?.("high", id)} />
       ) : tab === "collegiate" ? (
         <div className="flex items-start gap-3 rounded-xl border border-dashed border-accent/50 bg-accent/10 p-5">
           <Clock className="mt-0.5 h-5 w-5 shrink-0 text-accent" />
@@ -96,7 +99,7 @@ export function PracticeHub({
         </div>
       ) : (
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {GAMES[tab].map((game) => {
+        {GAMES[tab as LearningGradeLevel].map((game: MiniGame) => {
           const link = linkForGame(tab, game.id);
           return (
           <button
