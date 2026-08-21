@@ -674,6 +674,7 @@ export const HS_GAMES: GameMeta[] = [
     render: (p) => <BalanceTheField {...p} />,
   },
   ...HS_GAMES_2,
+  ...HS_GAMES_3,
 ];
 
 export function HighSchoolGamesHub({
