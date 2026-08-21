@@ -1,13 +1,21 @@
 import type { LearningGradeLevel } from "@/lib/types";
+import bodyPartsImg from "@/assets/insect_body_parts_cartoon.jpg.asset.json";
+import fireflyNamesImg from "@/assets/firefly_names.jpg.asset.json";
+import lifeStagesImg from "@/assets/insect_life_stages_cartoon.jpg.asset.json";
+import detectivesImg from "@/assets/insect_detectives_cartoon.jpg.asset.json";
+import lookAlikesImg from "@/assets/insect_look-alikes.jpg.asset.json";
 
 export interface Lesson {
   id: string;
   title: string;
   sections: { heading: string; body: string }[];
   funFact?: string;
+  /** Illustration shown at the end of the lesson. */
+  image?: { src: string; alt: string };
   /** Outline only — content still being written. */
   placeholder?: boolean;
 }
+
 
 export interface Unit {
   id: string;
@@ -37,21 +45,24 @@ export const CURRICULUM: Record<LearningGradeLevel, Unit[]> = {
           sections: [
             {
               heading: "Meet the insects",
-              body: "Insects are a diverse group of animals in the class Insecta. Insects may appear to be small bugs, but they are unique! There are more than 1 million known types of insects in the world. Insects can be identified by what they look like. Insects have 6 legs and a 3-part body plan. All insects have at least 1 pair of antennae on their head. Some insects have wings!",
+              body: "Insects are everywhere — in the grass, under rocks, on flowers, and even buzzing past your ear! Scientists put them all in one big group called Insecta. There are more than 1 million kinds of insects that we know about, and scientists are still finding new ones. That means insects are the biggest animal group on the whole planet.",
             },
-          ],
-        },
-        {
-          id: "body-basics",
-          title: "Insect body basics",
-          sections: [
             {
-              heading: "Three body parts, six legs",
-              body: "Have you ever looked closely at a beetle or a bee? Every single insect — no matter how big or small — has a body built in three pieces. We call them the head, the thorax, and the abdomen. Think of it like a tiny train with three cars! The head is where the eyes and mouth are. The thorax is the middle part where the legs attach. The abdomen is the back section. And here's a rule that never breaks: insects always have exactly six legs. Always. If you count more legs (like a spider!) or fewer legs, it's not an insect.",
+              heading: "Three body parts, like a tiny train",
+              body: "Every single insect — no matter how big or small — has a body built in three pieces: the head, the thorax, and the abdomen. Think of it like a tiny train with three cars! The head is where the eyes, antennae, and mouth are. The thorax is the middle car, where the legs (and wings, if it has them) attach. The abdomen is the back car, where the insect digests its food.",
+            },
+            {
+              heading: "The six-leg rule",
+              body: "Here's a rule that never breaks: insects always have exactly six legs. Always! If you count eight legs, you found a spider. If you count way more, you might have a centipede or a pillbug. Those are cool creatures too, but they are not insects.",
+            },
+            {
+              heading: "Antennae and wings",
+              body: "Every insect also has at least one pair of antennae on its head. Antennae are like super-senses — insects use them to smell, feel, and even taste the world around them. And many insects have wings, which makes them the only animals without backbones that can fly. Butterflies have scaly wings, beetles have hard shield wings, and flies have just one pair. So next time you spot a bug, check the list: three body parts, six legs, antennae. If it passes, you found an insect!",
             },
           ],
           funFact:
             "Try it out: next time you find an ant, count its legs out loud. One, two, three, four, five, six! Yep — it's an insect.",
+          image: { src: bodyPartsImg.url, alt: "Cartoon insect labeled with head, thorax, abdomen, antennae, wings, and six legs" },
         },
         {
           id: "names",
@@ -63,7 +74,9 @@ export const CURRICULUM: Record<LearningGradeLevel, Unit[]> = {
             },
           ],
           funFact: "The western corn rootworm's scientific name is Diabrotica virgifera. Try saying it three times fast!",
+          image: { src: fireflyNamesImg.url, alt: "Glossary of firefly nicknames: firefly, lightning bug, glowworm, candlefly, firebob, lamp bug, will-o'-the-wisp" },
         },
+
       ],
     },
     {
@@ -81,6 +94,7 @@ export const CURRICULUM: Record<LearningGradeLevel, Unit[]> = {
           ],
           funFact:
             "A corn earworm starts as a tiny egg on a corn silk, hatches into a caterpillar that eats the corn, and eventually becomes a moth that flies away. One bug, four totally different looks!",
+          image: { src: lifeStagesImg.url, alt: "Complete metamorphosis of a moth and incomplete metamorphosis of a grasshopper" },
         },
       ],
     },
@@ -93,11 +107,20 @@ export const CURRICULUM: Record<LearningGradeLevel, Unit[]> = {
           title: "Look and describe",
           sections: [
             {
-              heading: "Use your eyes and a notebook",
-              body: "You can learn a lot about an insect just by slowing down and looking carefully. Start with the safe senses — your eyes and ears. What color is it? Is it bigger than your fingernail or smaller? Does it have spots, stripes, or shiny patches? What shape is its body — long and skinny, or round and fat? Where did you find it — on a leaf, under a rock, in a flower? You can write down or draw what you see in a little notebook called a field journal. Scientists do the exact same thing! Never touch an insect unless a grown-up says it's safe. Some insects can pinch or sting.",
+              heading: "Insect Detective!",
+              body: "Grab your detective eyes and field journal — it's time to investigate! Look closely at your insect without touching it. What color is it? Is it bigger or smaller than your fingernail? Does it have spots, stripes, or shiny patches? Is its body long and skinny or round and fat?",
+            },
+            {
+              heading: "Gather your clues",
+              body: "Look for clues about where you found it — was it on a leaf, hiding under a rock, or visiting a flower? Write down your clues or draw a picture in your field journal, just like real scientists do! Remember, never touch an insect unless a grown-up says it is safe, because some insects can pinch or sting.",
+            },
+            {
+              heading: "Detective challenge",
+              body: "Can you figure out what makes your insect unique? Compare your notes with a friend's and see whether you both found the very same suspect.",
             },
           ],
           funFact: "A magnifying glass makes even tiny insects look huge and amazing — you can see their eyes, leg hairs, and wing veins up close!",
+          image: { src: detectivesImg.url, alt: "Kid detectives with magnifying glass and clue book inspecting a ladybug" },
         },
         {
           id: "parts",
@@ -113,7 +136,7 @@ export const CURRICULUM: Record<LearningGradeLevel, Unit[]> = {
         },
         {
           id: "side-by-side",
-          title: "Comparing farm species side by side",
+          title: "Comparing insects side by side",
           sections: [
             {
               heading: "Tricky look-alikes",
@@ -121,6 +144,7 @@ export const CURRICULUM: Record<LearningGradeLevel, Unit[]> = {
             },
           ],
           funFact: "Scientists use a tool called a \"dichotomous key\" — it's like a game of twenty questions that leads you to the right insect name!",
+          image: { src: lookAlikesImg.url, alt: "Side-by-side comparison of the pest Mexican bean beetle and the helpful ladybug" },
         },
       ],
     },
