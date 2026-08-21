@@ -6,6 +6,7 @@ import { InsectImage } from "@/components/InsectImage";
 import { linkForGame } from "@/data/topicLinks";
 import { GameIntro, GameResults, type GameMeta, type GameProps, type GameResult } from "./GameFrame";
 import { HS_GAMES_2 } from "./HighSchoolGames2";
+import { HS_GAMES_3 } from "./HighSchoolGames3";
 
 /* ------------------------------------------------------------------ utils */
 
@@ -673,6 +674,7 @@ export const HS_GAMES: GameMeta[] = [
     render: (p) => <BalanceTheField {...p} />,
   },
   ...HS_GAMES_2,
+  ...HS_GAMES_3,
 ];
 
 export function HighSchoolGamesHub({
