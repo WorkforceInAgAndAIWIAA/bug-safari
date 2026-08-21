@@ -1,9 +1,11 @@
-import { useEffect, useMemo, useState, type ReactElement } from "react";
-import { ArrowLeft, BookOpen, Crosshair, Layers, RefreshCcw, Sparkles, Trophy, Timer, ShieldAlert } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { ArrowLeft, BookOpen, RefreshCcw, Sparkles, Trophy, Timer, ShieldAlert } from "lucide-react";
 import { insectsForGrade } from "@/data/gradeInsects";
 import type { Insect } from "@/data/insects";
 import { InsectImage } from "@/components/InsectImage";
 import { linkForGame } from "@/data/topicLinks";
+import { GameIntro, GameResults, type GameMeta, type GameProps, type GameResult } from "./GameFrame";
+import { HS_GAMES_2 } from "./HighSchoolGames2";
 
 /* ------------------------------------------------------------------ utils */
 
