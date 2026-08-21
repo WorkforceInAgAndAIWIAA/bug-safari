@@ -94,6 +94,7 @@ export const CURRICULUM: Record<LearningGradeLevel, Unit[]> = {
           ],
           funFact:
             "A corn earworm starts as a tiny egg on a corn silk, hatches into a caterpillar that eats the corn, and eventually becomes a moth that flies away. One bug, four totally different looks!",
+          image: { src: lifeStagesImg.url, alt: "Complete metamorphosis of a moth and incomplete metamorphosis of a grasshopper" },
         },
       ],
     },
