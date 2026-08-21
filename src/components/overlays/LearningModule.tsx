@@ -120,7 +120,7 @@ export function LearningModule({
                 ))}
               </div>
               {activeLesson.funFact && (
-                <div className="mt-6 flex gap-3 rounded-lg border border-accent/40 bg-accent/15 p-4">
+                <div className="mt-6 flex gap-3 rounded-lg border border-muted bg-muted/50 p-4">
                   <Sparkles className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
                   <div>
                     <div className="text-xs font-semibold uppercase tracking-wide text-primary">
@@ -132,6 +132,16 @@ export function LearningModule({
                   </div>
                 </div>
               )}
+
+              {activeLesson.image && (
+                <img
+                  src={activeLesson.image.src}
+                  alt={activeLesson.image.alt}
+                  loading="lazy"
+                  className="mt-6 w-full rounded-xl border border-border"
+                />
+              )}
+
 
               {link && onPlayGame && (
                 <button
