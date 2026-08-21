@@ -1,12 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { insects } from "@/data/insects";
 import { getInsectImage } from "@/lib/insectImages";
-import { Bug, BookOpen, Gamepad2, Sprout, Library, MessageSquare, UserRound, BookMarked } from "lucide-react";
+import { Bug, BookOpen, Gamepad2, Library, MessageSquare, UserRound, BookMarked } from "lucide-react";
 
 interface Props {
   onOpenLearning: () => void;
   onOpenPractice: () => void;
-  onOpenFarm: () => void;
   onOpenGlossary: () => void;
   onOpenReferences: () => void;
   onOpenFeedback: () => void;
@@ -81,7 +80,6 @@ export function AppHeader(props: Props) {
         <nav className="flex flex-wrap items-center justify-end gap-1.5">
           <NavBtn icon={BookOpen} label="Learn" onClick={props.onOpenLearning} />
           <NavBtn icon={Gamepad2} label="Practice" onClick={props.onOpenPractice} />
-          <NavBtn icon={Sprout} label="Farm" onClick={props.onOpenFarm} />
           <NavBtn icon={Library} label="Glossary" onClick={props.onOpenGlossary} />
           <NavBtn icon={UserRound} label="My Scout" onClick={props.onOpenScout} />
           <NavBtn icon={BookMarked} label="References" onClick={props.onOpenReferences} />

@@ -7,7 +7,6 @@ import { GameScreen } from "@/components/GameScreen";
 import { ResultsScreen } from "@/components/ResultsScreen";
 import { LearningModule } from "@/components/overlays/LearningModule";
 import { PracticeHub } from "@/components/overlays/PracticeHub";
-import { FarmMode } from "@/components/overlays/FarmMode";
 import { Glossary } from "@/components/overlays/Glossary";
 import { ReferencesPage } from "@/components/overlays/ReferencesPage";
 import { FeedbackDialog } from "@/components/overlays/FeedbackDialog";
@@ -31,7 +30,6 @@ function Index() {
   const engine = useGameEngine();
   const [showLearning, setShowLearning] = useState(false);
   const [showPractice, setShowPractice] = useState(false);
-  const [showFarm, setShowFarm] = useState(false);
   const [showGlossary, setShowGlossary] = useState(false);
   const [showReferences, setShowReferences] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -46,7 +44,6 @@ function Index() {
   const closeAllPanels = () => {
     setShowLearning(false);
     setShowPractice(false);
-    setShowFarm(false);
     setShowGlossary(false);
     setShowReferences(false);
     setShowFeedback(false);
@@ -93,7 +90,6 @@ function Index() {
             setShowPractice(true);
           });
         }}
-        onOpenFarm={() => openOnly(() => setShowFarm(true))}
         onOpenGlossary={() => openOnly(() => setShowGlossary(true))}
         onOpenReferences={() => openOnly(() => setShowReferences(true))}
         onOpenFeedback={() => openOnly(() => setShowFeedback(true))}
@@ -107,7 +103,6 @@ function Index() {
           totalCorrect={engine.totalCorrect}
           totalWrong={engine.totalWrong}
           speciesMastered={mastered}
-          startGame={engine.startGame}
           onOpenLearning={(t) => {
             setLearnTier(t);
             setLearnLessonId(undefined);
@@ -118,7 +113,6 @@ function Index() {
             setPracticeGameId(undefined);
             setShowPractice(true);
           }}
-          onOpenFarm={() => setShowFarm(true)}
           onOpenGlossary={() => setShowGlossary(true)}
           onOpenScout={() => setShowScout(true)}
         />
@@ -144,7 +138,6 @@ function Index() {
           onClose={() => setShowPractice(false)}
         />
       )}
-      {showFarm && <FarmMode onClose={() => setShowFarm(false)} />}
       {showGlossary && <Glossary onClose={() => setShowGlossary(false)} />}
       {showReferences && <ReferencesPage onClose={() => setShowReferences(false)} />}
       {showFeedback && <FeedbackDialog onClose={() => setShowFeedback(false)} />}

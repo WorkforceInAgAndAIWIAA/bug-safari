@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import type { GradeLevel, LearningGradeLevel } from "@/lib/types";
+import type { LearningGradeLevel } from "@/lib/types";
 import { insects } from "@/data/insects";
 import { getInsectImage } from "@/lib/insectImages";
-import { Bug, BookOpen, Gamepad2, Sprout, Library, Trophy, UserRound, Flame, Sparkles, ArrowLeft } from "lucide-react";
+import { Bug, BookOpen, Gamepad2, Library, Trophy, UserRound, Flame, Sparkles, ArrowLeft } from "lucide-react";
 
-type Destination = "learn" | "practice" | "play";
+type Destination = "learn" | "practice";
 
 interface Props {
   xp: number;
@@ -12,10 +12,8 @@ interface Props {
   totalCorrect: number;
   totalWrong: number;
   speciesMastered: number;
-  startGame: (g: GradeLevel) => void;
   onOpenLearning: (tier: LearningGradeLevel) => void;
   onOpenPractice: (tier: LearningGradeLevel) => void;
-  onOpenFarm: () => void;
   onOpenGlossary: () => void;
   onOpenScout: () => void;
 }
@@ -30,7 +28,6 @@ const LEVELS: { id: LearningGradeLevel; title: string; sub: string; blurb: strin
 const DEST_META: Record<Destination, { title: string; icon: typeof Bug; copy: string }> = {
   learn: { title: "Learn", icon: BookOpen, copy: "Pick a level to open its learning modules." },
   practice: { title: "Practice", icon: Gamepad2, copy: "Pick a level to open its mini-games." },
-  play: { title: "Play", icon: Sprout, copy: "Pick a level to start an official run." },
 };
 
 export function LandingPage(p: Props) {
@@ -52,12 +49,11 @@ export function LandingPage(p: Props) {
     return () => clearInterval(t);
   }, [heroShots.length]);
 
-  const levels = dest === "play" ? LEVELS.filter((l) => l.id !== "collegiate") : LEVELS;
+  const levels = LEVELS;
 
   const choose = (id: LearningGradeLevel) => {
     if (dest === "learn") p.onOpenLearning(id);
     else if (dest === "practice") p.onOpenPractice(id);
-    else if (dest === "play") p.startGame(id as GradeLevel);
     setDest(null);
   };
 
@@ -87,8 +83,7 @@ export function LandingPage(p: Props) {
               <span className="text-accent">for Every Age</span>
             </h1>
             <p className="mt-5 max-w-lg text-base leading-relaxed text-primary-foreground/90">
-              Identify, scout, and manage 108 insect species. Learn, practice, and play through an
-              interactive field school built for K–College classrooms.
+              Identify, scout, and manage 108 insect species. Learn and practice through an interactive field school built for K–College classrooms.
             </p>
             <button
               onClick={() => setDest("learn")}
@@ -112,10 +107,9 @@ export function LandingPage(p: Props) {
           {/* Primary modes */}
           <section>
             <SectionLabel>Choose your path</SectionLabel>
-            <div className="mt-8 grid gap-6 sm:grid-cols-3">
+            <div className="mt-8 grid gap-6 sm:grid-cols-2">
               <BigTile icon={BookOpen} title="Learn" desc="Topic guides by grade level" tone="from-primary/50 to-secondary/30" onClick={() => setDest("learn")} />
               <BigTile icon={Gamepad2} title="Practice" desc="Mini-games and drills" tone="from-secondary/50 to-primary/30" onClick={() => setDest("practice")} />
-              <BigTile icon={Sprout} title="Play" desc="Official scored runs" tone="from-primary/40 to-accent/30" onClick={() => setDest("play")} />
             </div>
           </section>
 
