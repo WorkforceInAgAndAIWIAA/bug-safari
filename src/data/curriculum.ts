@@ -59,7 +59,7 @@ export const CURRICULUM: Record<LearningGradeLevel, Unit[]> = {
           sections: [
             {
               heading: "One name the whole world can share",
-              body: "People call insects all kinds of things. A \"lightning bug\" in Ohio might be called a \"firefly\" in Texas — and they're the same bug! Scientists needed one name everyone in the whole world could agree on, so they gave every insect a special two-word name in Latin. For example, the honeybee scientists call Apis mellifera. That name means the same thing whether you're in Texas, Japan, or Brazil. The first word tells you the insect's family, and the second word tells you exactly which one it is. It's like a first name and a last name, but in a very old language!",
+              body: "People call insects all kinds of things. A \"lightning bug\" in Ohio might be called a \"firefly\" in Texas — and they're the same bug! Scientists needed one name everyone in the whole world could agree on, so they gave every insect a special two-word name in Latin. For example: the honeybee! Scientists call honeybeels \"Apis mellifera\". That name means the same thing whether you're in Texas, Japan, or Brazil. The first word tells you the insect's family, and the second word tells you exactly which one it is. It's like a first name and a last name, but in a very old language!",
             },
           ],
           funFact: "The western corn rootworm's scientific name is Diabrotica virgifera. Try saying it three times fast!",
