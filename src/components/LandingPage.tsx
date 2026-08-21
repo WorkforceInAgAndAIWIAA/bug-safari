@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import type { GradeLevel, LearningGradeLevel } from "@/lib/types";
+import type { LearningGradeLevel } from "@/lib/types";
 import { insects } from "@/data/insects";
 import { getInsectImage } from "@/lib/insectImages";
 import { Bug, BookOpen, Gamepad2, Library, Trophy, UserRound, Flame, Sparkles, ArrowLeft } from "lucide-react";
@@ -12,7 +12,6 @@ interface Props {
   totalCorrect: number;
   totalWrong: number;
   speciesMastered: number;
-  startGame: (g: GradeLevel) => void;
   onOpenLearning: (tier: LearningGradeLevel) => void;
   onOpenPractice: (tier: LearningGradeLevel) => void;
   onOpenGlossary: () => void;
