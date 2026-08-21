@@ -14,7 +14,7 @@ export interface TopicLink {
 
 export const TOPIC_LINKS: TopicLink[] = [
   { tier: "elementary", topic: "Insect definition", lessonId: "what-is-an-insect", gameId: "insect-or-not", gameName: "Insect or Not?" },
-  { tier: "elementary", topic: "3-part body plan", lessonId: "body-basics", gameId: "build-insect", gameName: "Build an Insect" },
+  { tier: "elementary", topic: "3-part body plan", lessonId: "what-is-an-insect", gameId: "build-insect", gameName: "Build an Insect" },
   { tier: "elementary", topic: "Common names", lessonId: "names", gameId: "name-insect", gameName: "Name the Insect" },
   { tier: "elementary", topic: "Life stages", lessonId: "egg-to-adult", gameId: "life-stages", gameName: "Life Stages Sequence" },
   { tier: "elementary", topic: "Head position", lessonId: "parts", gameId: "head-position", gameName: "Head Position Match" },
