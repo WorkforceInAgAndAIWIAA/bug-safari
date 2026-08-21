@@ -44,6 +44,9 @@ export const TOPIC_LINKS: TopicLink[] = [
   { tier: "high", topic: "Metamorphosis", lessonId: "metamorphosis", gameId: "metamorphosis-race", gameName: "Molt & Move" },
   { tier: "high", topic: "Economic impact of insects", lessonId: "ipm", gameId: "farm-economics", gameName: "Bottom Line Farm" },
   { tier: "high", topic: "Insect damage", lessonId: "predator-pest", gameId: "damage-csi", gameName: "Damage CSI" },
+  { tier: "high", topic: "How insects hear", lessonId: "hearing", gameId: "listening-post", gameName: "The Listening Post" },
+  { tier: "high", topic: "Antennae", lessonId: "antennae", gameId: "antennae-dominoes", gameName: "Antennae Dominoes" },
+  { tier: "high", topic: "Mouth parts", lessonId: "mouthparts", gameId: "guess-the-tool", gameName: "The Toolshed" },
 ];
 
 export function linkForLesson(tier: LearningGradeLevel, lessonId: string) {
