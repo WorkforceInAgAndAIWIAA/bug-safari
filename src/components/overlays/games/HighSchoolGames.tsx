@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactElement } from "react";
 import { ArrowLeft, BookOpen, Crosshair, Layers, RefreshCcw, Sparkles, Trophy, Timer, ShieldAlert } from "lucide-react";
 import { insectsForGrade } from "@/data/gradeInsects";
 import type { Insect } from "@/data/insects";
@@ -647,7 +647,7 @@ interface HsGame {
   topic: string;
   blurb: string;
   icon: typeof Crosshair;
-  render: (add: (n: number) => void) => JSX.Element;
+  render: (add: (n: number) => void) => ReactElement;
 }
 
 export const HS_GAMES: HsGame[] = [
