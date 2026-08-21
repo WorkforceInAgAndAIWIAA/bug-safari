@@ -107,11 +107,20 @@ export const CURRICULUM: Record<LearningGradeLevel, Unit[]> = {
           title: "Look and describe",
           sections: [
             {
-              heading: "Use your eyes and a notebook",
-              body: "You can learn a lot about an insect just by slowing down and looking carefully. Start with the safe senses — your eyes and ears. What color is it? Is it bigger than your fingernail or smaller? Does it have spots, stripes, or shiny patches? What shape is its body — long and skinny, or round and fat? Where did you find it — on a leaf, under a rock, in a flower? You can write down or draw what you see in a little notebook called a field journal. Scientists do the exact same thing! Never touch an insect unless a grown-up says it's safe. Some insects can pinch or sting.",
+              heading: "Insect Detective!",
+              body: "Grab your detective eyes and field journal — it's time to investigate! Look closely at your insect without touching it. What color is it? Is it bigger or smaller than your fingernail? Does it have spots, stripes, or shiny patches? Is its body long and skinny or round and fat?",
+            },
+            {
+              heading: "Gather your clues",
+              body: "Look for clues about where you found it — was it on a leaf, hiding under a rock, or visiting a flower? Write down your clues or draw a picture in your field journal, just like real scientists do! Remember, never touch an insect unless a grown-up says it is safe, because some insects can pinch or sting.",
+            },
+            {
+              heading: "Detective challenge",
+              body: "Can you figure out what makes your insect unique? Compare your notes with a friend's and see whether you both found the very same suspect.",
             },
           ],
           funFact: "A magnifying glass makes even tiny insects look huge and amazing — you can see their eyes, leg hairs, and wing veins up close!",
+          image: { src: detectivesImg.url, alt: "Kid detectives with magnifying glass and clue book inspecting a ladybug" },
         },
         {
           id: "parts",
