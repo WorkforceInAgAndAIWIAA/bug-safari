@@ -45,21 +45,24 @@ export const CURRICULUM: Record<LearningGradeLevel, Unit[]> = {
           sections: [
             {
               heading: "Meet the insects",
-              body: "Insects are a diverse group of animals in the class Insecta. Insects may appear to be small bugs, but they are unique! There are more than 1 million known types of insects in the world. Insects can be identified by what they look like. Insects have 6 legs and a 3-part body plan. All insects have at least 1 pair of antennae on their head. Some insects have wings!",
+              body: "Insects are everywhere — in the grass, under rocks, on flowers, and even buzzing past your ear! Scientists put them all in one big group called Insecta. There are more than 1 million kinds of insects that we know about, and scientists are still finding new ones. That means insects are the biggest animal group on the whole planet.",
             },
-          ],
-        },
-        {
-          id: "body-basics",
-          title: "Insect body basics",
-          sections: [
             {
-              heading: "Three body parts, six legs",
-              body: "Have you ever looked closely at a beetle or a bee? Every single insect — no matter how big or small — has a body built in three pieces. We call them the head, the thorax, and the abdomen. Think of it like a tiny train with three cars! The head is where the eyes and mouth are. The thorax is the middle part where the legs attach. The abdomen is the back section. And here's a rule that never breaks: insects always have exactly six legs. Always. If you count more legs (like a spider!) or fewer legs, it's not an insect.",
+              heading: "Three body parts, like a tiny train",
+              body: "Every single insect — no matter how big or small — has a body built in three pieces: the head, the thorax, and the abdomen. Think of it like a tiny train with three cars! The head is where the eyes, antennae, and mouth are. The thorax is the middle car, where the legs (and wings, if it has them) attach. The abdomen is the back car, where the insect digests its food.",
+            },
+            {
+              heading: "The six-leg rule",
+              body: "Here's a rule that never breaks: insects always have exactly six legs. Always! If you count eight legs, you found a spider. If you count way more, you might have a centipede or a pillbug. Those are cool creatures too, but they are not insects.",
+            },
+            {
+              heading: "Antennae and wings",
+              body: "Every insect also has at least one pair of antennae on its head. Antennae are like super-senses — insects use them to smell, feel, and even taste the world around them. And many insects have wings, which makes them the only animals without backbones that can fly. Butterflies have scaly wings, beetles have hard shield wings, and flies have just one pair. So next time you spot a bug, check the list: three body parts, six legs, antennae. If it passes, you found an insect!",
             },
           ],
           funFact:
             "Try it out: next time you find an ant, count its legs out loud. One, two, three, four, five, six! Yep — it's an insect.",
+          image: { src: bodyPartsImg.url, alt: "Cartoon insect labeled with head, thorax, abdomen, antennae, wings, and six legs" },
         },
         {
           id: "names",
@@ -71,7 +74,9 @@ export const CURRICULUM: Record<LearningGradeLevel, Unit[]> = {
             },
           ],
           funFact: "The western corn rootworm's scientific name is Diabrotica virgifera. Try saying it three times fast!",
+          image: { src: fireflyNamesImg.url, alt: "Glossary of firefly nicknames: firefly, lightning bug, glowworm, candlefly, firebob, lamp bug, will-o'-the-wisp" },
         },
+
       ],
     },
     {
