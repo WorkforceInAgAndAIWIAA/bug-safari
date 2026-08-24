@@ -332,6 +332,7 @@ export const CURRICULUM: Record<LearningGradeLevel, Unit[]> = {
             },
           ],
           funFact: "Some farmers plant \"insectary strips\" — rows of wildflowers in or around their fields just to give beneficial insects a home base!",
+          image: { src: stewardshipImg.url, alt: "Good insect stewardship illustration: flower strips, wild habitat, and careful pesticide spraying" },
         },
         {
           id: "ipm",
