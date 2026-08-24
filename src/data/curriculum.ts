@@ -4,6 +4,14 @@ import fireflyNamesImg from "@/assets/firefly_names.jpg.asset.json";
 import lifeStagesImg from "@/assets/insect_life_stages_cartoon.jpg.asset.json";
 import detectivesImg from "@/assets/insect_detectives_cartoon.jpg.asset.json";
 import lookAlikesImg from "@/assets/insect_look-alikes.jpg.asset.json";
+import pollinationImg from "@/assets/pollination_cartoon.jpg.asset.json";
+import predatorsImg from "@/assets/helpful_predators.jpg.asset.json";
+import decomposersImg from "@/assets/decomposers.jpg.asset.json";
+import cropDamageImg from "@/assets/crop_damage.jpg.asset.json";
+import biodiverseImg from "@/assets/biodiverse.jpg.asset.json";
+import foodChainImg from "@/assets/food_chain.jpg.asset.json";
+import foodWebImg from "@/assets/food_web.jpg.asset.json";
+import stewardshipImg from "@/assets/insect_stewardship.jpg.asset.json";
 
 export interface Lesson {
   id: string;
