@@ -303,6 +303,7 @@ export const CURRICULUM: Record<LearningGradeLevel, Unit[]> = {
             },
           ],
           funFact: "A braconid wasp lays its eggs inside caterpillars — the wasp babies hatch inside and eat the caterpillar from the inside out. Gruesome, but it helps control farm pests!",
+          image: { src: foodWebImg.url, alt: "Farm food web showing producers, consumers, and decomposers connected by many arrows" },
         },
         {
           id: "move-and-spread",
