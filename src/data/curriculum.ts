@@ -244,6 +244,7 @@ export const CURRICULUM: Record<LearningGradeLevel, Unit[]> = {
             },
           ],
           funFact: "Aphids can multiply so fast that a single aphid can become thousands of aphids on one plant in just a few weeks!",
+          image: { src: cropDamageImg.url, alt: "Cartoon showing three ways pests damage crops: chewing, sucking, and boring" },
         },
         {
           id: "native-vs-invasive",
