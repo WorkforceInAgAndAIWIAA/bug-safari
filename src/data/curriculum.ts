@@ -285,6 +285,7 @@ export const CURRICULUM: Record<LearningGradeLevel, Unit[]> = {
             },
           ],
           funFact: "Baby birds need caterpillars to grow. A single nest of baby chickadees can eat 6,000 caterpillars before they're old enough to fly!",
+          image: { src: foodChainImg.url, alt: "Farm food chain: soybean plant to aphid to ladybug to bird" },
         },
       ],
     },
