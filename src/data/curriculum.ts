@@ -168,8 +168,29 @@ export const CURRICULUM: Record<LearningGradeLevel, Unit[]> = {
               heading: "Free farm helpers",
               body: "When a bee visits a flower to drink nectar, tiny grains of yellow dust called pollen stick to its fuzzy body. When the bee flies to another flower, some of that pollen rubs off — and that's how many plants make seeds and fruit! This job is called pollination, and without it, we wouldn't have apples, strawberries, pumpkins, almonds, or most of the foods we love. Bees are the most famous pollinators, but butterflies, moths, flies, and even some beetles do it too. On a farm, having pollinators around is like having free farm helpers that never take a day off.",
             },
+            {
+              heading: "📖 Story time: Barnaby the Pollinator Pilot ✈️🐝",
+              body: "Once upon a time, in a giant, sun-soaked garden ☀️🌷, lived a bee named Barnaby 🐝. Barnaby was… not a graceful bee. He was round, fuzzy, and had a tendency to crash-land into things. \"Time for work!\" Barnaby buzzed, putting on his tiny aviator goggles 🥽 (in his imagination, he was a cool pilot ✈️). He took off with all his might — and immediately bonked his head on a sunflower petal 🌻. \"Oof! Just… testing the landing gear,\" he mumbled, shaking his head. Today Barnaby had a very important mission. He was a Pollinator Pilot 👨‍✈️. His job was to fly from flower to flower, drinking sweet juice called nectar. But something else happened when he visited the flowers…",
+            },
+            {
+              heading: "🌸 First stop: the purple Petunia",
+              body: "\"Hello, Petunia! Permission to land!\" 🌸 Barnaby announced, executing a very wobbly approach. He dove right into the center and started slurping up the nectar. Sip, sip, sip. \"Mmm, delicious!\" But as he was drinking, his fluffy, fuzzy tummy brushed against the top of the flower, which was covered in super fine, sticky yellow dust called pollen ✨. Barnaby didn't notice — he was too busy enjoying his snack.",
+            },
+            {
+              heading: "🧡 Next stop: the orange Marigold",
+              body: "\"Well, that hit the spot! Next!\" With a BUZZ! ZOOOOOM! 💨 Barnaby took off again. This time his landing was slightly better — he only grazed the side of a daisy 🌼 before plopping into a beautiful orange Marigold 🧡. Sip, sip, sip went Barnaby again. As he wiggled around to get the last drop of nectar, some of that sticky yellow pollen stuck to his fuzzy tummy came off and fell deep inside the Marigold. Barnaby had no idea he was a courier for flower dust 📦 — he just thought he was getting a free lunch!",
+            },
+            {
+              heading: "🐞 A wise old ladybug explains",
+              body: "\"Phew, hard work being a pilot,\" Barnaby said, wiping his antennae. \"Time for a break.\" He flew over to a warm rock 🪨 to sunbathe. Suddenly, a wise old ladybug 🐞 landed next to him. \"You look tired, Barnaby.\" \"I am! This flying business is tough,\" Barnaby sighed. The ladybug chuckled. \"You know, you're not just drinking nectar. You're helping the garden.\" \"I am?\" Barnaby perked up. \"Yes! When you fly from the Petunia to the Marigold, you carry that sticky yellow pollen on your tummy. You're giving the flowers a magical dust-up. It helps them make seeds 🌱 and grow new flowers and fruits 🍎!\"",
+            },
+            {
+              heading: "🌹 Flower Dust Delivery Bee",
+              body: "Barnaby's little bee mind was blown 🤯. \"You mean… I'm not just a pilot, I'm a… Flower Dust Delivery Bee?!\" \"Exactly!\" Barnaby puffed out his fuzzy chest. He felt ten feet tall (for a bee). He was helping create more flowers! He adjusted his aviator goggles 🥽. \"Well, then! I have more dust to deliver!\" With a determined BUZZ! 🐝 and a slightly less crashy landing, Barnaby flew off to a bright red Poppy 🌺. \"Delivery for the Poppy! Sticky yellow dust incoming!\" he announced, and dove right in. And that was how Barnaby, the clumsiest bee pilot in the garden, became the most important helper in the whole world of flowers 🌍💛.",
+            },
           ],
           funFact: "About one out of every three bites of food you eat exists because of pollinators. That's a lot of thank-yous owed to bees!",
+          image: { src: pollinationImg.url, alt: "Cartoon showing a bee carrying pollen from one flower to another so flowers make seeds and fruit" },
         },
         {
           id: "predators",
@@ -181,6 +202,7 @@ export const CURRICULUM: Record<LearningGradeLevel, Unit[]> = {
             },
           ],
           funFact: "A single green lacewing larva can eat up to 200 aphids in one week. That's one hungry little bug!",
+          image: { src: predatorsImg.url, alt: "Cartoon of helper hunter insects eating pests while a farmer learns that too much pesticide kills the good guys too" },
         },
         {
           id: "decomposers",
@@ -190,8 +212,21 @@ export const CURRICULUM: Record<LearningGradeLevel, Unit[]> = {
               heading: "Recyclers of the soil",
               body: "When a leaf falls off a tree or an animal dies, it doesn't just sit there forever. Insects called decomposers eat dead plants and animals, breaking them down into tiny pieces that go back into the soil. Beetles, fly larvae, and many other insects do this important job. The nutrients they release feed new plants — so in a way, these insects are recyclers! Without decomposers, dead stuff would pile up everywhere and the soil would run out of the good stuff plants need to grow. On a farm, healthy soil full of decomposer activity means better crops.",
             },
+            {
+              heading: "📖 Story time: Pip the Recycler 🪲",
+              body: "Crunch, chomp, munch! Pip the burying beetle 🪲 woke up with a giant appetite and a very important job to do. Down on the forest floor beneath a busy farm 🚜, a crispy autumn leaf 🍂 had just fallen off a tree. To most people, a fallen leaf is just trash 🗑️. But to Pip, it was breakfast, lunch, and dinner!",
+            },
+            {
+              heading: "♻️ Time to recycle",
+              body: "\"Time to recycle,\" Pip clicked his mandibles happily. Without wasting a second, he began to chew the dead plant into tiny pieces. Right beside him, some fly larvae 🐛 were hard at work doing the exact same thing. You see, in nature, things don't just sit around forever. Insects like Pip are nature's ultimate cleanup crew 🧹 and recyclers. As they eat and break down dead plants and animals, they turn them into tiny pieces that mix right back into the soil 🌱.",
+            },
+            {
+              heading: "🌽 Why Pip matters",
+              body: "The best part? The nutrients these insects release feed brand-new plants, giving local farmers rich, healthy soil that grows amazing crops 🌽🍅. If Pip and his bug buddies took a day off, dead stuff would pile up everywhere, and the soil would run out of all the good stuff plants need to grow. After finishing his snack, Pip wiped his face with his front legs and smiled 😊. It's tough work being a microscopic recycling superhero 🦸, but somebody's gotta do it!",
+            },
           ],
           funFact: "Dung beetles roll animal poop into balls and bury it — that's decomposing at its most extreme, and it puts nutrients right back into the ground!",
+          image: { src: decomposersImg.url, alt: "Cartoon of Pip the burying beetle recycling dead leaves into healthy soil that grows better crops" },
         },
       ],
     },
