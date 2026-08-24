@@ -273,6 +273,7 @@ export const CURRICULUM: Record<LearningGradeLevel, Unit[]> = {
             },
           ],
           funFact: "Scientists have found and named over one million insect species — and they think there might be millions more we haven't discovered yet!",
+          image: { src: biodiverseImg.url, alt: "Busy meadow illustration packed with many different insects, flowers, and habitats" },
         },
         {
           id: "food-chains",
