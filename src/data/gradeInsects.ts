@@ -1,7 +1,10 @@
 import { insects, type Insect } from "@/data/insects";
 import type { LearningGradeLevel } from "@/lib/types";
 
-const ELEMENTARY_IDS = [ "seven-spotted-lady-beetle", "japanese-beetle",
+const ELEMENTARY_IDS = [
+  "seven-spotted-lady-beetle", "asian-lady-beetle", "japanese-beetle", "spined-soldier-bug",
+  "thistle-caterpillar-painted-lady-butterfly", "green-stink-bug", "brown-marmorated-stink-bug",
+  "striped-cucumber-beetle", "corn-earworm", "pea-aphid", "potato-leafhopper", "true-armyworm",
 ] as const;
 
 const MIDDLE_IDS = [
