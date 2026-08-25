@@ -1382,12 +1382,10 @@ function BeneficialSort({ onAward }: { onAward: (n: number) => void }) {
 /* 10. Find the Disease                                                */
 /* ================================================================== */
 const VECTORS: Record<string, { disease: string; wrong: string[] }> = {
-  "corn-flea-beetle": { disease: "Spreads Stewart's wilt bacteria to corn", wrong: ["Carries a virus that infects cattle", "Spreads mildew on apples"] },
-  "potato-leafhopper": { disease: "Causes hopperburn and spreads plant diseases", wrong: ["Carries rabies", "Spreads soil fungus to trees"] },
+    "potato-leafhopper": { disease: "Causes hopperburn and spreads plant diseases", wrong: ["Carries rabies", "Spreads soil fungus to trees"] },
   "corn-leaf-aphid": { disease: "Spreads plant viruses like maize dwarf mosaic", wrong: ["Carries malaria", "Spreads Dutch elm disease"] },
   "striped-cucumber-beetle": { disease: "Spreads bacterial wilt to cucumbers and melons", wrong: ["Carries Lyme disease", "Spreads apple scab"] },
-  "soybean-thrips": { disease: "Spreads soybean vein necrosis virus", wrong: ["Carries the flu", "Spreads corn smut"] },
-};
+  };
 const VECTOR_IDS = Object.keys(VECTORS);
 
 function FindTheDisease({ onAward }: { onAward: (n: number) => void }) {

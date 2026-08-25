@@ -12,22 +12,14 @@ const K5_IDS = insectsForGrade("middle").map((insect) => insect.id);
 
 const EMOJI: Record<string, string> = {
   "alfalfa-weevil": "🪲",
-  "bumble-bee": "🐝",
-  "corn-leaf-aphid": "🦗",
-  "honey-bee": "🐝",
-  "japanese-beetle": "🪲",
-  "monarch-butterfly": "🦋",
-  "potato-leafhopper": "🦗",
+    "corn-leaf-aphid": "🦗",
+    "japanese-beetle": "🪲",
+    "potato-leafhopper": "🦗",
   "seven-spotted-lady-beetle": "🐞",
-  "corn-flea-beetle": "🪲",
-  "differential-grasshopper": "🦗",
-  "green-cloverworm": "🐛",
+      "green-cloverworm": "🐛",
   "green-stink-bug": "🪳",
-  "spongy-moth": "🦋",
-  "spotted-lantern-fly": "🦋",
-  "striped-cucumber-beetle": "🪲",
-  "black-swallowtail": "🦋",
-};
+      "striped-cucumber-beetle": "🪲",
+  };
 
 const K5 = insectsForGrade("middle").filter((i) => K5_IDS.includes(i.id));
 const byId = (id: string): Insect => K5.find((i) => i.id === id)!;
@@ -38,32 +30,20 @@ const isInvasive = (i: Insect) => i.role === "Invasive Pest";
 
 // Facts used by several games (no scientific names for K-5)
 const FLIES: Record<string, boolean> = {
-  "alfalfa-weevil": true, "bumble-bee": true, "corn-leaf-aphid": true, "honey-bee": true,
-  "japanese-beetle": true, "monarch-butterfly": true, "potato-leafhopper": true,
-  "seven-spotted-lady-beetle": true, "corn-flea-beetle": true, "differential-grasshopper": true,
-  "green-cloverworm": true, "green-stink-bug": true, "spongy-moth": true,
-  "spotted-lantern-fly": true, "striped-cucumber-beetle": true, "black-swallowtail": true,
-};
+  "alfalfa-weevil": true, "corn-leaf-aphid": true,   "japanese-beetle": true, "potato-leafhopper": true,
+  "seven-spotted-lady-beetle": true,   "green-cloverworm": true, "green-stink-bug": true,   "striped-cucumber-beetle": true, };
 const EATS_BUGS = (i: Insect) =>
   i.id === "seven-spotted-lady-beetle" ||
   i.hosts.toLowerCase().includes("aphid") ||
   i.hosts.toLowerCase().includes("insect");
 const BODY_HINT: Record<string, string> = {
-  "bumble-bee": "Fuzzy body with black and yellow stripes",
-  "honey-bee": "Slim golden body with clear wings",
-  "monarch-butterfly": "Big orange wings with black lines",
-  "black-swallowtail": "Black wings with yellow spots and blue trim",
-  "seven-spotted-lady-beetle": "Red domed shell with seven black spots",
+          "seven-spotted-lady-beetle": "Red domed shell with seven black spots",
   "japanese-beetle": "Shiny green head with copper wing covers",
-  "corn-flea-beetle": "Tiny black beetle that jumps like a flea",
-  "striped-cucumber-beetle": "Yellow beetle with three black stripes",
+    "striped-cucumber-beetle": "Yellow beetle with three black stripes",
   "alfalfa-weevil": "Small brown beetle with a long snout",
-  "differential-grasshopper": "Big green hopper with strong back legs",
-  "green-cloverworm": "Skinny green caterpillar that wiggles",
+    "green-cloverworm": "Skinny green caterpillar that wiggles",
   "green-stink-bug": "Flat green shield-shaped body",
-  "spongy-moth": "Fuzzy moth with pale wings and dark bands",
-  "spotted-lantern-fly": "Gray wings with black spots and red underwings",
-  "corn-leaf-aphid": "Tiny soft blue-green bug in clusters",
+      "corn-leaf-aphid": "Tiny soft blue-green bug in clusters",
   "potato-leafhopper": "Bright green wedge that hops off leaves",
 };
 
@@ -760,23 +740,15 @@ const CONTINENTS: { id: string; label: string; x: number; y: number; w: number; 
   { id: "australia",     label: "Australia",     x: 78, y: 55, w: 15, h: 20 },
 ];
 const ORIGIN_ID: Record<string, string> = {
-  "spotted-lantern-fly": "asia",
-  "spongy-moth": "europe",
-  "japanese-beetle": "asia",
-  "honey-bee": "europe",
-  "seven-spotted-lady-beetle": "europe",
+      "japanese-beetle": "asia",
+    "seven-spotted-lady-beetle": "europe",
   "alfalfa-weevil": "europe",
-  "monarch-butterfly": "north-america",
-  "bumble-bee": "north-america",
-  "corn-leaf-aphid": "north-america",
-  "corn-flea-beetle": "north-america",
-  "differential-grasshopper": "north-america",
-  "green-cloverworm": "north-america",
+      "corn-leaf-aphid": "north-america",
+      "green-cloverworm": "north-america",
   "green-stink-bug": "north-america",
   "potato-leafhopper": "north-america",
   "striped-cucumber-beetle": "north-america",
-  "black-swallowtail": "north-america",
-};
+  };
 function MigrationMap({ onAward }: { onAward: (n: number) => void }) {
   const [i, setI] = useState(() => rand(K5));
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
